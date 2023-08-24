@@ -361,6 +361,9 @@ namespace Orbis.Game
             if (!AnimationChanged)
                 return;
 
+            var P1OldOffset = Player1Anim.GetAnimOffset(Player1.CurrentSprite);
+            var P2OldOffset = Player2Anim.GetAnimOffset(Player2.CurrentSprite);
+
             AnimationChanged = false;
 
             string FullAnimationName = $"{Player1AnimPrefix}{Player1CurrentAnim}{Player1AnimSufix}";
@@ -397,6 +400,21 @@ namespace Orbis.Game
                 !Speaker.SetActiveAnimation(SuffixOnlyAnimation))
             {
                 Speaker.SetActiveAnimation(SpeakerCurrentAnim);
+            }
+
+            var P1Offset = Player1Anim.GetAnimOffset(Player1.CurrentSprite);
+            var P2Offset = Player2Anim.GetAnimOffset(Player2.CurrentSprite);
+
+            if (P1Offset != P1OldOffset)
+            {
+                Player1.Position += P1OldOffset;
+                Player1.Position -= P1Offset;
+            }
+
+            if (P2Offset != P2OldOffset)
+            {
+                Player2.Position += P2OldOffset;
+                Player2.Position -= P2Offset;
             }
         }
         public void ComputeStep(out int BeatPerMS, out int StepPerMS)

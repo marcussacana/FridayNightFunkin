@@ -212,7 +212,10 @@ namespace Orbis.Game
                     if (CanBeHit && Hitted)
                         Score += SustainPoints;
 
-                    Sustain.Visible = false;
+                    if (Hitted && Sustain.Opacity == 150)
+                        Sustain.Visible = false;
+                    else
+                        Sustain.Opacity = 140;
                 }
             }
         }
