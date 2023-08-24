@@ -3,11 +3,12 @@ using System.Collections.Generic;
 
 namespace Orbis
 {
-    struct NewStatusEvent
+    public struct NewStatusEvent
     {
-        public string Target;
+        public EventTarget Target;
         public string AnimationSufix;
         public string AnimationPrefix;
+        public string NewAnimation;
     }
 
     public struct SongInfo

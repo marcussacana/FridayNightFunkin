@@ -14,31 +14,42 @@ namespace Orbis.Game
 {
     public class SongNoteEntry : GLObject2D
     {
-        NoteMenu Player;
         public Blank2D BackLayer { get; private set; } = new Blank2D();
         public SpriteAtlas2D Render { get; private set; }
 
         public Note Type { get; private set; }
 
+        public bool AutoHit { get; private set; }
+
         public bool CanBeHit { get; private set; }
 
-        long TargetTick;
+        public bool Hitted { get; set; }
+
+        const float HitZoneOffset = ((10f / 60) * 1000);
+
+        const float GoodDistance = HitZoneOffset * 0.2f;
+        const float BadDistance = HitZoneOffset * 0.75f;
+        const float ShitDistance = HitZoneOffset * 0.9f;
+
+        float SustainPoints = 0;
+
+        public float Score = 0;
+
         float TargetMS;
         float DurationMS;
         float YPerMS;
         long SongBeginTick;
 
-        Vector2 InitialPos;
+        public event EventHandler OnNoteElapsed;
 
-        public SongNoteEntry(SpriteAtlas2D Render, NoteMenu Player, Note Type, float TargetMS, float DurationMS, float YPerMS)
+        public SongNoteEntry(SpriteAtlas2D Render, Note Type, float TargetMS, float DurationMS, float YPerMS, bool AutoHit)
         {
             this.Render = Render;
             this.Type = Type;
             this.TargetMS = TargetMS;
             this.DurationMS = DurationMS;
             this.YPerMS = YPerMS;
-            this.Player = Player;
-            this.TargetTick = (long)TargetMS * Constants.ORBIS_MILISECOND;
+            this.AutoHit = AutoHit;
 
             AddChild(BackLayer);
             AddChild(Render);
@@ -70,15 +81,20 @@ namespace Orbis.Game
             Height = Render.Height;
             Width = Render.Width;
 
+            SetupSustain();
+        }
+
+        private void SetupSustain()
+        {
             List<SpriteAtlas2D> SustainNotes = new List<SpriteAtlas2D>();
 
-            float SustainY = DurationMS*YPerMS;
+            float SustainY = DurationMS * YPerMS;
             for (int i = 0, x = 0; i < SustainY; x++)
             {
                 var Sustain = Render.Clone(false);
                 Sustain.Opacity = 150;
                 Sustain.Position = new Vector2(Width / 2, i - (x * 1.5f));
-                
+
                 switch (Type)
                 {
                     case Note.Up:
@@ -140,32 +156,89 @@ namespace Orbis.Game
             long ElapsedTick = Tick - SongBeginTick;
             if (ElapsedTick > Constants.ORBIS_MILISECOND)
             {
-                long ReamingMS = (TargetTick - ElapsedTick) / Constants.ORBIS_MILISECOND;
+                long ElapsedMS = ElapsedTick / Constants.ORBIS_MILISECOND;
+                long DistanceMS = (long)TargetMS - ElapsedMS;
 
-                if (ReamingMS < 0)
-                {
+                //Original game tries to make easy to hit a
+                //note after the proper time than before.
+                if (DistanceMS < HitZoneOffset * 0.5)
                     CanBeHit = true;
+
+                if (DistanceMS < -HitZoneOffset)
                     Render.Opacity = 0;
-                }
 
-                if (ReamingMS + DurationMS < -100)
+                if (CanBeHit && AutoHit && DistanceMS < GoodDistance)
+                    Hitted = true;
+
+                if (DistanceMS + DurationMS < -HitZoneOffset)
                 {
-                    Render.Opacity = 0;
-                    CanBeHit = false;
+                    EndNote();
+                    return;
                 }
 
-                float CurrentY = YPerMS * ReamingMS;
-
-                foreach (var Sustain in BackLayer.Childs)
+                if (Render.Visible && CanBeHit && Hitted)
                 {
-                    float SustainDistance = ((-Sustain.Position.Y) + Height / 2);
-                    if (Sustain.Visible && SustainDistance > CurrentY)
-                        Sustain.Visible = false;
+                    Render.Visible = false;
+                    ComputeScore(DistanceMS);
+
+                    //Not sustain, let's dispose the note
+                    if (!BackLayer.Childs.Any())
+                    {
+                        EndNote();
+                        return;
+                    }
+
+                    SustainPoints = Score * 0.2f;
                 }
+
+                float CurrentY = YPerMS * DistanceMS;
+                UpdateSustainVisibility(CurrentY);
 
                 Position = new Vector2(Position.X, CurrentY);
             }
             base.Draw(Tick);
+        }
+
+        private void UpdateSustainVisibility(float CurrentY)
+        {
+            foreach (var Sustain in BackLayer.Childs)
+            {
+                if (!Sustain.Visible)
+                    continue;
+
+                float SustainDistance = ((-Sustain.Position.Y) + Height / 2);
+                if (SustainDistance > CurrentY)
+                {
+                    if (CanBeHit && Hitted)
+                        Score += SustainPoints;
+
+                    Sustain.Visible = false;
+                }
+            }
+        }
+
+        private void ComputeScore(long DistanceMS)
+        {
+            var AbsReamingMS = Math.Abs(DistanceMS);
+            if (AbsReamingMS < GoodDistance)
+            {
+                Score = 200;
+            }
+            else if (AbsReamingMS < BadDistance)
+            {
+                Score = 100;
+            }
+            else if (AbsReamingMS < ShitDistance)
+            {
+                Score = 50;
+            }
+        }
+
+        private void EndNote()
+        {
+            CanBeHit = false;
+            SongBeginTick = 0;
+            OnNoteElapsed?.Invoke(this, EventArgs.Empty);
         }
     }
 }

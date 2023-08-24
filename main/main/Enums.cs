@@ -37,4 +37,11 @@ namespace Orbis
         Limo,
         Halloween
     }
+
+    public enum EventTarget : byte
+    {
+        Speaker,
+        Player1,
+        Player2
+    }
 }

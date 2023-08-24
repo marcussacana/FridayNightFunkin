@@ -1,5 +1,4 @@
 ﻿using Orbis.BG;
-using Orbis.Game;
 using Orbis.Interfaces;
 using OrbisGL;
 using OrbisGL.Controls.Events;
@@ -8,10 +7,8 @@ using OrbisGL.GL2D;
 using System;
 using System.IO;
 using System.Numerics;
-using System.Threading;
-using System.Xml;
 
-namespace Orbis
+namespace Orbis.Game
 {
     public class SongPlayer : GLObject2D, ILoadable
     {
@@ -24,6 +21,8 @@ namespace Orbis
         float CoordinatesScale = 1.5f;//1.5 for 1080p
 
         bool IsStoryMode;
+
+        bool LastNoteIsFromPlayer1;
 
         public SongInfo SongInfo { get; private set; }
 
@@ -151,25 +150,61 @@ namespace Orbis
             //8 - Load Notes
             var Notes = new SpriteAtlas2D(NotesAssetData, Util.CopyFileToMemory, true);
 
-            Player1Menu = new NoteMenu(Notes, this, true);
-            Player2Menu = new NoteMenu(Notes, this, false);
+            Player1Menu = new NoteMenu(Notes, this, true, false);
+            Player2Menu = new NoteMenu(Notes, this, false, true);
+
+            Player1.OnAnimationEnd += OnAnimEnd;
+            Player2.OnAnimationEnd += OnAnimEnd;
 
             Notes.Texture = null;//Prevent Texture disposal
             Notes.Dispose();
 
             OnProgressChanged?.Invoke(BG.TotalProgress + 8);
 
-            BG.OnMapStatusChanged += BG_MapStatusChanged;
+            BG.OnMapStatusChanged += StatusChanged;
+            Player1Menu.OnNoteElapsed += StatusChanged;
+            Player2Menu.OnNoteElapsed += StatusChanged;
 
             //9
             SetupDisplay();
-#if ORBIS
             SetupInput();
-#endif
+
 
             Loaded = true;
 
             OnProgressChanged?.Invoke(BG.TotalProgress + 9);
+        }
+
+        private void OnAnimEnd(object sender, EventArgs e)
+        {
+            if (sender == Player1)
+            {
+                if (Player1.CurrentSprite == Player1Anim.HEY ||
+                    Player1.CurrentSprite == Player1Anim.LEFT_MISS ||
+                    Player1.CurrentSprite == Player1Anim.UP_MISS ||
+                    Player1.CurrentSprite == Player1Anim.RIGHT_MISS ||
+                    Player1.CurrentSprite == Player1Anim.DOWN_MISS)
+                {
+                    Player1CurrentAnim = Player1Anim.DANCING;
+                    AnimationChanged = true;
+                    UpdateAnimations();
+                    return;
+                }
+            }
+            if (sender == Player2)
+            {
+                if (Player2.CurrentSprite == Player2Anim.HEY ||
+                    Player2.CurrentSprite == Player2Anim.LEFT_MISS ||
+                    Player2.CurrentSprite == Player2Anim.UP_MISS ||
+                    Player2.CurrentSprite == Player2Anim.RIGHT_MISS ||
+                    Player2.CurrentSprite == Player2Anim.DOWN_MISS)
+                {
+                    Player2CurrentAnim = Player2Anim.DANCING;
+                    AnimationChanged = true;
+                    UpdateAnimations();
+                    return;
+                }
+            }
         }
 
         bool CanBegin = true;
@@ -185,8 +220,59 @@ namespace Orbis
 
         private void SetupInput()
         {
+#if ORBIS
             Application.Default.Gamepad.OnButtonDown += Gamepad_OnButtonDown;
             Application.Default.Gamepad.OnButtonUp += Gamepad_OnButtonUp;
+#endif
+
+            Application.Default.KeyboardDriver.OnKeyDown += KeyboardDriver_OnKeyDown;
+            Application.Default.KeyboardDriver.OnKeyUp += KeyboardDriver_OnKeyUp;
+        }
+
+        private void KeyboardDriver_OnKeyUp(object Sender, KeyboardEventArgs Args)
+        {
+            switch (Args.Keycode)
+            {
+                case IME_KeyCode.W:
+                case IME_KeyCode.UPARROW:
+                    Player1Menu.UnsetPress(Note.Up);
+                    break;
+                case IME_KeyCode.S:
+                case IME_KeyCode.DOWNARROW:
+                    Player1Menu.UnsetPress(Note.Down);
+                    break;
+                case IME_KeyCode.A:
+                case IME_KeyCode.LEFTARROW:
+                    Player1Menu.UnsetPress(Note.Left);
+                    break;
+                case IME_KeyCode.D:
+                case IME_KeyCode.RIGHTARROW:
+                    Player1Menu.UnsetPress(Note.Right);
+                    break;
+            }
+        }
+
+        private void KeyboardDriver_OnKeyDown(object Sender, KeyboardEventArgs Args)
+        {
+            switch (Args.Keycode)
+            {
+                case IME_KeyCode.W:
+                case IME_KeyCode.UPARROW:
+                    Player1Menu.SetPress(Note.Up);
+                    break;
+                case IME_KeyCode.S:
+                case IME_KeyCode.DOWNARROW:
+                    Player1Menu.SetPress(Note.Down);
+                    break;
+                case IME_KeyCode.A:
+                case IME_KeyCode.LEFTARROW:
+                    Player1Menu.SetPress(Note.Left);
+                    break;
+                case IME_KeyCode.D:
+                case IME_KeyCode.RIGHTARROW:
+                    Player1Menu.SetPress(Note.Right);
+                    break;
+            }
         }
 
         private void Gamepad_OnButtonDown(object Sender, ButtonEventArgs Args)
@@ -246,8 +332,8 @@ namespace Orbis
             FrontLayer.AddChild(Player2Menu);
             AddChild(FrontLayer);
 
-            Player1Menu.Position = new Vector2(50, 50);
-            Player2Menu.Position = new Vector2(1210, 50);
+            Player1Menu.Position = new Vector2(1210, 50);
+            Player2Menu.Position = new Vector2(50, 50);
 
             EnableAnimations();
         }
@@ -369,25 +455,46 @@ namespace Orbis
                     break;
             }
         }
-
-        private void BG_MapStatusChanged(object sender, NewStatusEvent Status)
+        private void StatusChanged(object sender, NewStatusEvent Status)
         {
+            if (SongInfo.Player2 == null)
+                Status.Target = EventTarget.Speaker;
+
             switch (Status.Target)
             {
-                case "player1":
+                case EventTarget.Player1:
                     Player1AnimPrefix = Status.AnimationPrefix;
                     Player1AnimSufix = Status.AnimationSufix;
+                    if (!string.IsNullOrWhiteSpace(Status.NewAnimation))
+                        Player1CurrentAnim = Status.NewAnimation;
                     break;
-                case "player2":
+                case EventTarget.Player2:
                     Player2AnimPrefix = Status.AnimationPrefix;
                     Player2AnimSufix = Status.AnimationSufix;
+                    if (!string.IsNullOrWhiteSpace(Status.NewAnimation))
+                        Player2CurrentAnim = Status.NewAnimation;
                     break;
-                case "speaker":
+                case EventTarget.Speaker:
                     SpeakerAnimPrefix = Status.AnimationPrefix;
                     SpeakerAnimSufix = Status.AnimationSufix;
+                    if (!string.IsNullOrWhiteSpace(Status.NewAnimation))
+                        SpeakerCurrentAnim = Status.NewAnimation;
                     break;
                 default:
                     throw new NotImplementedException();
+            }
+
+            if (sender is NoteMenu Menu)
+            {
+                bool IsPlayer1 = Menu == Player1Menu;
+
+                if (LastNoteIsFromPlayer1 && !IsPlayer1)
+                    Player1CurrentAnim = Player1Anim.HEY;
+
+                if (!LastNoteIsFromPlayer1 && IsPlayer1)
+                    Player2CurrentAnim = Player2Anim.HEY ?? Player2Anim.DANCING ?? Player2CurrentAnim;
+
+                LastNoteIsFromPlayer1 = IsPlayer1;
             }
 
             AnimationChanged = true;
@@ -416,8 +523,8 @@ namespace Orbis
             if (BeginRequested)
             {
                 BeginRequested = false;
-                Player1Menu.SetSongBegin(Tick);
-                Player2Menu.SetSongBegin(Tick);
+                Player1Menu.SetSongBegin(Tick + (Constants.ORBIS_SECOND * 3));
+                Player2Menu.SetSongBegin(Tick + (Constants.ORBIS_SECOND * 3));
             }
 
             base.Draw(Tick);

@@ -14,8 +14,14 @@ namespace Orbis.Game
 {
     public class NoteMenu : GLObject2D
     {
+        public bool CPU { get; set; }
 
-        public SongPlayer Player { get; private set; }
+        CharacterAnim Character;
+        public int Missed { get; private set; } = 0;
+        public int Score { get; private set; } = 0;
+        public SongPlayer Game { get; private set; }
+
+        public event EventHandler<NewStatusEvent> OnNoteElapsed;
 
         public const int NoteOffset = 155;
 
@@ -23,6 +29,8 @@ namespace Orbis.Game
         public const int DownX = NoteOffset * 1;
         public const int UpX = NoteOffset * 2;
         public const int RightX = NoteOffset * 3;
+
+        public bool IsPlayer1 { get; private set; }
 
         SpriteAtlas2D NoteSprite;
 
@@ -44,10 +52,11 @@ namespace Orbis.Game
         SongNoteEntry[] LeftNotes;
         SongNoteEntry[] RightNotes;
 
-        public NoteMenu(SpriteAtlas2D NoteSprite, SongPlayer Player, bool Player1)
+        public NoteMenu(SpriteAtlas2D NoteSprite, SongPlayer Game, bool Player1, bool CPU)
         {
             this.NoteSprite = NoteSprite;
-            this.Player = Player;
+            this.Game = Game;
+            this.CPU = CPU;
 
             Up = new PlayerNoteEntry(NoteSprite.Clone(false), Note.Up);
             Down = new PlayerNoteEntry(NoteSprite.Clone(false), Note.Down);
@@ -64,7 +73,7 @@ namespace Orbis.Game
             Up.Render.Position = new Vector2(UpX, 0);
             Right.Render.Position = new Vector2(RightX, 0);
 
-            SetupSong(Player.SongInfo.song, Player1);
+            SetupSong(Game.SongInfo.song, IsPlayer1 = Player1);
         }
 
         public void SetPress(Note Target)
@@ -114,7 +123,26 @@ namespace Orbis.Game
 
         private void HitNote(Note target)
         {
-            throw new NotImplementedException();
+            SongNoteEntry HittedNote;
+            switch (target)
+            {
+                case Note.Left:
+                    HittedNote = LeftNotes.First(x => x.CanBeHit);
+                    break;
+                case Note.Right:
+                    HittedNote = RightNotes.First(x => x.CanBeHit);
+                    break;
+                case Note.Down:
+                    HittedNote = DownNotes.First(x => x.CanBeHit);
+                    break;
+                case Note.Up:
+                    HittedNote = UpNotes.First(x => x.CanBeHit);
+                    break;
+                default:
+                    throw new Exception("Invalid Note Type");
+            }
+
+            HittedNote.Hitted = true;
         }
 
         public void SetSongBegin(long Tick)
@@ -125,16 +153,21 @@ namespace Orbis.Game
 
         public void SetupSong(SongData Song, bool IsPlayer1)
         {
+            Character = new CharacterAnim(IsPlayer1 ? Song.player1 : Song.player2 ?? "gf");
+
             SongNotes.Clear();
-            Player.ComputeStep(out int BPMS, out int SPMS);
+            Game.ComputeStep(out int BPMS, out int SPMS);
 
             //near but not accurate with the original game
             var YPerMS = (SPMS / 100f * 1.5f * Song.speed) / 4;
+            //var YPerMS = (SPMS / 100f * 1.5f * Song.speed) / 6; //slower, for debugging
 
 
             foreach (var Section in Song.notes)
             {
-                if (Section.mustHitSection == IsPlayer1)
+                bool OwnNote = (Section.mustHitSection && IsPlayer1) || (!Section.mustHitSection && !IsPlayer1);
+
+                if (!OwnNote)
                     continue;
 
                 foreach (var NoteData in Section.sectionNotes)
@@ -163,7 +196,9 @@ namespace Orbis.Game
                             throw new Exception("Invalid Note Type");
                     }
 
-                    SongNotes.Add(new SongNoteEntry(NoteSprite.Clone(false), this, NType, Milisecond, Duration, YPerMS));
+                    var CurNote = new SongNoteEntry(NoteSprite.Clone(false), NType, Milisecond, Duration, YPerMS, CPU);
+                    CurNote.OnNoteElapsed += NoteEntryElapsed;
+                    SongNotes.Add(CurNote);
                 }
             }
 
@@ -176,7 +211,96 @@ namespace Orbis.Game
             RightNotes = SongNotes.Where(x => x.Type == Note.Right).ToArray();
         }
 
+        private void NoteEntryElapsed(object sender, EventArgs e)
+        {
+            lock (this)
+            {
+                var ElapsedNote = ((SongNoteEntry)sender);
+                var NoteScore = (int)ElapsedNote.Score;
 
+                if (NoteScore == 0)
+                {
+                    Missed++;
+                    Score -= 100;
+
+                    if (IsPlayer1)
+                    {
+                        var NewState = new NewStatusEvent();
+                        NewState.Target = EventTarget.Player1;
+
+                        SetPlayerMiss(ElapsedNote, NewState);
+                    }
+                    else
+                    {
+                        var NewState = new NewStatusEvent();
+                        NewState.Target = EventTarget.Player2;
+
+                        SetPlayerMiss(ElapsedNote, NewState);
+                    }
+                }
+                else
+                {
+                    Score += NoteScore;
+
+                    if (IsPlayer1)
+                    {
+                        var NewState = new NewStatusEvent();
+                        NewState.Target = EventTarget.Player1;
+
+                        SetPlayerHit(ElapsedNote, NewState);
+                    }
+                    else
+                    {
+                        var NewState = new NewStatusEvent();
+                        NewState.Target = EventTarget.Player2;
+
+                        SetPlayerHit(ElapsedNote, NewState);
+                    }
+                }
+
+                ElapsedNote.Dispose();
+            }
+        }
+
+        private void SetPlayerHit(SongNoteEntry ElapsedNote, NewStatusEvent NewState)
+        {
+            switch (ElapsedNote.Type)
+            {
+                case Note.Up:
+                    NewState.NewAnimation = Character.UP;
+                    break;
+                case Note.Down:
+                    NewState.NewAnimation = Character.DOWN;
+                    break;
+                case Note.Left:
+                    NewState.NewAnimation = Character.LEFT;
+                    break;
+                case Note.Right:
+                    NewState.NewAnimation = Character.RIGHT;
+                    break;
+            }
+
+            OnNoteElapsed(this, NewState);
+        }
+        private void SetPlayerMiss(SongNoteEntry ElapsedNote, NewStatusEvent NewState)
+        {
+            switch (ElapsedNote.Type)
+            {
+                case Note.Up:
+                    NewState.NewAnimation = Character.UP_MISS;
+                    break;
+                case Note.Down:
+                    NewState.NewAnimation = Character.DOWN_MISS;
+                    break;
+                case Note.Left:
+                    NewState.NewAnimation = Character.LEFT_MISS;
+                    break;
+                case Note.Right:
+                    break;
+            }
+
+            OnNoteElapsed(this, NewState);
+        }
 
         public override void Draw(long Tick)
         {
