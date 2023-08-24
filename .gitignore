@@ -1,0 +1,53 @@
+# Prerequisites
+*.d
+
+# Compiled Object files
+*.slo
+*.lo
+*.o
+*.obj
+
+# Precompiled Headers
+*.gch
+*.pch
+
+# Compiled Dynamic libraries
+*.so
+*.dylib
+*.dll
+
+# Fortran module files
+*.mod
+*.smod
+
+# Compiled Static libraries
+*.lai
+*.la
+*.a
+*.lib
+
+# Executables
+*.exe
+*.out
+*.app
+
+bin/
+obj/
+packages/
+.idea/
+*.pidb
+*.userprefs
+*.suo
+*.pkg
+*.gp4
+eboot.bin
+*.elf
+*.oelf
+
+!mono/
+!mono/*
+!mono/4.5
+!mono/4.5/*
+
+
+.vs/
