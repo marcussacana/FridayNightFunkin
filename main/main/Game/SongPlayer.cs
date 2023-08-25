@@ -58,6 +58,11 @@ namespace Orbis.Game
         NoteMenu Player1Menu;
         NoteMenu Player2Menu;
 
+        Vector2 DiePlayerPos;
+        long DieTime;
+        Rectangle2D DieBG = null;
+        bool Player1Dead;
+
 
         bool AnimationChanged = true;
 
@@ -191,11 +196,53 @@ namespace Orbis.Game
             //9
             SetupDisplay();
             SetupInput();
-
+            SetupEvents();
 
             Loaded = true;
 
             OnProgressChanged?.Invoke(BG.TotalProgress + 9);
+        }
+
+        private void SetupEvents()
+        {
+            Health.OnPlayerDies += OnPlayerDies;
+        }
+
+        private void OnPlayerDies(object sender, NoteMenu e)
+        {
+            if (DieTime != 0)
+                return;
+
+            bool IsPlayer1 = e == Player1Menu;
+
+            if (!IsPlayer1 && Player2Menu.CPU)
+                return;
+
+            Player1Dead = IsPlayer1;
+
+            DieBG = new Rectangle2D(Application.Default.Width, Application.Default.Height, true);
+            DieBG.Color = RGBColor.Black;
+            DieBG.Opacity = 0;
+            DieBG.RefreshVertex();
+
+            if (IsPlayer1)
+            {
+                DiePlayerPos = Player1.Position - Player1Anim.GetAnimOffset(Player1Anim.DIES);
+                Player1CurrentAnim = Player1Anim.DIES;
+                AnimationChanged = true;
+                UpdateAnimations();
+            }
+            else
+            {
+                DiePlayerPos = Player2.Position - Player2Anim.GetAnimOffset(Player2Anim.DIES);
+                Player2CurrentAnim = Player2Anim.DIES;
+                AnimationChanged = true;
+                UpdateAnimations();
+            }
+
+            DieTime = LastDrawTick;
+
+            AddChild(DieBG);
         }
 
         private void OnAnimEnd(object sender, EventArgs e)
@@ -213,7 +260,19 @@ namespace Orbis.Game
                     UpdateAnimations();
                     return;
                 }
+
+                if (Player1.CurrentSprite == Player1Anim.DIES)
+                {
+                    DiePlayerPos -= Player1Anim.GetAnimOffset(Player1Anim.DIES);
+                    DiePlayerPos += Player1Anim.GetAnimOffset(Player1Anim.DEAD);
+
+                    Player1CurrentAnim = Player1Anim.DEAD;
+                    AnimationChanged = true;
+                    UpdateAnimations();
+                    return;
+                }
             }
+
             if (sender == Player2)
             {
                 if (Player2.CurrentSprite == Player2Anim.HEY ||
@@ -223,6 +282,17 @@ namespace Orbis.Game
                     Player2.CurrentSprite == Player2Anim.DOWN_MISS)
                 {
                     Player2CurrentAnim = Player2Anim.DANCING;
+                    AnimationChanged = true;
+                    UpdateAnimations();
+                    return;
+                }
+
+                if (Player2.CurrentSprite == Player2Anim.DIES)
+                {
+                    DiePlayerPos += Player2Anim.GetAnimOffset(Player1Anim.DIES);
+                    DiePlayerPos -= Player2Anim.GetAnimOffset(Player1Anim.DEAD);
+
+                    Player2CurrentAnim = Player2Anim.DEAD;
                     AnimationChanged = true;
                     UpdateAnimations();
                     return;
@@ -254,68 +324,104 @@ namespace Orbis.Game
 
         private void KeyboardDriver_OnKeyUp(object Sender, KeyboardEventArgs Args)
         {
-            switch (Args.Keycode)
+            if (DieTime != 0)
             {
-                case IME_KeyCode.W:
-                case IME_KeyCode.UPARROW:
-                    Player1Menu.UnsetPress(Note.Up);
-                    break;
-                case IME_KeyCode.S:
-                case IME_KeyCode.DOWNARROW:
-                    Player1Menu.UnsetPress(Note.Down);
-                    break;
-                case IME_KeyCode.A:
-                case IME_KeyCode.LEFTARROW:
-                    Player1Menu.UnsetPress(Note.Left);
-                    break;
-                case IME_KeyCode.D:
-                case IME_KeyCode.RIGHTARROW:
-                    Player1Menu.UnsetPress(Note.Right);
-                    break;
+                switch (Args.Keycode)
+                {
+                    case IME_KeyCode.W:
+                    case IME_KeyCode.UPARROW:
+                        Player1Menu.UnsetPress(Note.Up);
+                        break;
+                    case IME_KeyCode.S:
+                    case IME_KeyCode.DOWNARROW:
+                        Player1Menu.UnsetPress(Note.Down);
+                        break;
+                    case IME_KeyCode.A:
+                    case IME_KeyCode.LEFTARROW:
+                        Player1Menu.UnsetPress(Note.Left);
+                        break;
+                    case IME_KeyCode.D:
+                    case IME_KeyCode.RIGHTARROW:
+                        Player1Menu.UnsetPress(Note.Right);
+                        break;
+                }
             }
         }
 
         private void KeyboardDriver_OnKeyDown(object Sender, KeyboardEventArgs Args)
         {
-            switch (Args.Keycode)
+            if (DieTime != 0)
             {
-                case IME_KeyCode.W:
-                case IME_KeyCode.UPARROW:
-                    Player1Menu.SetPress(Note.Up);
-                    break;
-                case IME_KeyCode.S:
-                case IME_KeyCode.DOWNARROW:
-                    Player1Menu.SetPress(Note.Down);
-                    break;
-                case IME_KeyCode.A:
-                case IME_KeyCode.LEFTARROW:
-                    Player1Menu.SetPress(Note.Left);
-                    break;
-                case IME_KeyCode.D:
-                case IME_KeyCode.RIGHTARROW:
-                    Player1Menu.SetPress(Note.Right);
-                    break;
+                switch (Args.Keycode)
+                {
+                    case IME_KeyCode.W:
+                    case IME_KeyCode.UPARROW:
+                        Player1Menu.SetPress(Note.Up);
+                        break;
+                    case IME_KeyCode.S:
+                    case IME_KeyCode.DOWNARROW:
+                        Player1Menu.SetPress(Note.Down);
+                        break;
+                    case IME_KeyCode.A:
+                    case IME_KeyCode.LEFTARROW:
+                        Player1Menu.SetPress(Note.Left);
+                        break;
+                    case IME_KeyCode.D:
+                    case IME_KeyCode.RIGHTARROW:
+                        Player1Menu.SetPress(Note.Right);
+                        break;
+                }
             }
         }
 
         private void Gamepad_OnButtonDown(object Sender, ButtonEventArgs Args)
         {
-            switch (Args.Button)
+            if (DieTime != 0)
             {
-                case OrbisPadButton.Triangle:
-                case OrbisPadButton.Up:
-                    Player1Menu.SetPress(Note.Up);
-                    break;
+                switch (Args.Button)
+                {
+                    case OrbisPadButton.Triangle:
+                    case OrbisPadButton.Up:
+                        Player1Menu.SetPress(Note.Up);
+                        break;
+                    case OrbisPadButton.Square:
+                    case OrbisPadButton.Left:
+                        Player1Menu.SetPress(Note.Left);
+                        break;
+                    case OrbisPadButton.Circle:
+                    case OrbisPadButton.Right:
+                        Player1Menu.SetPress(Note.Right);
+                        break;
+                    case OrbisPadButton.Cross:
+                    case OrbisPadButton.Down:
+                        Player1Menu.SetPress(Note.Down);
+                        break;
+                }
             }
         }
         private void Gamepad_OnButtonUp(object Sender, ButtonEventArgs Args)
         {
-            switch (Args.Button)
+            if (DieTime != 0)
             {
-                case OrbisPadButton.Triangle:
-                case OrbisPadButton.Up:
-                    Player1Menu.UnsetPress(Note.Up);
-                    break;
+                switch (Args.Button)
+                {
+                    case OrbisPadButton.Triangle:
+                    case OrbisPadButton.Up:
+                        Player1Menu.UnsetPress(Note.Up);
+                        break;
+                    case OrbisPadButton.Square:
+                    case OrbisPadButton.Left:
+                        Player1Menu.UnsetPress(Note.Left);
+                        break;
+                    case OrbisPadButton.Circle:
+                    case OrbisPadButton.Right:
+                        Player1Menu.UnsetPress(Note.Right);
+                        break;
+                    case OrbisPadButton.Cross:
+                    case OrbisPadButton.Down:
+                        Player1Menu.UnsetPress(Note.Down);
+                        break;
+                }
             }
         }
 
@@ -499,6 +605,9 @@ namespace Orbis.Game
         }
         private void StatusChanged(object sender, NewStatusEvent Status)
         {
+            if (DieTime != 0)
+                return;
+
             if (SongInfo.Player2 == null)
                 Status.Target = EventTarget.Speaker;
 
@@ -550,9 +659,12 @@ namespace Orbis.Game
 
         int BPMTicks;
 
+        long LastDrawTick;
         long NextUpdateFrame = 0;
         public override void Draw(long Tick)
         {
+            ExecuteDeadAnim(Tick);
+
             if (Tick > NextUpdateFrame)
             {
                 NextUpdateFrame = Tick + BPMTicks;
@@ -569,7 +681,61 @@ namespace Orbis.Game
                 Player2Menu.SetSongBegin(Tick + (Constants.ORBIS_SECOND * 3));
             }
 
+            LastDrawTick = Tick;
             base.Draw(Tick);
+        }
+
+        private void ExecuteDeadAnim(long Tick)
+        {
+            if (DieBG != null && DieBG.Opacity != 255)
+            {
+                long ElapsedTick = Tick - DieTime;
+                int ElapsedMS = (int)(ElapsedTick / Constants.ORBIS_MILISECOND);
+                DieBG.Opacity = (byte)(Math.Min(ElapsedMS / 500f, 1f) * 255);
+
+                if (DieBG.Opacity == 255)
+                {
+                    BG.Dispose();
+
+
+                    if (Player1Dead)
+                    {
+                        DieBG.AddChild(Player1);
+                        Player2.Dispose();
+                    }
+                    else
+                    {
+                        DieBG.AddChild(Player2);
+                        Player1.Dispose();
+                    }
+
+                    Player1Menu.Dispose();
+                    Player2Menu.Dispose();
+                    Health.Dispose();
+                }
+            }
+            else if (DieBG != null)
+            {
+                var CenterBG = new Vector2(DieBG.Width, DieBG.Height) / 2;
+                var PlayerCenter = (Player1Dead ? new Vector2(Player1.Width, Player1.Height) : new Vector2(Player2.Width, Player2.Height)) / 2;
+
+                var CenteredPoint = CenterBG - PlayerCenter;
+
+                var Distance = CenteredPoint - DiePlayerPos;
+
+                if (Distance == Vector2.Zero)
+                    return;
+
+                long ElapsedTick = Tick - DieTime;
+                int ElapsedMS = (int)(ElapsedTick / Constants.ORBIS_MILISECOND);
+                var MoveProgress = Math.Min(ElapsedMS / 1500f, 1f);
+
+
+                if (Player1Dead)
+                    Player1.Position = (Distance * MoveProgress) + DiePlayerPos;
+                else
+                    Player2.Position = (Distance * MoveProgress) + DiePlayerPos;
+            }
         }
 
         public override void Dispose()
