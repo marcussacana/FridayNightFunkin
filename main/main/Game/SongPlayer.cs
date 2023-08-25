@@ -13,6 +13,8 @@ namespace Orbis.Game
     public class SongPlayer : GLObject2D, ILoadable
     {
 
+        HealthBar Health;
+
         Blank2D BackLayer = new Blank2D();
 
         Blank2D FrontLayer = new Blank2D();
@@ -164,6 +166,27 @@ namespace Orbis.Game
             BG.OnMapStatusChanged += StatusChanged;
             Player1Menu.OnNoteElapsed += StatusChanged;
             Player2Menu.OnNoteElapsed += StatusChanged;
+
+            //9 - Load Health Bar
+            using (var HealthBarData = Util.CopyFileToMemory("healthBar.png"))
+            using (var P1Icon = Util.CopyFileToMemory(Character.IconMap[SongInfo.Player1]))
+            using (var P2Icon = Util.CopyFileToMemory(Character.IconMap[SongInfo.Player2 ?? "gf"]))
+            {
+                var HealthTex = new Texture(true);
+                HealthTex.SetImage(HealthBarData.ToArray(), PixelFormat.RGBA, false);
+
+
+                var P1Tex = new Texture(true);
+                var P2Tex = new Texture(true);
+
+                P1Tex.SetImage(P1Icon.ToArray(), PixelFormat.RGBA, false);
+                P2Tex.SetImage(P2Icon.ToArray(), PixelFormat.RGBA, false);
+
+                Health = new HealthBar(Player1Menu, Player2Menu, HealthTex, P1Tex, P2Tex);
+            }
+
+
+            OnProgressChanged?.Invoke(BG.TotalProgress + 9);
 
             //9
             SetupDisplay();
@@ -330,6 +353,7 @@ namespace Orbis.Game
 
             FrontLayer.AddChild(Player1Menu);
             FrontLayer.AddChild(Player2Menu);
+            FrontLayer.AddChild(Health);
             AddChild(FrontLayer);
 
             Player1Menu.Position = new Vector2(1210, 50);
@@ -552,8 +576,10 @@ namespace Orbis.Game
         {
             if (Loaded)
             {
+#if ORBIS
                 Application.Default.Gamepad.OnButtonDown -= Gamepad_OnButtonDown;
                 Application.Default.Gamepad.OnButtonUp -= Gamepad_OnButtonUp;
+#endif
             }
 
             base.Dispose();

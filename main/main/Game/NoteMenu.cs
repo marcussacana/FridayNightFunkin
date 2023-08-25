@@ -23,6 +23,9 @@ namespace Orbis.Game
 
         public event EventHandler<NewStatusEvent> OnNoteElapsed;
 
+        public event EventHandler OnNoteMissed;
+        public event EventHandler OnNoteHit;
+
         public const int NoteOffset = 155;
 
         public const int LeftX = NoteOffset * 0;
@@ -213,53 +216,50 @@ namespace Orbis.Game
 
         private void NoteEntryElapsed(object sender, EventArgs e)
         {
-            lock (this)
+            var ElapsedNote = ((SongNoteEntry)sender);
+            var NoteScore = (int)ElapsedNote.Score;
+
+            if (NoteScore == 0)
             {
-                var ElapsedNote = ((SongNoteEntry)sender);
-                var NoteScore = (int)ElapsedNote.Score;
+                Missed++;
+                Score -= 100;
 
-                if (NoteScore == 0)
+                if (IsPlayer1)
                 {
-                    Missed++;
-                    Score -= 100;
+                    var NewState = new NewStatusEvent();
+                    NewState.Target = EventTarget.Player1;
 
-                    if (IsPlayer1)
-                    {
-                        var NewState = new NewStatusEvent();
-                        NewState.Target = EventTarget.Player1;
-
-                        SetPlayerMiss(ElapsedNote, NewState);
-                    }
-                    else
-                    {
-                        var NewState = new NewStatusEvent();
-                        NewState.Target = EventTarget.Player2;
-
-                        SetPlayerMiss(ElapsedNote, NewState);
-                    }
+                    SetPlayerMiss(ElapsedNote, NewState);
                 }
                 else
                 {
-                    Score += NoteScore;
+                    var NewState = new NewStatusEvent();
+                    NewState.Target = EventTarget.Player2;
 
-                    if (IsPlayer1)
-                    {
-                        var NewState = new NewStatusEvent();
-                        NewState.Target = EventTarget.Player1;
-
-                        SetPlayerHit(ElapsedNote, NewState);
-                    }
-                    else
-                    {
-                        var NewState = new NewStatusEvent();
-                        NewState.Target = EventTarget.Player2;
-
-                        SetPlayerHit(ElapsedNote, NewState);
-                    }
+                    SetPlayerMiss(ElapsedNote, NewState);
                 }
-
-                ElapsedNote.Dispose();
             }
+            else
+            {
+                Score += NoteScore;
+
+                if (IsPlayer1)
+                {
+                    var NewState = new NewStatusEvent();
+                    NewState.Target = EventTarget.Player1;
+
+                    SetPlayerHit(ElapsedNote, NewState);
+                }
+                else
+                {
+                    var NewState = new NewStatusEvent();
+                    NewState.Target = EventTarget.Player2;
+
+                    SetPlayerHit(ElapsedNote, NewState);
+                }
+            }
+
+            ElapsedNote.Dispose();
         }
 
         private void SetPlayerHit(SongNoteEntry ElapsedNote, NewStatusEvent NewState)
@@ -280,7 +280,8 @@ namespace Orbis.Game
                     break;
             }
 
-            OnNoteElapsed(this, NewState);
+            OnNoteElapsed?.Invoke(this, NewState);
+            OnNoteHit?.Invoke(this, EventArgs.Empty);
         }
         private void SetPlayerMiss(SongNoteEntry ElapsedNote, NewStatusEvent NewState)
         {
@@ -299,7 +300,8 @@ namespace Orbis.Game
                     break;
             }
 
-            OnNoteElapsed(this, NewState);
+            OnNoteElapsed?.Invoke(this, NewState);
+            OnNoteMissed?.Invoke(this, EventArgs.Empty);
         }
 
         public override void Draw(long Tick)

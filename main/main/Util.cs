@@ -19,7 +19,9 @@ namespace Orbis
 
             var Hints = new string[] {
                 "assets/shared/images/characters/",
-                "assets/preload/images"
+                "assets/preload/images",
+                "assets/shared/images",
+                "assets/preload/images/icons"
             };
 
             if (!File.Exists(FilePath) && File.Exists(Path.Combine(RootDir, FilePath)))

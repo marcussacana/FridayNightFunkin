@@ -72,6 +72,7 @@
     <Compile Include="Constants.cs" />
     <Compile Include="BG\StageBG.cs" />
     <Compile Include="Enums.cs" />
+    <Compile Include="Game\HealthBar.cs" />
     <Compile Include="Game\MusicNoteEntry.cs" />
     <Compile Include="Game\PlayerNoteEntry.cs" />
     <Compile Include="Game\NoteMenu.cs" />

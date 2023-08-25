@@ -12,7 +12,7 @@ namespace Orbis
         public const string BoyfriendChristmasAssets = "bfChristmas.xml";
         public const string BoyfriendCarAssets = "bfCar.xml";
         public const string BoyfriendPixelAssets = "bfPixel.xml";
-        public const string GirfriendAssets = "GF_assets.xml";
+        public const string GirlfriendAssets = "GF_assets.xml";
         public const string DadAssets = "DADDY_DEAREST.xml";
         public const string SpookyKidsAssets = "spooky_kids_assets.xml";
         public const string MonsterAssets = "Monster_Assets.xml";
@@ -21,6 +21,19 @@ namespace Orbis
         public const string MomCarAssets = "momCar.xml";
         public const string PicoAssets = "Pico_FNF_assetss.xml";
         public const string Senpai = "senpai.xml";
+
+        public const string BoyfriendIcon = "icon-bf.png";
+        public const string BoyfriendPixelIcon = "icon-bf-pixel.png";
+        public const string DadIcon = "icon-dad.png";
+        public const string GirlfriendIcon = "icon-gf.png";
+        public const string MomIcon = "icon-mom.png";
+        public const string MonsterIcon = "icon-monster.png";
+        public const string ParentsIcon = "icon-parents.png";
+        public const string PicoIcon = "icon-pico.png";
+        public const string SenpaiIcon = "icon-senpai.png";
+        public const string SpiritIcon = "icon-spirit.png";
+        public const string SpookyIcon = "icon-spooky.png";
+        public const string TankmanIcon = "icon-tankman.png";
 
 
         public static readonly ReadOnlyDictionary<string, string> AssetsMap = new ReadOnlyDictionary<string, string>(
@@ -38,7 +51,25 @@ namespace Orbis
                 { "senpai", Senpai},
                 { "senpai-angry" , Senpai },
                 { "spooky" , SpookyKidsAssets },
-                { "gf" , GirfriendAssets }
+                { "gf" , GirlfriendAssets }
+            });
+
+        public static readonly ReadOnlyDictionary<string, string> IconMap = new ReadOnlyDictionary<string, string>(
+            new Dictionary<string, string> {
+                { "bf" , BoyfriendIcon },
+                { "bf-christmas" , BoyfriendIcon},
+                { "bf-car" , BoyfriendIcon },
+                { "bf-pixel" , BoyfriendPixelIcon },
+                { "dad" , DadIcon },
+                { "mom" , MomIcon },
+                { "mom-car" , MomIcon },
+                { "pico" , PicoIcon },
+                { "monster" , MonsterIcon },
+                { "monster-christmas" , MonsterIcon },
+                { "senpai", SenpaiIcon },
+                { "senpai-angry" , SenpaiIcon },
+                { "spooky" , SpookyIcon },
+                { "gf" , GirlfriendIcon }
             });
     }
 
@@ -81,7 +112,7 @@ namespace Orbis
 
     static class Speaker 
     {
-        public const string GirfriendAssets = Character.GirfriendAssets;
+        public const string GirfriendAssets = Character.GirlfriendAssets;
         public const string GirlfriendTankmanAssets = "gfTankmen.xml";
         public const string GirlfriendPixelAssets = "gfPixel.xml";
         public const string PicoAssets = "picoSpeaker.xml";
