@@ -1,16 +1,69 @@
-﻿using System;
+﻿using Newtonsoft.Json;
+using Orbis.Internals;
+using System;
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
 using System.Reflection;
+using System.Text;
 using System.Xml;
+using ICSharpCode.SharpZipLib.Zip;
 
 namespace Orbis
 {
     internal static class Util
     {
+
+        static ZipFile Assets;
+
+        public static Stream GetAsset(string FilePath)
+        {
+            if (Assets == null)
+            {
+#if ORBIS
+                string RootDir = IO.GetAppBaseDirectory();
+#else
+                string RootDir = AppDomain.CurrentDomain.BaseDirectory;
+#endif
+                var ZipPath = Path.Combine(RootDir, "assets/misc/assets.zip");
+
+                if (!File.Exists(ZipPath))
+                    return null;
+
+                Stream FStream = File.OpenRead(ZipPath);
+                Assets = new ZipFile(FStream);
+            }
+
+            if (FilePath.StartsWith("assets/"))
+                FilePath = FilePath.Substring(FilePath.IndexOf("/") + 1);
+
+            FilePath = FilePath.Replace("\\", "/");
+
+
+            var Files = Assets.GetEntries().Where(x => x.Name.ToLowerInvariant() == FilePath.ToLowerInvariant() || Path.GetFileName(x.Name) == FilePath);
+
+            if (!Files.Any())
+                return null;
+
+            if (Files.Count() > 1)
+                throw new FileNotFoundException("Duplicate file entry with name: " + FilePath);
+
+            return Assets.GetInputStream(Files.Single());
+        }
+
         public static MemoryStream CopyFileToMemory(string FilePath)
         {
+            using (var ZStream = GetAsset(FilePath))
+            {
+                if (ZStream != null)
+                {
+                    MemoryStream Result = new MemoryStream();
+                    ZStream.CopyTo(Result);
+                    Result.Position = 0;
+                    return Result;
+                }
+            }
+
 #if ORBIS
             string RootDir = IO.GetAppBaseDirectory();
 #else
@@ -42,7 +95,7 @@ namespace Orbis
             }
 
             if (!File.Exists(FilePath))
-                throw new FileNotFoundException(FilePath);
+                return null;
 
             MemoryStream Output = new MemoryStream();
             using (var Stream = File.OpenRead(FilePath))
@@ -50,6 +103,15 @@ namespace Orbis
 
             Output.Position = 0;
             return Output;
+        }
+
+        public static SongInfo GetSongByName(string Name)
+        {
+            using (var Data = CopyFileToMemory($"preload/data/{Name}/{Name}.json"))
+            {
+                var JSON = Encoding.UTF8.GetString(Data.ToArray());
+                return JsonConvert.DeserializeObject<SongInfo>(JSON);
+            }
         }
 
         public static XmlDocument GetXML(string Name)
@@ -71,7 +133,7 @@ namespace Orbis
             while (NewAssembly)
             {
                 NewAssembly = false;
-                foreach (var Asm in AppDomain.CurrentDomain.GetAssemblies())
+                foreach (var Asm in AppDomain.CurrentDomain.GetAssemblies().Concat(new Assembly[] { Assembly.GetExecutingAssembly() }))
                 {
                     if (Ready.Contains(Asm))
                         continue;
@@ -82,10 +144,24 @@ namespace Orbis
                     {
                         foreach (var method in type.GetMethods(AllMethods))
                         {
+                            if ((method.Attributes & MethodAttributes.Abstract) == MethodAttributes.Abstract ||
+                                method.ContainsGenericParameters)
+                                continue;
                             System.Runtime.CompilerServices.RuntimeHelpers.PrepareMethod(method.MethodHandle);
                         }
                     }
                 }
+            }
+        }
+
+        public static IEnumerable<ZipEntry> GetEntries(this ZipFile Archive)
+        {
+            var Enum = Archive.GetEnumerator();
+            Enum.Reset();
+            
+            while (Enum.MoveNext())
+            {
+                yield return Enum.Current as ZipEntry;
             }
         }
     }

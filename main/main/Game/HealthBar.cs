@@ -120,11 +120,11 @@ namespace Orbis.Game
 
             if (IsPlayer1)
             {
-                Health += 0.0475f;
+                Health -= 0.023f;
             }
             else if (!Player2.CPU)
             {
-                Health -= 0.0475f;
+                Health += 0.023f;
             }
 
             UpdateHealthBar();

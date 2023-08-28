@@ -13,6 +13,45 @@ namespace Orbis
         Hard
     }
 
+    public struct SFXScheme
+    {
+        public SFXType Countdown1;
+        public SFXType Countdown2;
+        public SFXType Countdown3;
+        public SFXType CountdownGo;
+
+        public SFXType Dies;
+        public SFXType Win;
+    }
+    public enum SFXType
+    {
+        NONE,
+        Countdown1,
+        Countdown2,
+        Countdown3,
+        CountdownGo,
+        Countdown1Pixel,
+        Countdown2Pixel,
+        Countdown3Pixel,
+        CountdownGoPixel,
+        CarPass0,
+        CarPass1,
+        NoteMiss1,
+        NoteMiss2,
+        NoteMiss3,
+        Dies,
+        DiesPixel,
+        DeadLoop,
+        DeadRetry,
+        MenuChoice,
+        MenuConfirm,
+        MenuBack,
+        Girlfriend1,
+        Girlfriend2,
+        Girlfriend3,
+        Girlfriend4,
+    }
+
     [Flags]
     public enum Note : byte
     {

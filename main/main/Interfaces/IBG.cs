@@ -10,6 +10,6 @@ namespace Orbis.Interfaces
     internal interface IBG : ILoadable
     {
         public event EventHandler<NewStatusEvent> OnMapStatusChanged;
-        void SetCharacterPosition(SpriteAtlas2D Player1, SpriteAtlas2D Player2, SpriteAtlas2D Speaker);
+        void SetCharacterPosition(TiledSpriteAtlas2D Player1, TiledSpriteAtlas2D Player2, TiledSpriteAtlas2D Speaker);
     }
 }

@@ -23,31 +23,31 @@ namespace Orbis.BG
             Texture2D StageCurtainsTex;
 
             //1
-            using (var ImgData = Util.CopyFileToMemory("assets/shared/images/stageback.png"))
+            using (var ImgData = Util.CopyFileToMemory("assets/shared/images/stageback.dds"))
             {
                 StageBackTex = new Texture2D();
                 StageBackTex.Texture = new Texture(true);
-                StageBackTex.Texture.SetImage(ImgData.ToArray(), OrbisGL.PixelFormat.RGB, true);
+                StageBackTex.Texture.SetDDS(ImgData, true);
             }
 
             OnProgressChanged?.Invoke(1);
 
             //2
-            using (var ImgData = Util.CopyFileToMemory("assets/shared/images/stagefront.png"))
+            using (var ImgData = Util.CopyFileToMemory("assets/shared/images/stagefront.dds"))
             {
                 StageFrontTex = new Texture2D();
                 StageFrontTex.Texture = new Texture(true);
-                StageFrontTex.Texture.SetImage(ImgData.ToArray(), OrbisGL.PixelFormat.RGBA, true);
+                StageFrontTex.Texture.SetDDS(ImgData, true);
             }
 
             OnProgressChanged?.Invoke(2);
 
             //3
-            using (var ImgData = Util.CopyFileToMemory("assets/shared/images/stagecurtains.png"))
+            using (var ImgData = Util.CopyFileToMemory("assets/shared/images/stagecurtains.dds"))
             {
                 StageCurtainsTex = new Texture2D();
                 StageCurtainsTex.Texture = new Texture(true);
-                StageCurtainsTex.Texture.SetImage(ImgData.ToArray(), OrbisGL.PixelFormat.RGBA, true);
+                StageCurtainsTex.Texture.SetDDS(ImgData, true);
             }
 
 
@@ -67,7 +67,7 @@ namespace Orbis.BG
             OnProgressChanged?.Invoke(3);
         }
 
-        public void SetCharacterPosition(SpriteAtlas2D Player1, SpriteAtlas2D Player2, SpriteAtlas2D Speaker)
+        public void SetCharacterPosition(TiledSpriteAtlas2D Player1, TiledSpriteAtlas2D Player2, TiledSpriteAtlas2D Speaker)
         {
             //default map, no changes
         }

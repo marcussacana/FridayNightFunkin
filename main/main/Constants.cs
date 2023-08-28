@@ -22,18 +22,18 @@ namespace Orbis
         public const string PicoAssets = "Pico_FNF_assetss.xml";
         public const string Senpai = "senpai.xml";
 
-        public const string BoyfriendIcon = "icon-bf.png";
-        public const string BoyfriendPixelIcon = "icon-bf-pixel.png";
-        public const string DadIcon = "icon-dad.png";
-        public const string GirlfriendIcon = "icon-gf.png";
-        public const string MomIcon = "icon-mom.png";
-        public const string MonsterIcon = "icon-monster.png";
-        public const string ParentsIcon = "icon-parents.png";
-        public const string PicoIcon = "icon-pico.png";
-        public const string SenpaiIcon = "icon-senpai.png";
-        public const string SpiritIcon = "icon-spirit.png";
-        public const string SpookyIcon = "icon-spooky.png";
-        public const string TankmanIcon = "icon-tankman.png";
+        public const string BoyfriendIcon = "icon-bf.dds";
+        public const string BoyfriendPixelIcon = "icon-bf-pixel.dds";
+        public const string DadIcon = "icon-dad.dds";
+        public const string GirlfriendIcon = "icon-gf.dds";
+        public const string MomIcon = "icon-mom.dds";
+        public const string MonsterIcon = "icon-monster.dds";
+        public const string ParentsIcon = "icon-parents.dds";
+        public const string PicoIcon = "icon-pico.dds";
+        public const string SenpaiIcon = "icon-senpai.dds";
+        public const string SpiritIcon = "icon-spirit.dds";
+        public const string SpookyIcon = "icon-spooky.dds";
+        public const string TankmanIcon = "icon-tankman.dds";
 
 
         public static readonly ReadOnlyDictionary<string, string> AssetsMap = new ReadOnlyDictionary<string, string>(

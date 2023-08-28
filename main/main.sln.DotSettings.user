@@ -1,2 +1,6 @@
 ﻿<wpf:ResourceDictionary xml:space="preserve" xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml" xmlns:s="clr-namespace:System;assembly=mscorlib" xmlns:ss="urn:shemas-jetbrains-com:settings-storage-xaml" xmlns:wpf="http://schemas.microsoft.com/winfx/2006/xaml/presentation">
+	<s:Boolean x:Key="/Default/AddReferences/RecentPaths/=C_003A_005CUsers_005CMarcus_005CDocuments_005CGitHub_005CFridayNightFunkin_005Cmono_005C4_002E5_005CNewtonsoft_002EJson_002EPlayStation_002Edll/@EntryIndexedValue">True</s:Boolean>
+	<s:String x:Key="/Default/Environment/AssemblyExplorer/XmlDocument/@EntryValue">&lt;AssemblyExplorer&gt;&#xD;
+  &lt;Assembly Path="C:\Users\Marcus\Documents\GitHub\FridayNightFunkin\mono\4.5\Newtonsoft.Json.PlayStation.dll" /&gt;&#xD;
+&lt;/AssemblyExplorer&gt;</s:String>
 	<s:Boolean x:Key="/Default/UnloadedProject/UnloadedProjects/=836bc80e_002D8dfe_002D49a8_002Da411_002Db30ff5a8482f_0023GLTest/@EntryIndexedValue">True</s:Boolean></wpf:ResourceDictionary>

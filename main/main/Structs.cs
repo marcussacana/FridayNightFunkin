@@ -43,6 +43,7 @@ namespace Orbis
         public bool needsVoices;
         public string player1;
         public string player2;
+        public string song;
         public List<object> sectionLengths;
         public float speed;
         public bool validScore;

@@ -9,6 +9,7 @@ namespace Orbis
     {
         public static void Main(string[] args)
         {
+            Util.PrepareAsemblies();
 #if ORBIS
             var Display = new Entrypoint();
             Display.Run();

@@ -33,6 +33,8 @@ namespace Orbis.Game
         public const int UpX = NoteOffset * 2;
         public const int RightX = NoteOffset * 3;
 
+        public const int StartDelayMS = 3000;
+
         public bool IsPlayer1 { get; private set; }
 
         SpriteAtlas2D NoteSprite;
@@ -175,7 +177,7 @@ namespace Orbis.Game
 
                 foreach (var NoteData in Section.sectionNotes)
                 {
-                    float Milisecond = NoteData[0];
+                    float Milisecond = NoteData[0] + StartDelayMS;
                     float Type = NoteData[1];
                     float Duration = NoteData[2];
 

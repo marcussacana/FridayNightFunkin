@@ -1,4 +1,5 @@
-﻿using Orbis.BG;
+﻿using Orbis.Audio;
+using Orbis.BG;
 using Orbis.Interfaces;
 using OrbisGL;
 using OrbisGL.Controls.Events;
@@ -12,6 +13,9 @@ namespace Orbis.Game
 {
     public class SongPlayer : GLObject2D, ILoadable
     {
+        SFXHelper SFX;
+        
+        MusicPlayer MusicPlayer;
 
         HealthBar Health;
 
@@ -32,14 +36,13 @@ namespace Orbis.Game
 
         GLObject2D BGObject;
 
-        SpriteAtlas2D Speaker;
-        SpriteAtlas2D Player1;
-        SpriteAtlas2D Player2;
+        TiledSpriteAtlas2D Speaker;
+        TiledSpriteAtlas2D Player1;
+        TiledSpriteAtlas2D Player2;
 
         CharacterAnim Player1Anim;
         CharacterAnim Player2Anim;
         CharacterAnim SpeakerAnim;
-
 
         Vector2 Player2CamPos;
         Vector2 Player1CamPos;
@@ -76,6 +79,8 @@ namespace Orbis.Game
                     throw new NotImplementedException();
             };
 
+            SFX = new SFXHelper();
+
             if (SongInfo.Speaker == null)
                 SongInfo.Speaker = "gf";
 
@@ -91,30 +96,35 @@ namespace Orbis.Game
                     break;
             }
 
+            SongInfo.Name = SongInfo.song.song;
+
             SetBPM(SongInfo.song.bpm);
 
             this.SongInfo = SongInfo;
         }
 
-        public int TotalProgress => 9 + BG.TotalProgress;
+        public int TotalProgress => 11 + BG.TotalProgress + SFX.TotalProgress;
 
         public bool Loaded { get; private set; }
 
         public void Load(Action<int> OnProgressChanged)
         {
             BG.Load(OnProgressChanged);
+            SFX.Load((i) => { OnProgressChanged(BG.TotalProgress + i); });
+
+            int BaseProgress = BG.TotalProgress + SFX.TotalProgress;
 
             //1 - Load Player1 Sprite Info
             var P1Asset = Character.AssetsMap[SongInfo.Player1];
             var P1AssetData = Util.GetXML(P1Asset);
 
-            OnProgressChanged?.Invoke(BG.TotalProgress + 1);
+            OnProgressChanged?.Invoke(BaseProgress + 1);
 
             //2 - Load Player1 Sprite
-            Player1 = new SpriteAtlas2D();
-            Player1.LoadSprite(P1AssetData, Util.CopyFileToMemory, true);
+            Player1 = new TiledSpriteAtlas2D();
+            Player1.LoadSprite(P1AssetData, Util.CopyFileToMemory, true, true);
 
-            OnProgressChanged?.Invoke(BG.TotalProgress + 2);
+            OnProgressChanged?.Invoke(BaseProgress + 2);
 
             if (SongInfo.Player2 != null)
             {
@@ -122,13 +132,13 @@ namespace Orbis.Game
                 var P2Asset = Character.AssetsMap[SongInfo.Player2];
                 var P2AssetData = Util.GetXML(P2Asset);
 
-                OnProgressChanged?.Invoke(BG.TotalProgress + 3);
+                OnProgressChanged?.Invoke(BaseProgress + 3);
 
                 //4 - Load Player2 Sprite
-                Player2 = new SpriteAtlas2D();
-                Player2.LoadSprite(P2AssetData, Util.CopyFileToMemory, true);
+                Player2 = new TiledSpriteAtlas2D();
+                Player2.LoadSprite(P2AssetData, Util.CopyFileToMemory, true, true);
 
-                OnProgressChanged?.Invoke(BG.TotalProgress + 4);
+                OnProgressChanged?.Invoke(BaseProgress + 4);
 
             }
             else
@@ -141,21 +151,21 @@ namespace Orbis.Game
             var SpeakerAsset = Orbis.Speaker.AssetsMap[SongInfo.Speaker];
             var SpeakerAssetData = Util.GetXML(SpeakerAsset);
 
-            OnProgressChanged?.Invoke(BG.TotalProgress + 5);
+            OnProgressChanged?.Invoke(BaseProgress + 5);
 
             //6 - Load Speaker Sprite
-            Speaker = new SpriteAtlas2D();
-            Speaker.LoadSprite(SpeakerAssetData, Util.CopyFileToMemory, true);
+            Speaker = new TiledSpriteAtlas2D();
+            Speaker.LoadSprite(SpeakerAssetData, Util.CopyFileToMemory, true, true);
 
-            OnProgressChanged?.Invoke(BG.TotalProgress + 6);
+            OnProgressChanged?.Invoke(BaseProgress + 6);
 
             //7 - Load Notes Sprite Info
             var NotesAssetData = Util.GetXML(NotesNames.NotesAssets);
 
-            OnProgressChanged?.Invoke(BG.TotalProgress + 7);
+            OnProgressChanged?.Invoke(BaseProgress + 7);
 
             //8 - Load Notes
-            var Notes = new SpriteAtlas2D(NotesAssetData, Util.CopyFileToMemory, true);
+            var Notes = new SpriteAtlas2D(NotesAssetData, Util.CopyFileToMemory, true, true);
 
             Player1Menu = new NoteMenu(Notes, this, true, false);
             Player2Menu = new NoteMenu(Notes, this, false, true);
@@ -166,41 +176,49 @@ namespace Orbis.Game
             Notes.Texture = null;//Prevent Texture disposal
             Notes.Dispose();
 
-            OnProgressChanged?.Invoke(BG.TotalProgress + 8);
+            OnProgressChanged?.Invoke(BaseProgress + 8);
 
             BG.OnMapStatusChanged += StatusChanged;
             Player1Menu.OnNoteElapsed += StatusChanged;
             Player2Menu.OnNoteElapsed += StatusChanged;
 
             //9 - Load Health Bar
-            using (var HealthBarData = Util.CopyFileToMemory("healthBar.png"))
+            using (var HealthBarData = Util.CopyFileToMemory("healthBar.dds"))
             using (var P1Icon = Util.CopyFileToMemory(Character.IconMap[SongInfo.Player1]))
             using (var P2Icon = Util.CopyFileToMemory(Character.IconMap[SongInfo.Player2 ?? "gf"]))
             {
                 var HealthTex = new Texture(true);
-                HealthTex.SetImage(HealthBarData.ToArray(), PixelFormat.RGBA, false);
+                HealthTex.SetDDS(HealthBarData, false);
 
 
                 var P1Tex = new Texture(true);
                 var P2Tex = new Texture(true);
 
-                P1Tex.SetImage(P1Icon.ToArray(), PixelFormat.RGBA, false);
-                P2Tex.SetImage(P2Icon.ToArray(), PixelFormat.RGBA, false);
+                P1Tex.SetDDS(P1Icon, false);
+                P2Tex.SetDDS(P2Icon, false);
 
                 Health = new HealthBar(Player1Menu, Player2Menu, HealthTex, P1Tex, P2Tex);
             }
 
+            OnProgressChanged?.Invoke(BaseProgress + 9);
 
-            OnProgressChanged?.Invoke(BG.TotalProgress + 9);
+            //10 - Load Music
+#if ORBIS
+            var Instrumental = Util.CopyFileToMemory($"songs/{SongInfo.Name}/Inst_48khz.wav");
+            var Voices = Util.CopyFileToMemory($"songs/{SongInfo.Name}/Voices_48khz.wav");
 
-            //9
+            MusicPlayer = new MusicPlayer(Instrumental, Voices, false);
+#endif
+            OnProgressChanged?.Invoke(BaseProgress + 10);
+
+            //11 - Setup Env
             SetupDisplay();
             SetupInput();
             SetupEvents();
 
             Loaded = true;
 
-            OnProgressChanged?.Invoke(BG.TotalProgress + 9);
+            OnProgressChanged?.Invoke(BaseProgress + 11);
         }
 
         private void SetupEvents()
@@ -217,6 +235,9 @@ namespace Orbis.Game
 
             if (!IsPlayer1 && Player2Menu.CPU)
                 return;
+            
+            MusicPlayer.Pause();
+            MusicPlayer.PlayActiveSFX(SFX.GetSFX(SFXType.Dies));
 
             Player1Dead = IsPlayer1;
 
@@ -227,14 +248,12 @@ namespace Orbis.Game
 
             if (IsPlayer1)
             {
-                DiePlayerPos = Player1.Position - Player1Anim.GetAnimOffset(Player1Anim.DIES);
                 Player1CurrentAnim = Player1Anim.DIES;
                 AnimationChanged = true;
                 UpdateAnimations();
             }
             else
             {
-                DiePlayerPos = Player2.Position - Player2Anim.GetAnimOffset(Player2Anim.DIES);
                 Player2CurrentAnim = Player2Anim.DIES;
                 AnimationChanged = true;
                 UpdateAnimations();
@@ -263,8 +282,8 @@ namespace Orbis.Game
 
                 if (Player1.CurrentSprite == Player1Anim.DIES)
                 {
-                    DiePlayerPos -= Player1Anim.GetAnimOffset(Player1Anim.DIES);
-                    DiePlayerPos += Player1Anim.GetAnimOffset(Player1Anim.DEAD);
+                    DiePlayerPos += Player1Anim.GetAnimOffset(Player1Anim.DIES);
+                    DiePlayerPos -= Player1Anim.GetAnimOffset(Player1Anim.DEAD);
 
                     Player1CurrentAnim = Player1Anim.DEAD;
                     AnimationChanged = true;
@@ -302,6 +321,7 @@ namespace Orbis.Game
 
         bool CanBegin = true;
         bool BeginRequested = false;
+        long BeginAudioTick = 0;
         public void Begin()
         {
             if (!CanBegin)
@@ -324,7 +344,7 @@ namespace Orbis.Game
 
         private void KeyboardDriver_OnKeyUp(object Sender, KeyboardEventArgs Args)
         {
-            if (DieTime != 0)
+            if (DieTime == 0)
             {
                 switch (Args.Keycode)
                 {
@@ -350,7 +370,7 @@ namespace Orbis.Game
 
         private void KeyboardDriver_OnKeyDown(object Sender, KeyboardEventArgs Args)
         {
-            if (DieTime != 0)
+            if (DieTime == 0)
             {
                 switch (Args.Keycode)
                 {
@@ -376,7 +396,7 @@ namespace Orbis.Game
 
         private void Gamepad_OnButtonDown(object Sender, ButtonEventArgs Args)
         {
-            if (DieTime != 0)
+            if (DieTime == 0)
             {
                 switch (Args.Button)
                 {
@@ -401,7 +421,7 @@ namespace Orbis.Game
         }
         private void Gamepad_OnButtonUp(object Sender, ButtonEventArgs Args)
         {
-            if (DieTime != 0)
+            if (DieTime == 0)
             {
                 switch (Args.Button)
                 {
@@ -654,7 +674,11 @@ namespace Orbis.Game
 
         public void SetBPM(float BPM)
         {
+#if ORBIS
+            BPMTicks = (int)((BPM / 60) * Constants.ORBIS_MILISECOND) * 10;
+#else
             BPMTicks = (int)((BPM / 60) * Constants.ORBIS_MILISECOND);
+#endif
         }
 
         int BPMTicks;
@@ -663,6 +687,9 @@ namespace Orbis.Game
         long NextUpdateFrame = 0;
         public override void Draw(long Tick)
         {
+            if (!Loaded)
+                return;
+
             ExecuteDeadAnim(Tick);
 
             if (Tick > NextUpdateFrame)
@@ -677,8 +704,20 @@ namespace Orbis.Game
             if (BeginRequested)
             {
                 BeginRequested = false;
-                Player1Menu.SetSongBegin(Tick + (Constants.ORBIS_SECOND * 3));
-                Player2Menu.SetSongBegin(Tick + (Constants.ORBIS_SECOND * 3));
+                BeginAudioTick = Tick + (Constants.ORBIS_MILISECOND * NoteMenu.StartDelayMS);
+                
+                //Preload Audio
+                MusicPlayer?.Resume();
+                MusicPlayer?.Pause();
+                
+                Player1Menu.SetSongBegin(Tick);
+                Player2Menu.SetSongBegin(Tick);
+            }
+
+            if (BeginAudioTick != 0 && Tick >= BeginAudioTick)
+            {
+                MusicPlayer?.Resume();
+                BeginAudioTick = 0;
             }
 
             LastDrawTick = Tick;

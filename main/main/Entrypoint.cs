@@ -1,99 +1,62 @@
-﻿using System;
-using System.IO;
-using OrbisGL.GL;
-using System.Numerics;
-using Orbis.Internals;
+﻿using OrbisGL.GL;
+using Orbis.Game;
 using OrbisGL.Controls;
+using OrbisGL.GL2D;
 #if ORBIS
+using System.IO;
+using System.Reflection.Emit;
+using Orbis.Internals;
 using OrbisGL;
 using OrbisGL.Audio;
-using OrbisGL.Debug;
 
 namespace Orbis
 {
     internal class Entrypoint : Application
     {
-        public Entrypoint() : base(1920, 1080, 60)
+        public Entrypoint() : base(1920, 1080, 60, GPUMemoryConfig.HighMemory)
         {
             EnableKeyboard();
 
-            EnableDualshock(new DualshockSettings() 
-            {
-                LeftAnalogAsPad = true, 
-                PadAsSelector = true,
-                Mouse = VirtualMouse.Touchpad
-            });
+            EnableDualshock(new DualshockSettings());
             
             InitializeComponents();
         }
 
         private void InitializeComponents()
         {
-            var BG = new Panel(1920, 1080);
-            BG.Size = new Vector2(Width, Height);
+            var BG = new Rectangle2D(1920, 1080, true);
+            BG.Color = RGBColor.White;
 
-            var Inspect = new Inspector(600, 600);
-            Inspect.Position = new Vector2(400, 0);
-
-            var List = new RowView(300, 600);
-            List.Position = new Vector2(0, 0);
-            List.BackgroundColor = RGBColor.ReallyLightBlue;
-
-            List.Links.Right = Inspect;
-            Inspect.Links.Left = List;
-
-            var RB = new Radiobutton(28);
-            RB.Text = "Hello World";
-            RB.OnMouseClick += (s, a) => { Inspect.Target = (Control)s; };
+            var Lbl = new Text2D(32, null);
             
-            var CB = new Checkbox(28);
-            CB.Text = "Hello World";
-            CB.OnMouseClick += (s, a) => { Inspect.Target = (Control)s; };
+            Lbl.Color = RGBColor.Black;
+            Lbl.Position = BG.GetMiddle(Lbl);
+            Lbl.SetText("Initializing...");
+            
+            BG.AddChild(Lbl);
+            
+            AddObject(BG);
 
-            var BTN = new Button(200, 20, 28);
-            BTN.Text = "Hello World";
-            BTN.OnMouseClick += (s, a) => { Inspect.Target = (Control)s; };
+          /* IAudioPlayer player = new WavePlayer();
+            IAudioOut driver = new OrbisAudioOut();
+            player.SetAudioDriver(driver);
+            player.Open(File.Open(Path.Combine(IO.GetAppBaseDirectory(), "assets/audio/Test.wav"), FileMode.Open));
+            player.Resume();*/
 
-            var TB = new TextBox(200, 28);
-            TB.Text = "Hello World";
-            TB.OnMouseClick += (s, a) => { Inspect.Target = (Control)s; };
+            var SP = new SongPlayer(Util.GetSongByName("Bopeebo"));
 
-            var Play = new Button(200, 20, 28);
-            Play.Text = "Play Audio";
-            Play.Position = new Vector2(Inspect.AbsoluteRectangle.Right + 20, Inspect.AbsolutePosition.Y);
-            Play.OnClicked += PlayOnClicked;
-
-            Inspect.Links.Right = Play;
-            Play.Links.Left = Inspect;
-
-            List.AddChild(RB);
-            List.AddChild(CB);
-            List.AddChild(BTN);
-            List.AddChild(TB);
-
-            BG.AddChild(List);
-            BG.AddChild(Inspect);
-            BG.AddChild(Play);
-
-            AddObject(BG); 
-        }
-
-        private IAudioPlayer Player;
-        private void PlayOnClicked(object sender, EventArgs e)
-        {
-            var AudioOut = new OrbisAudioOut();
-            if (Player == null)
+            SP.Load((i) =>
             {
-                Player = new WavePlayer();
+                var Progress = (int)(((double)i / SP.TotalProgress) * 100);
+                Lbl.SetText($"Loading... {Progress}%");
+                Lbl.Position = BG.GetMiddle(Lbl);
+                DrawOnce();
                 
-                var Stream = File.OpenRead(Path.Combine(IO.GetAppBaseDirectory(), "assets", "audio", "Test.wav"));
-                
-                Player.Open(Stream);
-                Player.SetAudioDriver(AudioOut);
-            }
+                if (SP.Loaded)
+                    SP.Begin();
+            });
             
-            Player.Resume();
-            AudioOut.SetVolume(100);
+            AddObject(SP); 
         }
     }
 }
