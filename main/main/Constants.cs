@@ -86,19 +86,19 @@ namespace Orbis
 
         public const string DOWN_NOTE = "blue instance";
         public const string DOWN_HIT = "down confirm instance";
-        public const string DOWN_MISS = "down press instance";
+        public const string DOWN_PRESS = "down press instance";
 
         public const string UP_NOTE = "green instance";
         public const string UP_HIT = "up confirm instance";
-        public const string UP_MISS = "up press instance";
+        public const string UP_PRESS = "up press instance";
 
         public const string LEFT_NOTE = "purple instance";
         public const string LEFT_HIT = "left confirm instance";
-        public const string LEFT_MISS = "left press instance";
+        public const string LEFT_PRESS = "left press instance";
 
         public const string RIGHT_NOTE = "red instance";
         public const string RIGHT_HIT = "right confirm instance";
-        public const string RIGHT_MISS = "right press instance";
+        public const string RIGHT_PRESS = "right press instance";
 
         public const string DOWN_BAR = "blue hold piece instance";
         public const string DOWN_BAR_END = "blue hold end instance";

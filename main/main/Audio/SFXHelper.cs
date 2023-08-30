@@ -8,6 +8,11 @@ namespace Orbis.Audio;
 
 public class SFXHelper : ILoadable
 {
+    private SFXHelper() { }
+
+
+    public static SFXHelper Default = new SFXHelper();
+
     Dictionary<SFXType, MemoryStream> SFXEntries = new Dictionary<SFXType, MemoryStream>();
 
     public void Dispose()

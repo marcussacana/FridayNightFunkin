@@ -47,7 +47,7 @@ public class LoadingBG :  GLObject2D, ILoadable
             Bar.RefreshVertex();
 
             BarWidth = Bar.Width;
-
+            
             Bar.Position = new Vector2((Width - Bar.Width) - 50, (Height - 150) - Bar.Height / 2);
 
             Bar.AutoSize = false;
@@ -69,9 +69,9 @@ public class LoadingBG :  GLObject2D, ILoadable
             Target.Load(i =>
             {
                 double Progress = (double)i / Target.TotalProgress;
-
-                Bar.Width = (int)(BarWidth * Progress);
-                Bar.RefreshVertex();
+                
+                Bar.Opacity = 255;
+                Bar.SetVisibleRectangle(0, 0, (int)(BarWidth * Progress), Bar.Height);
                 
                 Application.Default.DrawOnce();
 

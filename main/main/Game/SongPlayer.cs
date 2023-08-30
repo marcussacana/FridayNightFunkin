@@ -13,7 +13,7 @@ namespace Orbis.Game
 {
     public class SongPlayer : GLObject2D, ILoadable
     {
-        SFXHelper SFX;
+        SFXHelper SFX => SFXHelper.Default;
         
         MusicPlayer MusicPlayer;
 
@@ -79,8 +79,6 @@ namespace Orbis.Game
                     throw new NotImplementedException();
             };
 
-            SFX = new SFXHelper();
-
             if (SongInfo.Speaker == null)
                 SongInfo.Speaker = "gf";
 
@@ -103,16 +101,15 @@ namespace Orbis.Game
             this.SongInfo = SongInfo;
         }
 
-        public int TotalProgress => 11 + BG.TotalProgress + SFX.TotalProgress;
+        public int TotalProgress => 11 + BG.TotalProgress;
 
         public bool Loaded { get; private set; }
 
         public void Load(Action<int> OnProgressChanged)
         {
             BG.Load(OnProgressChanged);
-            SFX.Load((i) => { OnProgressChanged(BG.TotalProgress + i); });
 
-            int BaseProgress = BG.TotalProgress + SFX.TotalProgress;
+            int BaseProgress = BG.TotalProgress;
 
             //1 - Load Player1 Sprite Info
             var P1Asset = Character.AssetsMap[SongInfo.Player1];
@@ -235,9 +232,11 @@ namespace Orbis.Game
 
             if (!IsPlayer1 && Player2Menu.CPU)
                 return;
-            
+
+#if ORBIS
             MusicPlayer.Pause();
             MusicPlayer.PlayActiveSFX(SFX.GetSFX(SFXType.Dies));
+#endif
 
             Player1Dead = IsPlayer1;
 

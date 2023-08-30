@@ -201,7 +201,8 @@ namespace Orbis.Game
                             throw new Exception("Invalid Note Type");
                     }
 
-                    var CurNote = new SongNoteEntry(NoteSprite.Clone(false), NType, Milisecond, Duration, YPerMS, CPU);
+                    var CurNote = new SongNoteEntry(NoteSprite.Clone(false), NType, Milisecond, Duration, YPerMS);
+                    CurNote.OnNoteReached += NoteEntryReached;
                     CurNote.OnNoteElapsed += NoteEntryElapsed;
                     SongNotes.Add(CurNote);
                 }
@@ -216,49 +217,40 @@ namespace Orbis.Game
             RightNotes = SongNotes.Where(x => x.Type == Note.Right).ToArray();
         }
 
+        private void NoteEntryReached(object sender, EventArgs e)
+        {
+            var ReachedNote = ((SongNoteEntry)sender);
+
+            if (CPU)
+                SetPress(ReachedNote.Type);
+        }
         private void NoteEntryElapsed(object sender, EventArgs e)
         {
             var ElapsedNote = ((SongNoteEntry)sender);
             var NoteScore = (int)ElapsedNote.Score;
+
+
+            var NewState = new NewStatusEvent();
+            NewState.Target = IsPlayer1 ? EventTarget.Player1 : EventTarget.Player2;
+            NewState.NewAnimation = Character.DANCING;
 
             if (NoteScore == 0)
             {
                 Missed++;
                 Score -= 100;
 
-                if (IsPlayer1)
-                {
-                    var NewState = new NewStatusEvent();
-                    NewState.Target = EventTarget.Player1;
-
-                    SetPlayerMiss(ElapsedNote, NewState);
-                }
-                else
-                {
-                    var NewState = new NewStatusEvent();
-                    NewState.Target = EventTarget.Player2;
-
-                    SetPlayerMiss(ElapsedNote, NewState);
-                }
+                SetPlayerMiss(ElapsedNote, NewState);
             }
             else
             {
                 Score += NoteScore;
 
-                if (IsPlayer1)
-                {
-                    var NewState = new NewStatusEvent();
-                    NewState.Target = EventTarget.Player1;
+                SetPlayerHit(ElapsedNote, NewState);
+            }
 
-                    SetPlayerHit(ElapsedNote, NewState);
-                }
-                else
-                {
-                    var NewState = new NewStatusEvent();
-                    NewState.Target = EventTarget.Player2;
-
-                    SetPlayerHit(ElapsedNote, NewState);
-                }
+            if (CPU)
+            {
+                UnsetPress(ElapsedNote.Type);
             }
 
             ElapsedNote.Dispose();

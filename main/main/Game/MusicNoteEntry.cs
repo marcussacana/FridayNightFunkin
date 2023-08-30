@@ -19,8 +19,6 @@ namespace Orbis.Game
 
         public Note Type { get; private set; }
 
-        public bool AutoHit { get; private set; }
-
         public bool CanBeHit { get; private set; }
 
         public bool Hitted { get; set; }
@@ -41,15 +39,15 @@ namespace Orbis.Game
         long SongBeginTick;
 
         public event EventHandler OnNoteElapsed;
+        public event EventHandler OnNoteReached;
 
-        public SongNoteEntry(SpriteAtlas2D Render, Note Type, float TargetMS, float DurationMS, float YPerMS, bool AutoHit)
+        public SongNoteEntry(SpriteAtlas2D Render, Note Type, float TargetMS, float DurationMS, float YPerMS)
         {
             this.Render = Render;
             this.Type = Type;
             this.TargetMS = TargetMS;
             this.DurationMS = DurationMS;
             this.YPerMS = YPerMS;
-            this.AutoHit = AutoHit;
 
             AddChild(BackLayer);
             AddChild(Render);
@@ -162,13 +160,13 @@ namespace Orbis.Game
                 //Original game tries to make easy to hit a
                 //note after the proper time than before.
                 if (DistanceMS < HitZoneOffset * 0.5)
+                {
                     CanBeHit = true;
+                    OnNoteReached?.Invoke(this, EventArgs.Empty);
+                }
 
                 if (DistanceMS < -HitZoneOffset)
                     Render.Opacity = 0;
-
-                if (CanBeHit && AutoHit && DistanceMS < GoodDistance)
-                    Hitted = true;
 
                 if (DistanceMS + DurationMS < -HitZoneOffset)
                 {

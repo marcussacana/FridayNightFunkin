@@ -1,12 +1,16 @@
 ﻿using OrbisGL;
 using OrbisGL.GL2D;
-using System;
+using System.Numerics;
 
 namespace Orbis.Game
 {
     public class PlayerNoteEntry
     {
         public SpriteAtlas2D Render { get; private set;}
+        public SpriteAtlas2D Overlay { get; set; }
+
+        int StaticID;
+        string PressAnim;
 
         public Note Type { get; private set; }
 
@@ -16,6 +20,35 @@ namespace Orbis.Game
         {
             this.Render = Render;
             this.Type = Type;
+            
+            Overlay = Render.Clone(false);
+            Overlay.Position -= new Vector2(40, 40);
+
+            switch (Type)
+            {
+                case Note.Up:
+                    StaticID = NotesNames.UP_FRAME_ID;
+                    PressAnim = NotesNames.UP_PRESS;
+                    Overlay.SetActiveAnimation(NotesNames.UP_HIT);
+                    break;
+                case Note.Down:
+                    StaticID = NotesNames.DOWN_FRAME_ID;
+                    PressAnim = NotesNames.DOWN_PRESS;
+                    Overlay.SetActiveAnimation(NotesNames.DOWN_HIT);
+                    break;
+                case Note.Left:
+                    StaticID = NotesNames.LEFT_FRAME_ID;
+                    PressAnim = NotesNames.LEFT_PRESS;
+                    Overlay.SetActiveAnimation(NotesNames.LEFT_HIT);
+                    break;
+                case Note.Right:
+                    StaticID = NotesNames.RIGHT_FRAME_ID;
+                    PressAnim = NotesNames.RIGHT_PRESS;
+                    Overlay.SetActiveAnimation(NotesNames.RIGHT_HIT);
+                    break;
+            }
+
+            Render.AddChild(Overlay);
 
             SetState(NoteState.Static);
         }
@@ -30,40 +63,13 @@ namespace Orbis.Game
             if (State == NoteState.Static)
             {
                 Render.SetActiveAnimation(NotesNames.STATIC_ARROW);
-
-                switch (Type)
-                {
-                    case Note.Up:
-                        Render.SetCurrentFrame(NotesNames.UP_FRAME_ID);
-                        break;
-                    case Note.Down:
-                        Render.SetCurrentFrame(NotesNames.DOWN_FRAME_ID);
-                        break;
-                    case Note.Left:
-                        Render.SetCurrentFrame(NotesNames.LEFT_FRAME_ID);
-                        break;
-                    case Note.Right:
-                        Render.SetCurrentFrame(NotesNames.RIGHT_FRAME_ID);
-                        break;
-                }
+                Render.SetCurrentFrame(StaticID);
+                Overlay.Visible = false;
             }
             else
             {
-                switch (Type)
-                {
-                    case Note.Up:
-                        Render.SetActiveAnimation(State == NoteState.Hit ? NotesNames.UP_HIT : NotesNames.UP_MISS);
-                        break;
-                    case Note.Down:
-                        Render.SetActiveAnimation(State == NoteState.Hit ? NotesNames.DOWN_HIT : NotesNames.DOWN_MISS);
-                        break;
-                    case Note.Left:
-                        Render.SetActiveAnimation(State == NoteState.Hit ? NotesNames.LEFT_HIT : NotesNames.LEFT_MISS);
-                        break;
-                    case Note.Right:
-                        Render.SetActiveAnimation(State == NoteState.Hit ? NotesNames.RIGHT_HIT : NotesNames.RIGHT_MISS);
-                        break;
-                }
+                Render.SetActiveAnimation(PressAnim);
+                Overlay.Visible = true;
             }
         }
 
@@ -76,7 +82,9 @@ namespace Orbis.Game
 
             if (Tick - LastUpdateTick > HalfSecond)
             {
-                Render.NextFrame();
+                if (Overlay.Visible)
+                    Overlay.NextFrame();
+
                 LastUpdateTick = Tick;
             }
         }

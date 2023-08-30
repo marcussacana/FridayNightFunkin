@@ -8,6 +8,7 @@ using System.Reflection;
 using System.Text;
 using System.Xml;
 using ICSharpCode.SharpZipLib.Zip;
+using System.Diagnostics.Eventing.Reader;
 
 namespace Orbis
 {
@@ -74,7 +75,8 @@ namespace Orbis
                 "assets/shared/images/characters/",
                 "assets/preload/images",
                 "assets/shared/images",
-                "assets/preload/images/icons"
+                "assets/preload/images/icons",
+                "assets/",
             };
 
             if (!File.Exists(FilePath) && File.Exists(Path.Combine(RootDir, FilePath)))
@@ -92,7 +94,7 @@ namespace Orbis
                         break;
                     }
                 }
-            }
+            } 
 
             if (!File.Exists(FilePath))
                 return null;
