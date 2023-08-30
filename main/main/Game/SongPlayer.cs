@@ -122,7 +122,7 @@ namespace Orbis.Game
 
             //2 - Load Player1 Sprite
             Player1 = new TiledSpriteAtlas2D();
-            Player1.LoadSprite(P1AssetData, Util.CopyFileToMemory, true, true);
+            Player1.LoadSprite(P1AssetData, Util.CopyFileToMemory, true);
 
             OnProgressChanged?.Invoke(BaseProgress + 2);
 
@@ -136,7 +136,7 @@ namespace Orbis.Game
 
                 //4 - Load Player2 Sprite
                 Player2 = new TiledSpriteAtlas2D();
-                Player2.LoadSprite(P2AssetData, Util.CopyFileToMemory, true, true);
+                Player2.LoadSprite(P2AssetData, Util.CopyFileToMemory, true);
 
                 OnProgressChanged?.Invoke(BaseProgress + 4);
 
@@ -155,7 +155,7 @@ namespace Orbis.Game
 
             //6 - Load Speaker Sprite
             Speaker = new TiledSpriteAtlas2D();
-            Speaker.LoadSprite(SpeakerAssetData, Util.CopyFileToMemory, true, true);
+            Speaker.LoadSprite(SpeakerAssetData, Util.CopyFileToMemory, true);
 
             OnProgressChanged?.Invoke(BaseProgress + 6);
 
@@ -165,7 +165,7 @@ namespace Orbis.Game
             OnProgressChanged?.Invoke(BaseProgress + 7);
 
             //8 - Load Notes
-            var Notes = new SpriteAtlas2D(NotesAssetData, Util.CopyFileToMemory, true, true);
+            var Notes = new SpriteAtlas2D(NotesAssetData, Util.CopyFileToMemory, true);
 
             Player1Menu = new NoteMenu(Notes, this, true, false);
             Player2Menu = new NoteMenu(Notes, this, false, true);
@@ -690,10 +690,15 @@ namespace Orbis.Game
             if (!Loaded)
                 return;
 
+            bool FirstFrame = false;
+
             ExecuteDeadAnim(Tick);
 
             if (Tick > NextUpdateFrame)
             {
+                if (NextUpdateFrame == 0)
+                    FirstFrame = true;
+                
                 NextUpdateFrame = Tick + BPMTicks;
 
                 Player1?.NextFrame();
@@ -701,23 +706,29 @@ namespace Orbis.Game
                 Speaker?.NextFrame();
             }
 
-            if (BeginRequested)
+            //Firt frame may have an delayed tick due the loading,
+            //Let's skip the timmer related events to the next one,
+            //that will have an updated tick.
+            if (!FirstFrame)
             {
-                BeginRequested = false;
-                BeginAudioTick = Tick + (Constants.ORBIS_MILISECOND * NoteMenu.StartDelayMS);
-                
-                //Preload Audio
-                MusicPlayer?.Resume();
-                MusicPlayer?.Pause();
-                
-                Player1Menu.SetSongBegin(Tick);
-                Player2Menu.SetSongBegin(Tick);
-            }
+                if (BeginRequested)
+                {
+                    BeginRequested = false;
+                    BeginAudioTick = Tick + (Constants.ORBIS_MILISECOND * NoteMenu.StartDelayMS);
 
-            if (BeginAudioTick != 0 && Tick >= BeginAudioTick)
-            {
-                MusicPlayer?.Resume();
-                BeginAudioTick = 0;
+                    //Preload Audio
+                    MusicPlayer?.Resume();
+                    MusicPlayer?.Pause();
+
+                    Player1Menu.SetSongBegin(Tick);
+                    Player2Menu.SetSongBegin(Tick);
+                }
+
+                if (BeginAudioTick != 0 && Tick >= BeginAudioTick)
+                {
+                    MusicPlayer?.Resume();
+                    BeginAudioTick = 0;
+                }
             }
 
             LastDrawTick = Tick;

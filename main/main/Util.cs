@@ -124,36 +124,6 @@ namespace Orbis
             }
         }
 
-        public static void PrepareAsemblies()
-        {
-            bool NewAssembly = true; 
-            var AllMethods = BindingFlags.DeclaredOnly | BindingFlags.NonPublic | BindingFlags.Public | BindingFlags.Instance | BindingFlags.Static;
-            List<Assembly> Ready = new List<Assembly>();
-
-            while (NewAssembly)
-            {
-                NewAssembly = false;
-                foreach (var Asm in AppDomain.CurrentDomain.GetAssemblies().Concat(new Assembly[] { Assembly.GetExecutingAssembly() }))
-                {
-                    if (Ready.Contains(Asm))
-                        continue;
-
-                    NewAssembly = true;
-                    Ready.Add(Asm);
-                    foreach (var type in Asm.GetTypes())
-                    {
-                        foreach (var method in type.GetMethods(AllMethods))
-                        {
-                            if ((method.Attributes & MethodAttributes.Abstract) == MethodAttributes.Abstract ||
-                                method.ContainsGenericParameters)
-                                continue;
-                            System.Runtime.CompilerServices.RuntimeHelpers.PrepareMethod(method.MethodHandle);
-                        }
-                    }
-                }
-            }
-        }
-
         public static IEnumerable<ZipEntry> GetEntries(this ZipFile Archive)
         {
             var Enum = Archive.GetEnumerator();

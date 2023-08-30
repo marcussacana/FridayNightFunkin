@@ -30,7 +30,7 @@
   <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Release|x64' ">
     <DebugType>pdbonly</DebugType>
     <Optimize>true</Optimize>
-    <DefineConstants>TRACE</DefineConstants>
+    <DefineConstants>TRACE;ORBIS</DefineConstants>
     <ErrorReport>prompt</ErrorReport>
     <WarningLevel>4</WarningLevel>
     <AllowUnsafeBlocks>true</AllowUnsafeBlocks>
@@ -88,6 +88,8 @@
   <ItemGroup>
     <Compile Include="Audio\MusicPlayer.cs" />
     <Compile Include="Audio\SFXHelper.cs" />
+    <Compile Include="BG\LoadingBG.cs" />
+    <Compile Include="BG\StartMenu.cs" />
     <Compile Include="CharacterAnim.cs" />
     <Compile Include="Entrypoint.cs" />
     <Compile Include="Constants.cs" />

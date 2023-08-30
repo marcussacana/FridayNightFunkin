@@ -150,7 +150,7 @@ namespace Orbis.Game
 
         public override void Draw(long Tick)
         {
-            if (SongBeginTick == 0)
+            if (SongBeginTick == 0 || Tick < SongBeginTick)
                 return;
 
             long ElapsedTick = Tick - SongBeginTick;

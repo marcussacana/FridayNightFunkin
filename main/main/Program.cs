@@ -1,6 +1,4 @@
-﻿using Orbis.Internals;
-using System;
-using System.IO;
+﻿using OrbisGL;
 
 namespace Orbis
 {
@@ -9,9 +7,9 @@ namespace Orbis
     {
         public static void Main(string[] args)
         {
-            Util.PrepareAsemblies();
 #if ORBIS
             var Display = new Entrypoint();
+            Shader.PrecompileShaders();
             Display.Run();
 #endif
         }
