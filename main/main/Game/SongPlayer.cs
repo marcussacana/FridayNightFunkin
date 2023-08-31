@@ -47,6 +47,16 @@ namespace Orbis.Game
         Vector2 Player2CamPos;
         Vector2 Player1CamPos;
 
+        Vector2 Player1InitialPos;
+        Vector2 Player2InitialPos;
+        Vector2 SpeakerInitialPos;
+        Vector2 Player1InitialSize;
+        Vector2 Player2InitialSize;
+        Vector2 SpeakerInitialSize;
+
+        Vector2 Player1AnimOffset;
+        Vector2 Player2AnimOffset;
+
         string Player1AnimPrefix = string.Empty;
         string Player2AnimPrefix = string.Empty;
         string SpeakerAnimPrefix = string.Empty;
@@ -485,6 +495,14 @@ namespace Orbis.Game
             Player2Menu.Position = new Vector2(50, 50);
 
             EnableAnimations();
+
+            Player1InitialPos = Player1.Position;
+            Player2InitialPos = Player2.Position;
+            SpeakerInitialPos = Speaker.Position;
+
+            Player1InitialSize = new Vector2(Player1.Width, Player1.Height);
+            Player2InitialSize = new Vector2(Player2.Width, Player2.Height);
+            SpeakerInitialSize = new Vector2(Speaker.Width, Speaker.Height);
         }
 
         private void EnableAnimations()
@@ -556,14 +574,18 @@ namespace Orbis.Game
 
             if (P1Offset != P1OldOffset)
             {
-                Player1.Position += P1OldOffset;
-                Player1.Position -= P1Offset;
+                Player1AnimOffset = P1Offset;
+
+                Player1.ZoomPosition += P1OldOffset;
+                Player1.ZoomPosition -= P1Offset;
             }
 
             if (P2Offset != P2OldOffset)
             {
-                Player2.Position += P2OldOffset;
-                Player2.Position -= P2Offset;
+                Player2AnimOffset = P2Offset;
+
+                Player2.ZoomPosition += P2OldOffset;
+                Player2.ZoomPosition -= P2Offset;
             }
         }
         public void ComputeStep(out int BeatPerMS, out int StepPerMS)
@@ -682,6 +704,8 @@ namespace Orbis.Game
 
         int BPMTicks;
 
+        float LastBeatProgress;
+        long LastBeatTick;
         long LastDrawTick;
         long NextUpdateFrame = 0;
         public override void Draw(long Tick)
@@ -703,6 +727,11 @@ namespace Orbis.Game
                 Player1?.NextFrame();
                 Player2?.NextFrame();
                 Speaker?.NextFrame();
+            }
+
+            if (Tick - LastBeatTick > BPMTicks)
+            {
+                DoBeatZoom(Tick);
             }
 
             //Firt frame may have an delayed tick due the loading,
@@ -732,6 +761,63 @@ namespace Orbis.Game
 
             LastDrawTick = Tick;
             base.Draw(Tick);
+        }
+
+        private void DoBeatZoom(long Tick)
+        {
+            if (DieTime != 0)
+            {
+                BGObject.SetZoom(1);
+                BGObject.Position = Vector2.Zero;
+                return;
+            }
+
+            var AnimDuration = Constants.ORBIS_MILISECOND * 500;
+            var Time = (float)(Tick % AnimDuration) / AnimDuration;
+
+            var Progress = Geometry.CubicBezierInOut(new Vector2(0.9f, 0), new Vector2(0.9f, 1), Time);
+
+            if (Progress < LastBeatProgress)
+            {
+                LastBeatTick = Tick;
+            }
+            else
+            {
+                var Zoom = 1.0f - (0.01f * Progress);
+
+                BGObject.SetZoom(Zoom);
+
+                var NewSize = new Vector2(BGObject.ZoomWidth, BGObject.ZoomHeight);
+                var DeltaSize = new Vector2(1920, 1080) - NewSize;
+
+                BGObject.ZoomPosition = (DeltaSize / 2);
+
+                Zoom = 1.0f - (0.005f * Progress);
+
+                /*
+                Player1.SetZoom(Zoom);
+
+                NewSize = new Vector2(Player1.ZoomWidth, Player1.ZoomHeight);
+                DeltaSize = Player1InitialSize - NewSize;
+
+                Player1.ZoomPosition = (DeltaSize / 2) + Player1InitialPos - Player2AnimOffset;
+
+                Player2.SetZoom(Zoom);
+
+
+                NewSize = new Vector2(Player2.ZoomWidth, Player2.ZoomHeight);
+                DeltaSize = Player2InitialSize - NewSize;
+
+                Player2.ZoomPosition = (DeltaSize / 2) + Player2InitialPos - Player2AnimOffset;
+                */
+
+                NewSize = new Vector2(Speaker.ZoomWidth, Speaker.ZoomHeight);
+                DeltaSize = SpeakerInitialSize - NewSize;
+
+                Speaker.ZoomPosition = (DeltaSize / 2) + SpeakerInitialPos;
+            }
+
+            LastBeatProgress = Progress;
         }
 
         private void ExecuteDeadAnim(long Tick)

@@ -3,6 +3,7 @@ using System.Diagnostics.Eventing.Reader;
 using System.Net.Mail;
 using System.Net.Mime;
 using System.Numerics;
+using System.Security.Cryptography;
 using System.Xml;
 using Orbis.Audio;
 using Orbis.Game;
@@ -17,6 +18,7 @@ namespace Orbis.BG;
 
 public class StartMenu : GLObject2D, ILoadable
 {
+
     private bool Ready;
     private SFXHelper SFX => SFXHelper.Default;
     
@@ -57,7 +59,7 @@ public class StartMenu : GLObject2D, ILoadable
         Girlfriend = new SpriteAtlas2D(XML, Util.CopyFileToMemory, true);
         Girlfriend.SetActiveAnimation("gfDance");
         Girlfriend.Position = new Vector2(1920, 1080) - new Vector2(Girlfriend.Width, Girlfriend.Height) - new Vector2(50, 50);
-        Girlfriend.Position -= new Vector2(350, 200);
+        Girlfriend.Position -= new Vector2(150, 150);
         Girlfriend.SetZoom(0.8f);
 
         OnProgressChanged?.Invoke(SFX.TotalProgress + 3);
@@ -170,6 +172,7 @@ public class StartMenu : GLObject2D, ILoadable
 
     private long LastFrameTick = 0;
     private long FrameTick = Constants.ORBIS_MILISECOND * 20;
+
     public override void Draw(long Tick)
     {
         if (Ready)
@@ -177,7 +180,22 @@ public class StartMenu : GLObject2D, ILoadable
             Ready = false;
             StarGame();
         }
-        
+
+        /*
+        SAMPLE Manual Beat Animation, not needed since the sprite already have it
+        var AnimDuration = Constants.ORBIS_MILISECOND * 600;
+        var Time = (float)(Tick % AnimDuration) / AnimDuration;
+
+        var Progress = Geometry.CubicBezierInOut(new Vector2(0.9f, 0), new Vector2(0.9f, 1), Time);
+        var Zoom = 1.0f - (0.15f * Progress);
+        Logo.SetZoom(Zoom);
+
+        var NewSize = new Vector2(Logo.ZoomWidth, Logo.ZoomHeight);
+        var DeltaSize =  OriLogoSize - NewSize;
+
+        Logo.ZoomPosition = (DeltaSize / 2) + OriLogoPos;
+        */
+
         if (LastFrameTick == 0)
             Theme?.Resume();
         
