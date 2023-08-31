@@ -1,5 +1,5 @@
 ﻿using Orbis.Audio;
-using Orbis.BG;
+using Orbis.Scene;
 using Orbis.Interfaces;
 using OrbisGL;
 using OrbisGL.Controls.Events;
@@ -32,7 +32,7 @@ namespace Orbis.Game
 
         public SongInfo SongInfo { get; private set; }
 
-        IBG BG;
+        IScene BG;
 
         GLObject2D BGObject;
 
@@ -83,7 +83,7 @@ namespace Orbis.Game
         {
             switch (SongInfo.BG) {
                 case Map.Stage:
-                    BG = (IBG)(BGObject = new StageBG());
+                    BG = (IScene)(BGObject = new StageScene());
                     break;
                 default:
                     throw new NotImplementedException();

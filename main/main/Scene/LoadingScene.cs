@@ -5,9 +5,9 @@ using Orbis.Interfaces;
 using OrbisGL.GL;
 using OrbisGL.GL2D;
 
-namespace Orbis.BG;
+namespace Orbis.Scene;
 
-public class LoadingBG :  GLObject2D, ILoadable
+public class LoadingScene :  GLObject2D, ILoadable
 {
     public static Texture2D BG;
     public static Texture2D Bar;

@@ -1,10 +1,5 @@
 ﻿using System;
-using System.Diagnostics.Eventing.Reader;
-using System.Net.Mail;
-using System.Net.Mime;
 using System.Numerics;
-using System.Security.Cryptography;
-using System.Xml;
 using Orbis.Audio;
 using Orbis.Game;
 using Orbis.Interfaces;
@@ -14,9 +9,9 @@ using OrbisGL.Controls.Events;
 using OrbisGL.GL;
 using OrbisGL.GL2D;
 
-namespace Orbis.BG;
+namespace Orbis.Scene;
 
-public class StartMenu : GLObject2D, ILoadable
+public class StartMenuScene : GLObject2D, ILoadable
 {
 
     private bool Ready;
@@ -147,7 +142,7 @@ public class StartMenu : GLObject2D, ILoadable
 
     private void StarGame()
     {
-        LoadingBG LoadBG = new LoadingBG();
+        LoadingScene LoadBG = new LoadingScene();
         LoadBG.Load(i =>
         {
             if (!LoadBG.Loaded)

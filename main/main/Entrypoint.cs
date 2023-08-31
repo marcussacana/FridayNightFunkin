@@ -5,7 +5,7 @@ using OrbisGL.GL2D;
 #if ORBIS
 using System.IO;
 using System.Reflection.Emit;
-using Orbis.BG;
+using Orbis.Scene;
 using Orbis.Internals;
 using OrbisGL;
 using OrbisGL.Audio;

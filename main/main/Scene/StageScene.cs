@@ -5,9 +5,9 @@ using System;
 using System.Linq;
 using System.Numerics;
 
-namespace Orbis.BG
+namespace Orbis.Scene
 {
-    internal class StageBG : GLObject2D, IBG
+    internal class StageScene : GLObject2D, IScene
     {
 
         public bool Loaded { get; private set; }
