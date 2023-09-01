@@ -41,9 +41,9 @@ namespace Orbis.Game
         public event EventHandler OnNoteElapsed;
         public event EventHandler OnNoteReached;
 
-        public SongNoteEntry(SpriteAtlas2D Render, Note Type, float TargetMS, float DurationMS, float YPerMS)
+        public SongNoteEntry(GLObject2D Render, Note Type, float TargetMS, float DurationMS, float YPerMS)
         {
-            this.Render = Render;
+            this.Render = (SpriteAtlas2D)Render;
             this.Type = Type;
             this.TargetMS = TargetMS;
             this.DurationMS = DurationMS;
@@ -89,7 +89,7 @@ namespace Orbis.Game
             float SustainY = DurationMS * YPerMS;
             for (int i = 0, x = 0; i < SustainY; x++)
             {
-                var Sustain = Render.Clone(false);
+                var Sustain = (SpriteAtlas2D)Render.Clone(false);
                 Sustain.Opacity = 150;
                 Sustain.Position = new Vector2(Width / 2, i - (x * 1.5f));
 

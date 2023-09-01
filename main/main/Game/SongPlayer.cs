@@ -13,6 +13,10 @@ namespace Orbis.Game
 {
     public class SongPlayer : GLObject2D, ILoadable
     {
+        public event EventHandler OnSongEnd;
+
+        bool Ended = false;
+
         SFXHelper SFX => SFXHelper.Default;
         
         MusicPlayer MusicPlayer;
@@ -73,7 +77,7 @@ namespace Orbis.Game
 
         Vector2 DiePlayerPos;
         long DieTime;
-        Rectangle2D DieBG = null;
+        Rectangle2D Fade = null;
         bool Player1Dead;
 
 
@@ -214,7 +218,7 @@ namespace Orbis.Game
             var Instrumental = Util.CopyFileToMemory($"songs/{SongInfo.Name}/Inst_48khz.wav");
             var Voices = Util.CopyFileToMemory($"songs/{SongInfo.Name}/Voices_48khz.wav");
 
-            MusicPlayer = new MusicPlayer(Instrumental, Voices, false);
+            MusicPlayer = new MusicPlayer(Instrumental, Voices, (s, a) => { Ended = true; }, false);
 #endif
             OnProgressChanged?.Invoke(BaseProgress + 10);
 
@@ -250,11 +254,6 @@ namespace Orbis.Game
 
             Player1Dead = IsPlayer1;
 
-            DieBG = new Rectangle2D(Application.Default.Width, Application.Default.Height, true);
-            DieBG.Color = RGBColor.Black;
-            DieBG.Opacity = 0;
-            DieBG.RefreshVertex();
-
             if (IsPlayer1)
             {
                 Player1CurrentAnim = Player1Anim.DIES;
@@ -270,7 +269,7 @@ namespace Orbis.Game
 
             DieTime = LastDrawTick;
 
-            AddChild(DieBG);
+            AddChild(Fade);
         }
 
         private void OnAnimEnd(object sender, EventArgs e)
@@ -503,6 +502,10 @@ namespace Orbis.Game
             Player1InitialSize = new Vector2(Player1.Width, Player1.Height);
             Player2InitialSize = new Vector2(Player2.Width, Player2.Height);
             SpeakerInitialSize = new Vector2(Speaker.Width, Speaker.Height);
+
+            Fade = new Rectangle2D(Application.Default.Width, Application.Default.Height, true);
+            Fade.Color = RGBColor.Black;
+            Fade.Opacity = 0;
         }
 
         private void EnableAnimations()
@@ -704,6 +707,7 @@ namespace Orbis.Game
 
         int BPMTicks;
 
+        long BeginFadeOut = -1;
         float LastBeatProgress;
         long LastBeatTick;
         long LastDrawTick;
@@ -713,9 +717,15 @@ namespace Orbis.Game
             if (!Loaded)
                 return;
 
+            if (Ended && BeginFadeOut == -1)
+            {
+                BeginFadeOut = Tick;
+            }
+
             bool FirstFrame = false;
 
             ExecuteDeadAnim(Tick);
+            DoFadeOut(Tick);
 
             if (Tick > NextUpdateFrame)
             {
@@ -761,6 +771,39 @@ namespace Orbis.Game
 
             LastDrawTick = Tick;
             base.Draw(Tick);
+        }
+
+        private void DoFadeOut(long Tick)
+        {
+            if (BeginFadeOut >= 0)
+            {
+                if (BeginFadeOut == 0)
+                {
+                    BeginFadeOut = Tick;
+                }
+
+                var DeltaTick = Tick - BeginFadeOut;
+
+                var ElapsedMS = (float)(DeltaTick / Constants.ORBIS_MILISECOND);
+
+                const int FadeDuration = 500;
+
+                float Progress = ElapsedMS / FadeDuration;
+
+                if (Progress > 1)
+                {
+                    BeginFadeOut = -1;
+                    Progress = 1;
+
+                    if (Ended)
+                    {
+                        OnSongEnd?.Invoke(this, EventArgs.Empty);
+                        Ended = true;
+                    }
+                }
+
+                Fade.Opacity = (byte)(255 * Progress);
+            }
         }
 
         private void DoBeatZoom(long Tick)
@@ -822,25 +865,25 @@ namespace Orbis.Game
 
         private void ExecuteDeadAnim(long Tick)
         {
-            if (DieBG != null && DieBG.Opacity != 255)
+            if (DieTime != 0 && Fade.Opacity != 255)
             {
                 long ElapsedTick = Tick - DieTime;
                 int ElapsedMS = (int)(ElapsedTick / Constants.ORBIS_MILISECOND);
-                DieBG.Opacity = (byte)(Math.Min(ElapsedMS / 500f, 1f) * 255);
+                Fade.Opacity = (byte)(Math.Min(ElapsedMS / 500f, 1f) * 255);
 
-                if (DieBG.Opacity == 255)
+                if (Fade.Opacity == 255)
                 {
                     BG.Dispose();
 
 
                     if (Player1Dead)
                     {
-                        DieBG.AddChild(Player1);
+                        Fade.AddChild(Player1);
                         Player2.Dispose();
                     }
                     else
                     {
-                        DieBG.AddChild(Player2);
+                        Fade.AddChild(Player2);
                         Player1.Dispose();
                     }
 
@@ -849,9 +892,9 @@ namespace Orbis.Game
                     Health.Dispose();
                 }
             }
-            else if (DieBG != null)
+            else if (DieTime != 0) // Screen is black, start second animation step
             {
-                var CenterBG = new Vector2(DieBG.Width, DieBG.Height) / 2;
+                var CenterBG = new Vector2(Fade.Width, Fade.Height) / 2;
                 var PlayerCenter = (Player1Dead ? new Vector2(Player1.Width, Player1.Height) : new Vector2(Player2.Width, Player2.Height)) / 2;
 
                 var CenteredPoint = CenterBG - PlayerCenter;
@@ -864,7 +907,6 @@ namespace Orbis.Game
                 long ElapsedTick = Tick - DieTime;
                 int ElapsedMS = (int)(ElapsedTick / Constants.ORBIS_MILISECOND);
                 var MoveProgress = Math.Min(ElapsedMS / 1500f, 1f);
-
 
                 if (Player1Dead)
                     Player1.Position = (Distance * MoveProgress) + DiePlayerPos;

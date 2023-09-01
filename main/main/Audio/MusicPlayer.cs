@@ -16,7 +16,7 @@ namespace Orbis.Audio
         IAudioOut SFXADriver;
         IAudioOut SFXBDriver;
 
-        public MusicPlayer(MemoryStream Instrumental, MemoryStream Voices, bool Ogg) {
+        public MusicPlayer(MemoryStream Instrumental, MemoryStream Voices, EventHandler OnMusicEnd, bool Ogg) {
             InstrumentalDriver = new OrbisAudioOut();
             VoiceDriver = new OrbisAudioOut();
             SFXADriver = new OrbisAudioOut();
@@ -35,6 +35,8 @@ namespace Orbis.Audio
 
             SFXA.SetAudioDriver(SFXADriver);
             SFXB.SetAudioDriver(SFXBDriver);
+
+            this.Instrumental.OnTrackEnd += OnMusicEnd;
             
             InstrumentalDriver.Resume();
             VoiceDriver.Resume();
@@ -83,7 +85,7 @@ namespace Orbis.Audio
 
         public void UnmuteVoice()
         {
-            VoiceDriver.SetVolume(100);
+            VoiceDriver.SetVolume(80);
         }
 
         public void MuteActiveSFX()
@@ -98,24 +100,24 @@ namespace Orbis.Audio
 
         public void UnmuteActiveSFX()
         {
-            SFXADriver.SetVolume(100);
+            SFXADriver.SetVolume(80);
         }
 
         public void UnmutePassiveSFX()
         {
-            SFXBDriver.SetVolume(100);
+            SFXBDriver.SetVolume(80);
         }
 
         public void PlayActiveSFX(MemoryStream Sound)
         {
-            SFXADriver.SetVolume(100);
+            SFXADriver.SetVolume(80);
             SFXA.Open(Sound);
             SFXA.Resume();
         }
         
         public void PlayPassiveSFX(MemoryStream Sound)
         {
-            SFXBDriver.SetVolume(100);
+            SFXBDriver.SetVolume(80);
             SFXB.Open(Sound);
             SFXB.Resume();
         }

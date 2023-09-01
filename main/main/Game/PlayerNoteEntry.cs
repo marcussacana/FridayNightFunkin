@@ -16,12 +16,12 @@ namespace Orbis.Game
 
         public NoteState State { get; private set; }
 
-        public PlayerNoteEntry(SpriteAtlas2D Render, Note Type)
+        public PlayerNoteEntry(GLObject2D Render, Note Type)
         {
-            this.Render = Render;
+            this.Render = (SpriteAtlas2D)Render;
             this.Type = Type;
             
-            Overlay = Render.Clone(false);
+            Overlay = (SpriteAtlas2D)this.Render.Clone(false);
             Overlay.Position -= new Vector2(40, 40);
 
             switch (Type)

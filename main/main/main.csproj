@@ -88,18 +88,19 @@
   <ItemGroup>
     <Compile Include="Audio\MusicPlayer.cs" />
     <Compile Include="Audio\SFXHelper.cs" />
-    <Compile Include="BG\LoadingBG.cs" />
-    <Compile Include="BG\StartMenu.cs" />
+    <Compile Include="Scene\LoadingScene.cs" />
+    <Compile Include="Scene\Freestyle.cs" />
+    <Compile Include="Scene\StartMenuScene.cs" />
     <Compile Include="CharacterAnim.cs" />
     <Compile Include="Entrypoint.cs" />
     <Compile Include="Constants.cs" />
-    <Compile Include="BG\StageBG.cs" />
+    <Compile Include="Scene\StageScene.cs" />
     <Compile Include="Enums.cs" />
     <Compile Include="Game\HealthBar.cs" />
     <Compile Include="Game\MusicNoteEntry.cs" />
     <Compile Include="Game\PlayerNoteEntry.cs" />
     <Compile Include="Game\NoteMenu.cs" />
-    <Compile Include="Interfaces\IBG.cs" />
+    <Compile Include="Interfaces\IScene.cs" />
     <Compile Include="Interfaces\ILoadable.cs" />
     <Compile Include="Program.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />

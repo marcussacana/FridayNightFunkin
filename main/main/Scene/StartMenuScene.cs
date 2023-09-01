@@ -26,6 +26,8 @@ public class StartMenuScene : GLObject2D, ILoadable
     private SpriteAtlas2D Logo;
     private SpriteAtlas2D PressStart;
     private SpriteAtlas2D Girlfriend;
+
+    private IScene Target;
     
     public bool Loaded { get; private set; }
     public int TotalProgress { get => 5 + SFX.TotalProgress; }
@@ -54,7 +56,11 @@ public class StartMenuScene : GLObject2D, ILoadable
         Girlfriend = new SpriteAtlas2D(XML, Util.CopyFileToMemory, true);
         Girlfriend.SetActiveAnimation("gfDance");
         Girlfriend.Position = new Vector2(1920, 1080) - new Vector2(Girlfriend.Width, Girlfriend.Height) - new Vector2(50, 50);
+#if ORBIS
+        Girlfriend.Position -= new Vector2(350, 200);
+#else
         Girlfriend.Position -= new Vector2(150, 150);
+#endif
         Girlfriend.SetZoom(0.8f);
 
         OnProgressChanged?.Invoke(SFX.TotalProgress + 3);
@@ -119,7 +125,7 @@ public class StartMenuScene : GLObject2D, ILoadable
 
         PressStart.SetActiveAnimation("ENTER PRESSED");
 
-        ThemeDriver?.Dispose();
+        ThemeDriver?.SetVolume(0);
 
         if (SFXPlayer != null)
         {
@@ -135,6 +141,8 @@ public class StartMenuScene : GLObject2D, ILoadable
 
     void OnSFXEnd(object sender, EventArgs Args)
     {
+        SFXPlayer.OnTrackEnd -= OnSFXEnd;
+        
         //OnTrackEnd is called in a background thread,
         //you can't use to interact with OpenGL
         Ready = true;
@@ -151,7 +159,15 @@ public class StartMenuScene : GLObject2D, ILoadable
             Application.Default.RemoveObjects();
             Application.Default.AddObject(LoadBG);
             Dispose();
+
+            var Freestyle = new FreestyleScene(Theme, ThemeDriver, SFXPlayer, SFXDriver, LoadBG);
+            LoadBG.Load(Freestyle, () =>
+            {
+                Application.Default.RemoveObjects();
+                Application.Default.AddObject(Freestyle);
+            });
             
+            /*
             var Song = new SongPlayer(Util.GetSongByName("Bopeebo"));
             LoadBG.Load(Song, () =>
             {
@@ -161,7 +177,7 @@ public class StartMenuScene : GLObject2D, ILoadable
 
                 Song.Begin();
                 Application.Default.AddObject(Song);
-            });
+            });*/
         });
     }
 
@@ -209,6 +225,5 @@ public class StartMenuScene : GLObject2D, ILoadable
     {
         Logo?.Dispose();
         Girlfriend?.Dispose();
-        Theme?.Dispose();
     }
 }

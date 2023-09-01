@@ -1,14 +1,7 @@
-﻿using OrbisGL.GL;
-using Orbis.Game;
-using OrbisGL.Controls;
-using OrbisGL.GL2D;
-#if ORBIS
-using System.IO;
-using System.Reflection.Emit;
+﻿#if ORBIS
 using Orbis.Scene;
-using Orbis.Internals;
 using OrbisGL;
-using OrbisGL.Audio;
+using OrbisGL.GL;
 
 namespace Orbis
 {
@@ -25,7 +18,7 @@ namespace Orbis
 
         private void InitializeComponents()
         {
-            StartMenu Menu = new StartMenu();
+            StartMenuScene Menu = new StartMenuScene();
             Menu.Load((i) =>
             {
                 if (Menu.Loaded)
