@@ -253,6 +253,7 @@ namespace Orbis.Game
 #endif
 
             Player1Dead = IsPlayer1;
+            DiePlayerPos = IsPlayer1 ? Player1.ZoomPosition : Player2.ZoomPosition;
 
             if (IsPlayer1)
             {
@@ -786,7 +787,7 @@ namespace Orbis.Game
 
                 var ElapsedMS = (float)(DeltaTick / Constants.ORBIS_MILISECOND);
 
-                const int FadeDuration = 500;
+                const int FadeDuration = 1500;
 
                 float Progress = ElapsedMS / FadeDuration;
 
@@ -797,8 +798,8 @@ namespace Orbis.Game
 
                     if (Ended)
                     {
+                        Ended = false;
                         OnSongEnd?.Invoke(this, EventArgs.Empty);
-                        Ended = true;
                     }
                 }
 
@@ -924,7 +925,8 @@ namespace Orbis.Game
                 Application.Default.Gamepad.OnButtonUp -= Gamepad_OnButtonUp;
 #endif
             }
-
+            
+            MusicPlayer.Dispose();
             base.Dispose();
         }
     }

@@ -122,9 +122,9 @@ namespace Orbis.Scene
             AddChild(SongList);
 
             DifficultyView = new AtlasText2D(Atlas, Util.FontBoldMap);
-            DifficultyView.SetText("Normal");
+            DifficultyView.SetText("NORMAL");
             DifficultyView.SetZoom(1.2f);
-            DifficultyView.ZoomPosition = new Vector2(Application.Default.Width - 200, 50);
+            DifficultyView.ZoomPosition = new Vector2(Application.Default.Width - 300, 50);
             AddChild(DifficultyView);
 
             Loaded = true;
@@ -275,12 +275,13 @@ namespace Orbis.Scene
             {
                 case Dificuty.Normal:
                     CurrentDifficulty = Dificuty.Easy;
+                    DifficultyView.SetText("EASY");
                     break;
                 case Dificuty.Hard:
                     CurrentDifficulty = Dificuty.Normal;
+                    DifficultyView.SetText("NORMAL");
                     break;
             }
-
         }
 
         private void IncreaseDifficulty()
@@ -289,9 +290,11 @@ namespace Orbis.Scene
             {
                 case Dificuty.Easy:
                     CurrentDifficulty = Dificuty.Normal;
+                    DifficultyView.SetText("NORMAL");
                     break;
                 case Dificuty.Normal:
                     CurrentDifficulty = Dificuty.Hard;
+                    DifficultyView.SetText("HARD");
                     break;
             }
         }
@@ -439,6 +442,8 @@ namespace Orbis.Scene
                 if (Progress > 1)
                 {
                     BeginFadeIn = -1;
+                    Application.Default.RemoveObjects();
+                    Application.Default.AddObject(this);
                     Progress = 1;
                 }
 
