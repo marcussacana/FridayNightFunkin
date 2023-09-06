@@ -9,6 +9,9 @@ namespace Orbis.Scene
 {
     internal class StageScene : GLObject2D, IScene
     {
+        Texture2D StageBackTex;
+        Texture2D StageFrontTex;
+        Texture2D StageCurtainsTex;
 
         public bool Loaded { get; private set; }
 
@@ -18,9 +21,6 @@ namespace Orbis.Scene
 
         public void Load(Action<int> OnProgressChanged)
         {
-            Texture2D StageBackTex;
-            Texture2D StageFrontTex;
-            Texture2D StageCurtainsTex;
 
             //1
             using (var ImgData = Util.CopyFileToMemory("assets/shared/images/stageback.dds"))
@@ -70,6 +70,14 @@ namespace Orbis.Scene
         public void SetCharacterPosition(TiledSpriteAtlas2D Player1, TiledSpriteAtlas2D Player2, TiledSpriteAtlas2D Speaker)
         {
             //default map, no changes
+        }
+
+        public override void Dispose()
+        {
+            StageBackTex?.Dispose();
+            StageFrontTex?.Dispose();
+            StageCurtainsTex?.Dispose();
+            base.Dispose();
         }
     }
 }

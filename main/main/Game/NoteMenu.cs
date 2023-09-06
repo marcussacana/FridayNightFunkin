@@ -33,7 +33,11 @@ namespace Orbis.Game
         public const int UpX = NoteOffset * 2;
         public const int RightX = NoteOffset * 3;
 
+        private long SongStartTick;
+
         public const int StartDelayMS = 3000;
+
+        IEnumerator<SongNoteEntry> NoteCreator;
 
         public bool IsPlayer1 { get; private set; }
 
@@ -50,12 +54,12 @@ namespace Orbis.Game
         PlayerNoteEntry Right;
 
 
-        List<SongNoteEntry> SongNotes = new List<SongNoteEntry>();
+        private IEnumerable<SongNoteEntry> SongNotes => UpNotes.Concat(DownNotes).Concat(LeftNotes).Concat(RightNotes); 
 
-        SongNoteEntry[] UpNotes;
-        SongNoteEntry[] DownNotes;
-        SongNoteEntry[] LeftNotes;
-        SongNoteEntry[] RightNotes;
+        List<SongNoteEntry> UpNotes = new List<SongNoteEntry>();
+        List<SongNoteEntry> DownNotes = new List<SongNoteEntry>();
+        List<SongNoteEntry> LeftNotes = new List<SongNoteEntry>();
+        List<SongNoteEntry> RightNotes = new List<SongNoteEntry>();
 
         public NoteMenu(SpriteAtlas2D NoteSprite, SongPlayer Game, bool Player1, bool CPU)
         {
@@ -152,6 +156,8 @@ namespace Orbis.Game
 
         public void SetSongBegin(long Tick)
         {
+            this.SongStartTick = Tick;
+            
             foreach (var Note in SongNotes)
                 Note.SetSongBegin(Tick);
         }
@@ -159,10 +165,57 @@ namespace Orbis.Game
         public void SetupSong(SongData Song, bool IsPlayer1)
         {
             Character = new CharacterAnim(IsPlayer1 ? Song.player1 : Song.player2 ?? "gf");
-
-            SongNotes.Clear();
+            
             Game.ComputeStep(out int BPMS, out int SPMS);
 
+            NoteCreator = CreateNotes(Song, IsPlayer1, SPMS);
+
+            EnsureEnoughtNotes();
+        }
+
+        private void EnsureEnoughtNotes()
+        {
+            while (SongNotes.Count() < 20)
+            {
+                if (!AddNextNote())
+                    break;
+            }
+        }
+
+        private bool AddNextNote()
+        {
+            if (NoteCreator.MoveNext())
+            {
+                var CurNote = NoteCreator.Current;
+
+                switch (CurNote.Type)
+                {
+                    case Note.Up:
+                        UpNotes.Add(CurNote);
+                        break;
+                    case Note.Down:
+                        DownNotes.Add(CurNote);
+                        break;
+                    case Note.Left:
+                        LeftNotes.Add(CurNote);
+                        break;
+                    case Note.Right:
+                        RightNotes.Add(CurNote);
+                        break;
+                }
+
+                if (SongStartTick != 0)
+                    CurNote.SetSongBegin(SongStartTick);
+                
+                AddChild(CurNote);
+                return true;
+            }
+
+            return false;
+        }
+
+        private IEnumerator<SongNoteEntry> CreateNotes(SongData Song, bool IsPlayer1, int SPMS)
+        {
             //near but not accurate with the original game
             var YPerMS = (SPMS / 100f * 1.5f * Song.speed) / 4;
             //var YPerMS = (SPMS / 100f * 1.5f * Song.speed) / 6; //slower, for debugging
@@ -204,17 +257,10 @@ namespace Orbis.Game
                     var CurNote = new SongNoteEntry(NoteSprite.Clone(false), NType, Milisecond, Duration, YPerMS);
                     CurNote.OnNoteReached += NoteEntryReached;
                     CurNote.OnNoteElapsed += NoteEntryElapsed;
-                    SongNotes.Add(CurNote);
+
+                    yield return CurNote;
                 }
             }
-
-            foreach (var Note in SongNotes)
-                AddChild(Note);
-
-            UpNotes = SongNotes.Where(x => x.Type == Note.Up).ToArray();
-            DownNotes = SongNotes.Where(x => x.Type == Note.Down).ToArray();
-            LeftNotes = SongNotes.Where(x => x.Type == Note.Left).ToArray();
-            RightNotes = SongNotes.Where(x => x.Type == Note.Right).ToArray();
         }
 
         private void NoteEntryReached(object sender, EventArgs e)
@@ -253,7 +299,29 @@ namespace Orbis.Game
                 UnsetPress(ElapsedNote.Type);
             }
 
-            ElapsedNote.Dispose();
+            DeleteNote(ElapsedNote);
+            EnsureEnoughtNotes();
+        }
+
+        private void DeleteNote(SongNoteEntry Target)
+        {
+            switch (Target.Type)
+            {
+                case Note.Down:
+                    DownNotes.Remove(Target);
+                    break;
+                case Note.Up:
+                    UpNotes.Remove(Target);
+                    break;
+                case Note.Left:
+                    LeftNotes.Remove(Target);
+                    break;
+                case Note.Right:
+                    RightNotes.Remove(Target);
+                    break;
+            }
+
+            Target.Dispose();
         }
 
         private void SetPlayerHit(SongNoteEntry ElapsedNote, NewStatusEvent NewState)
@@ -310,6 +378,7 @@ namespace Orbis.Game
 
         public override void Dispose()
         {
+            NoteCreator?.Dispose();
             NoteSprite.Dispose();
             base.Dispose();
         }

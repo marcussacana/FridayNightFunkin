@@ -342,7 +342,7 @@ namespace Orbis.Scene
 
                 SongPlayer SP = new SongPlayer(Util.GetSongByName(Songs[SelectedIndex], CurrentDifficulty));
                 SP.OnSongEnd += SongEnd;
-
+                
                 Application.Default.RemoveObjects();
                 Application.Default.AddObject(LoadScreen);
 

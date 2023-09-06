@@ -7,7 +7,7 @@ namespace Orbis
 {
     internal class Entrypoint : Application
     {
-        public Entrypoint() : base(1920, 1080, 60, GPUMemoryConfig.HighMemory)
+        public Entrypoint() : base(1920, 1080, 60, GPUMemoryConfig.Default)
         {
             EnableKeyboard();
 

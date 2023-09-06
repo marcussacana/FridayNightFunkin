@@ -1,10 +1,11 @@
 ﻿using OrbisGL;
 using OrbisGL.GL2D;
+using System;
 using System.Numerics;
 
 namespace Orbis.Game
 {
-    public class PlayerNoteEntry
+    public class PlayerNoteEntry : IDisposable
     {
         public SpriteAtlas2D Render { get; private set;}
         public SpriteAtlas2D Overlay { get; set; }
@@ -87,6 +88,12 @@ namespace Orbis.Game
 
                 LastUpdateTick = Tick;
             }
+        }
+
+        public void Dispose()
+        {
+            Render.Dispose();
+            Overlay.Dispose();
         }
     }
 }

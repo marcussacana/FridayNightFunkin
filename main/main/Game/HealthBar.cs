@@ -129,5 +129,15 @@ namespace Orbis.Game
 
             UpdateHealthBar();
         }
+
+        public override void Dispose()
+        {
+            P1Bar?.Dispose();
+            P2Bar?.Dispose();
+            P1Icon?.Dispose();
+            P2Icon?.Dispose();
+
+            base.Dispose();
+        }
     }
 }

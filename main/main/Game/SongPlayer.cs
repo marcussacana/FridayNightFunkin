@@ -155,7 +155,6 @@ namespace Orbis.Game
             else
             {
                 Player2?.Dispose();
-                Player2 = null;
             }
 
             //5 - Load Speaker Sprite Info
@@ -182,10 +181,7 @@ namespace Orbis.Game
             Player2Menu = new NoteMenu(Notes, this, false, true);
 
             Player1.OnAnimationEnd += OnAnimEnd;
-            Player2.OnAnimationEnd += OnAnimEnd;
-
-            Notes.Texture = null;//Prevent Texture disposal
-            Notes.Dispose();
+            (Player2 ?? Speaker).OnAnimationEnd += OnAnimEnd;
 
             OnProgressChanged?.Invoke(BaseProgress + 8);
 
@@ -215,8 +211,8 @@ namespace Orbis.Game
 
             //10 - Load Music
 #if ORBIS
-            var Instrumental = Util.CopyFileToMemory($"songs/{SongInfo.Name}/Inst_48khz.wav");
-            var Voices = Util.CopyFileToMemory($"songs/{SongInfo.Name}/Voices_48khz.wav");
+            Instrumental = Util.CopyFileToMemory($"songs/{SongInfo.Name}/Inst_48khz.wav");
+            Voices = Util.CopyFileToMemory($"songs/{SongInfo.Name}/Voices_48khz.wav");
 
             MusicPlayer = new MusicPlayer(Instrumental, Voices, (s, a) => { Ended = true; }, false);
 #endif
@@ -713,6 +709,10 @@ namespace Orbis.Game
         long LastBeatTick;
         long LastDrawTick;
         long NextUpdateFrame = 0;
+        
+        private MemoryStream Instrumental;
+        private MemoryStream Voices;
+
         public override void Draw(long Tick)
         {
             if (!Loaded)
@@ -925,8 +925,22 @@ namespace Orbis.Game
                 Application.Default.Gamepad.OnButtonUp -= Gamepad_OnButtonUp;
 #endif
             }
+
+            BackLayer?.Dispose();
+            FrontLayer?.Dispose();
+
+            BG?.Dispose();
+            Speaker?.Dispose();
+            Player1?.Dispose();
+            Player2?.Dispose();
+            Player1Menu?.Dispose();
+            Player2Menu?.Dispose();
+            MusicPlayer?.Dispose();
+            Health?.Dispose();
             
-            MusicPlayer.Dispose();
+            Voices?.Dispose();
+            Instrumental?.Dispose();
+
             base.Dispose();
         }
     }

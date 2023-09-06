@@ -159,7 +159,7 @@ namespace Orbis.Game
 
                 //Original game tries to make easy to hit a
                 //note after the proper time than before.
-                if (DistanceMS < HitZoneOffset * 0.5)
+                if (DistanceMS < HitZoneOffset * 0.5 && !CanBeHit)
                 {
                     CanBeHit = true;
                     OnNoteReached?.Invoke(this, EventArgs.Empty);

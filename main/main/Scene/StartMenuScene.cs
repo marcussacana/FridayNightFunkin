@@ -190,6 +190,7 @@ public class StartMenuScene : GLObject2D, ILoadable
         {
             Ready = false;
             StarGame();
+            return;
         }
 
         /*
@@ -225,5 +226,6 @@ public class StartMenuScene : GLObject2D, ILoadable
     {
         Logo?.Dispose();
         Girlfriend?.Dispose();
+        base.Dispose();
     }
 }
