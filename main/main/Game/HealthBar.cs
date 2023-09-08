@@ -99,7 +99,7 @@ namespace Orbis.Game
             P2Icon.Position = P2Bar.Position + new Vector2(SplitPos - (P2Icon.Width*0.8f), -P2Icon.Height / 2);
         }
 
-        private void NoteMiss(object sender, EventArgs e)
+        private void NoteMiss(object sender, SongNoteEntry e)
         {
             bool IsPlayer1 = sender == Player1;
 
@@ -114,7 +114,7 @@ namespace Orbis.Game
 
             UpdateHealthBar();
         }
-        private void NoteHit(object sender, EventArgs e)
+        private void NoteHit(object sender, SongNoteEntry e)
         {
             bool IsPlayer1 = sender == Player1;
 

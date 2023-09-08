@@ -141,7 +141,8 @@ public class StartMenuScene : GLObject2D, ILoadable
 
     void OnSFXEnd(object sender, EventArgs Args)
     {
-        SFXPlayer.OnTrackEnd -= OnSFXEnd;
+        if (SFXPlayer != null)
+            SFXPlayer.OnTrackEnd -= OnSFXEnd;
         
         //OnTrackEnd is called in a background thread,
         //you can't use to interact with OpenGL

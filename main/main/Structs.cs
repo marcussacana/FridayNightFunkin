@@ -1,4 +1,5 @@
-﻿using OrbisGL.GL2D;
+﻿using Orbis.Game;
+using OrbisGL.GL2D;
 using System.Collections.Generic;
 
 namespace Orbis
@@ -9,6 +10,8 @@ namespace Orbis
         public string AnimationSufix;
         public string AnimationPrefix;
         public string NewAnimation;
+
+        public SongNoteEntry NoteInfo;
     }
 
     public struct SongInfo

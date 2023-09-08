@@ -49,6 +49,7 @@ namespace Orbis.Scene
         static SpriteAtlas2D Atlas;
 
         Blank2D SongList = new Blank2D();
+        private Vector2 SongListPos = new Vector2(50f, 0);
 
         private WavePlayer Theme;
         private OrbisAudioOut ThemeDriver;
@@ -118,7 +119,7 @@ namespace Orbis.Scene
                 CurrentPos += new Vector2(Text.Width, Text.Height + 20);
             }
 
-            SongList.Position = new Vector2(50, 0);
+            SongList.Position = SongListPos;
             AddChild(SongList);
 
             DifficultyView = new AtlasText2D(Atlas, Util.FontBoldMap);
@@ -141,6 +142,7 @@ namespace Orbis.Scene
 
 
             UpdateSelection(true);
+            
 
             OnProgressChanged?.Invoke(2);
 
@@ -161,7 +163,7 @@ namespace Orbis.Scene
             if (Args.Keycode == IME_KeyCode.LEFTARROW)
                 DecreaseDifficulty();
 
-            if (Args.Keycode == IME_KeyCode.KEYPAD_ENTER)
+            if (Args.Keycode == IME_KeyCode.KEYPAD_ENTER || Args.Keycode == IME_KeyCode.RETURN)
                 SongConfirm();
         }
 
@@ -246,12 +248,12 @@ namespace Orbis.Scene
             Selection = (AtlasText2D)SongList.Childs.ElementAt(SelectedIndex);
 
             var ListBasePos = 1080f / 2f;
-            var SelectionY = Selection.ZoomPosition.Y;
-
-            var TargetYPos = ListBasePos - SelectionY;
-
-            MoveDeltaY = TargetYPos - SongList.Position.Y;
             MoveInitialY = SongList.Position.Y;
+
+            var CenterSelectionY = Selection.ZoomPosition.Y + (Selection.ZoomHeight / 2);
+            var TargetListY = ListBasePos - CenterSelectionY;
+
+            MoveDeltaY = TargetListY - MoveInitialY;
 
             if (Instant)
             {
@@ -265,7 +267,10 @@ namespace Orbis.Scene
             else
             {
                 AnimTick = 0;
-                SFXPlayer.Open(SFXHelper.Default.GetSFX(SFXType.MenuChoice));
+                var SFX = SFXHelper.Default.GetSFX(SFXType.MenuChoice);
+
+                if (SFX != null)
+                    SFXPlayer.Open(SFX);
             }
         }
 
@@ -368,7 +373,7 @@ namespace Orbis.Scene
                 if (AnimTick == 0)
                 {
                     AnimTick = Tick;
-                    SFXPlayer.Restart();
+                    SFXPlayer?.Restart();
                 }
 
                 var DeltaTick = Tick - AnimTick;

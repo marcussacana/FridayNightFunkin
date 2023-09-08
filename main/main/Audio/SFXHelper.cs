@@ -32,6 +32,9 @@ public class SFXHelper : ILoadable
 
     public MemoryStream GetSFX(SFXType Type)
     {
+        if (!SFXEntries.ContainsKey(Type))
+            return null;
+
         var Entry= SFXEntries[Type];
         Entry.Position = 0;
         return Entry;

@@ -88,6 +88,8 @@
   <ItemGroup>
     <Compile Include="Audio\MusicPlayer.cs" />
     <Compile Include="Audio\SFXHelper.cs" />
+    <Compile Include="Game\FallObj.cs" />
+    <Compile Include="Game\PopupLoaderHelper.cs" />
     <Compile Include="Scene\LoadingScene.cs" />
     <Compile Include="Scene\Freestyle.cs" />
     <Compile Include="Scene\StartMenuScene.cs" />

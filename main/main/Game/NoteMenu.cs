@@ -23,8 +23,8 @@ namespace Orbis.Game
 
         public event EventHandler<NewStatusEvent> OnNoteElapsed;
 
-        public event EventHandler OnNoteMissed;
-        public event EventHandler OnNoteHit;
+        public event EventHandler<SongNoteEntry> OnNoteMissed;
+        public event EventHandler<SongNoteEntry> OnNoteHit;
 
         public const int NoteOffset = 155;
 
@@ -343,7 +343,7 @@ namespace Orbis.Game
             }
 
             OnNoteElapsed?.Invoke(this, NewState);
-            OnNoteHit?.Invoke(this, EventArgs.Empty);
+            OnNoteHit?.Invoke(this, ElapsedNote);
         }
         private void SetPlayerMiss(SongNoteEntry ElapsedNote, NewStatusEvent NewState)
         {
@@ -363,7 +363,7 @@ namespace Orbis.Game
             }
 
             OnNoteElapsed?.Invoke(this, NewState);
-            OnNoteMissed?.Invoke(this, EventArgs.Empty);
+            OnNoteMissed?.Invoke(this, ElapsedNote);
         }
 
         public override void Draw(long Tick)

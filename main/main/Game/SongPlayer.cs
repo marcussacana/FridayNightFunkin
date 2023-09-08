@@ -80,6 +80,7 @@ namespace Orbis.Game
         Rectangle2D Fade = null;
         bool Player1Dead;
 
+        PopupLoaderHelper PopupHelper;
 
         bool AnimationChanged = true;
 
@@ -92,6 +93,8 @@ namespace Orbis.Game
                 default:
                     throw new NotImplementedException();
             };
+
+            PopupHelper = new PopupLoaderHelper();
 
             if (SongInfo.Speaker == null)
                 SongInfo.Speaker = "gf";
@@ -115,7 +118,7 @@ namespace Orbis.Game
             this.SongInfo = SongInfo;
         }
 
-        public int TotalProgress => 11 + BG.TotalProgress;
+        public int TotalProgress => 11 + BG.TotalProgress + PopupHelper.TotalProgress;
 
         public bool Loaded { get; private set; }
 
@@ -124,6 +127,10 @@ namespace Orbis.Game
             BG.Load(OnProgressChanged);
 
             int BaseProgress = BG.TotalProgress;
+
+            PopupHelper.Load((i) => OnProgressChanged(i + BaseProgress));
+
+            BaseProgress += PopupHelper.TotalProgress;
 
             //1 - Load Player1 Sprite Info
             var P1Asset = Character.AssetsMap[SongInfo.Player1];
@@ -183,6 +190,11 @@ namespace Orbis.Game
             Player1.OnAnimationEnd += OnAnimEnd;
             (Player2 ?? Speaker).OnAnimationEnd += OnAnimEnd;
 
+            if (Player2 != null)
+            {
+                Speaker.OnAnimationEnd += OnAnimEnd;
+            }
+
             OnProgressChanged?.Invoke(BaseProgress + 8);
 
             BG.OnMapStatusChanged += StatusChanged;
@@ -231,6 +243,48 @@ namespace Orbis.Game
         private void SetupEvents()
         {
             Health.OnPlayerDies += OnPlayerDies;
+
+            if (Player2Menu.CPU)
+            {
+                Player1Menu.OnNoteHit += OnScore;
+                Player1Menu.OnNoteMissed += OnScore;
+            }
+        }
+
+        private void OnScore(object sender, SongNoteEntry Note)
+        {
+            if (sender != Player1Menu)
+                return;
+
+            PopupLoaderHelper.Popup Score;
+            switch (Note.Score)
+            {
+                case 200:
+                    Score = PopupLoaderHelper.Popup.Perfect;
+                    break;
+                case 100:
+                    Score = PopupLoaderHelper.Popup.Good;
+                    break;
+                case 50:
+                    Score = PopupLoaderHelper.Popup.Bad;
+                    break;
+                default:
+                    StatusChanged(null, new NewStatusEvent() { 
+                        Target = EventTarget.Speaker,
+                        NewAnimation = SpeakerAnim.DOWN_MISS
+                    });
+                    Score = PopupLoaderHelper.Popup.Miss;
+                    break;
+            }
+
+            var Texture = PopupHelper.GetTexture(Score);
+
+            FallObj Obj = new FallObj(Texture, 50, 1000);
+            var Pos = Speaker.GetMiddle(Obj);            
+            Obj.SetZoom(1.2f);
+            Obj.ZoomPosition = Pos + new Vector2(30, -150);
+
+            Speaker.AddChild(Obj);
         }
 
         private void OnPlayerDies(object sender, NoteMenu e)
@@ -317,6 +371,22 @@ namespace Orbis.Game
                     DiePlayerPos -= Player2Anim.GetAnimOffset(Player1Anim.DEAD);
 
                     Player2CurrentAnim = Player2Anim.DEAD;
+                    AnimationChanged = true;
+                    UpdateAnimations();
+                    return;
+                }
+            }
+
+            if (sender == Speaker)
+            {
+                if (Speaker.CurrentSprite == SpeakerAnim.DIES ||
+                    Speaker.CurrentSprite == SpeakerAnim.DEAD ||
+                    Speaker.CurrentSprite == SpeakerAnim.LEFT_MISS ||
+                    Speaker.CurrentSprite == SpeakerAnim.UP_MISS ||
+                    Speaker.CurrentSprite == SpeakerAnim.RIGHT_MISS ||
+                    Speaker.CurrentSprite == SpeakerAnim.DOWN_MISS)
+                {
+                    SpeakerCurrentAnim = SpeakerAnim.DANCING;
                     AnimationChanged = true;
                     UpdateAnimations();
                     return;
