@@ -48,6 +48,8 @@ namespace Orbis.Game
         CharacterAnim Player2Anim;
         CharacterAnim SpeakerAnim;
 
+        bool HasPlayer2 => Player2 != null;
+
         Vector2 Player2CamPos;
         Vector2 Player1CamPos;
 
@@ -60,7 +62,6 @@ namespace Orbis.Game
 
         Vector2 Player1AnimOffset;
         Vector2 Player2AnimOffset;
-        Vector2 SpeakerAnimOffset;
 
         string Player1AnimPrefix = string.Empty;
         string Player2AnimPrefix = string.Empty;
@@ -550,7 +551,10 @@ namespace Orbis.Game
             BackLayer.AddChild(BGObject);
             BackLayer.AddChild(Speaker);
             BackLayer.AddChild(Player1);
-            BackLayer.AddChild(Player2);
+
+            if (HasPlayer2)
+                BackLayer.AddChild(Player2);
+            
             AddChild(BackLayer);
 
             FrontLayer.AddChild(Player1Menu);
@@ -564,12 +568,16 @@ namespace Orbis.Game
             EnableAnimations();
 
             Player1InitialPos = Player1.Position;
-            Player2InitialPos = Player2.Position;
             SpeakerInitialPos = Speaker.Position;
 
+            if (HasPlayer2)
+                Player2InitialPos = Player2.Position;
+
             Player1InitialSize = new Vector2(Player1.Width, Player1.Height);
-            Player2InitialSize = new Vector2(Player2.Width, Player2.Height);
             SpeakerInitialSize = new Vector2(Speaker.Width, Speaker.Height);
+
+            if (HasPlayer2)
+                Player2InitialSize = new Vector2(Player2.Width, Player2.Height);
 
             Fade = new Rectangle2D(Application.Default.Width, Application.Default.Height, true);
             Fade.Color = RGBColor.Black;
@@ -581,13 +589,17 @@ namespace Orbis.Game
             if (Player1Anim == null)
             {
                 Player1Anim = new CharacterAnim(SongInfo.Player1);
-                Player2Anim = new CharacterAnim(SongInfo.Player2);
                 SpeakerAnim = new CharacterAnim(SongInfo.Speaker);
+
+                if (HasPlayer2)
+                    Player2Anim = new CharacterAnim(SongInfo.Player2);
             }
 
             Player1CurrentAnim = Player1Anim.DANCING;
-            Player2CurrentAnim = Player2Anim.DANCING;
             SpeakerCurrentAnim = SpeakerAnim.DANCING;
+
+            if (HasPlayer2)
+                Player2CurrentAnim = Player2Anim.DANCING;
 
             AnimationChanged = true;
 
@@ -600,8 +612,8 @@ namespace Orbis.Game
                 return;
 
             var P1OldOffset = Player1Anim.GetAnimOffset(Player1.CurrentSprite);
-            var P2OldOffset = Player2Anim.GetAnimOffset(Player2.CurrentSprite);
-            var SPOldOffset = SpeakerAnim.GetAnimOffset(Speaker.CurrentSprite);
+
+            var P2OldOffset = Player2Anim?.GetAnimOffset(Player2?.CurrentSprite);
 
             AnimationChanged = false;
 
@@ -616,7 +628,7 @@ namespace Orbis.Game
                 Player1.SetActiveAnimation(Player1CurrentAnim);
             }
 
-            if (Player2 != null)
+            if (HasPlayer2)
             {
                 FullAnimationName = $"{Player2AnimPrefix}{Player2CurrentAnim}{Player2AnimSufix}";
                 PrefixOnlyAnimation = $"{Player2AnimPrefix}{Player2CurrentAnim}";
@@ -642,8 +654,7 @@ namespace Orbis.Game
             }
 
             var P1Offset = Player1Anim.GetAnimOffset(Player1.CurrentSprite);
-            var P2Offset = Player2Anim.GetAnimOffset(Player2.CurrentSprite);
-            var SPOffset = SpeakerAnim.GetAnimOffset(Speaker.CurrentSprite);
+            var P2Offset = Player2Anim?.GetAnimOffset(Player2.CurrentSprite);
 
             if (P1Offset != P1OldOffset)
             {
@@ -653,20 +664,12 @@ namespace Orbis.Game
                 Player1.ZoomPosition -= P1Offset;
             }
 
-            if (P2Offset != P2OldOffset)
+            if (HasPlayer2 && P2Offset != P2OldOffset)
             {
-                Player2AnimOffset = P2Offset;
+                Player2AnimOffset = P2Offset.Value;
 
-                Player2.ZoomPosition += P2OldOffset;
-                Player2.ZoomPosition -= P2Offset;
-            }
-
-            if (SPOffset != SPOldOffset)
-            {
-                SpeakerAnimOffset = SPOffset;
-
-                Speaker.ZoomPosition += SPOldOffset;
-                Speaker.ZoomPosition -= SPOldOffset;
+                Player2.ZoomPosition += P2OldOffset.Value;
+                Player2.ZoomPosition -= P2Offset.Value;
             }
         }
         public void ComputeStep(out int BeatPerMS, out int StepPerMS)
@@ -765,7 +768,12 @@ namespace Orbis.Game
                     Player1CurrentAnim = Player1Anim.HEY;
 
                 if (!LastNoteIsFromPlayer1 && IsPlayer1)
-                    Player2CurrentAnim = Player2Anim.HEY ?? Player2Anim.DANCING ?? Player2CurrentAnim;
+                {
+                    if (HasPlayer2)
+                        Player2CurrentAnim = Player2Anim.HEY ?? Player2Anim.DANCING ?? Player2CurrentAnim;
+                    else
+                        SpeakerCurrentAnim = SpeakerAnim.HEY ?? SpeakerAnim.DANCING ?? SpeakerCurrentAnim;
+                }
 
                 LastNoteIsFromPlayer1 = IsPlayer1;
             }
@@ -961,7 +969,7 @@ namespace Orbis.Game
                     if (Player1Dead)
                     {
                         Fade.AddChild(Player1);
-                        Player2.Dispose();
+                        Player2?.Dispose();
                     }
                     else
                     {
