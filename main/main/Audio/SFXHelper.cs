@@ -41,7 +41,7 @@ public class SFXHelper : ILoadable
     }
 
     public bool Loaded { get; private set; }
-    public int TotalProgress { get; private set; } = 7;
+    public int TotalProgress { get; private set; } = 8;
     public void Load(Action<int> OnProgressChanged)
     {
         //1
@@ -82,7 +82,11 @@ public class SFXHelper : ILoadable
         SFXEntries[SFXType.MenuChoice] = Util.CopyFileToMemory("scrollMenu_48khz.wav");
         SFXEntries[SFXType.MenuConfirm] = Util.CopyFileToMemory("confirmMenu_48khz.wav");
         SFXEntries[SFXType.MenuBack] = Util.CopyFileToMemory("cancelMenu_48khz.wav");
-        Loaded = true;
         OnProgressChanged?.Invoke(7);
+
+        SFXEntries[SFXType.ThunderA] = Util.CopyFileToMemory("thunder_1_48khz.wav");
+        SFXEntries[SFXType.ThunderB] = Util.CopyFileToMemory("thunder_2_48khz.wav");
+        Loaded = true;
+        OnProgressChanged?.Invoke(5);
     }
 }

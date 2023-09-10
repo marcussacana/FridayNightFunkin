@@ -50,6 +50,8 @@ namespace Orbis
         Girlfriend2,
         Girlfriend3,
         Girlfriend4,
+        ThunderA,
+        ThunderB
     }
 
     [Flags]

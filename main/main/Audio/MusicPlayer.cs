@@ -121,7 +121,24 @@ namespace Orbis.Audio
             SFXB.Open(Sound);
             SFXB.Resume();
         }
-        
+
+
+        public void SetActiveSFXVol(float Volume)
+        {
+            if (Volume < 0 || Volume > 1)
+                throw new ArgumentOutOfRangeException($"{nameof(Volume)} must be in the range 0.0 <= X <= 1.0");
+
+            SFXADriver.SetVolume((byte)(80 * Volume));
+        }
+
+        public void SetPassiveSFXVol(float Volume)
+        {
+            if (Volume < 0 || Volume > 1)
+                throw new ArgumentOutOfRangeException($"{nameof(Volume)} must be in the range 0.0 <= X <= 1.0");
+
+            SFXBDriver.SetVolume((byte)(80 * Volume));
+        }
+
         public void Dispose()
         {
             Voices?.Dispose();

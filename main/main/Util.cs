@@ -279,6 +279,7 @@ namespace Orbis
                 "assets/preload/images",
                 "assets/shared/images",
                 "assets/preload/images/icons",
+                "assets/week2/images",
                 "assets/",
             };
 
@@ -326,7 +327,25 @@ namespace Orbis
             using (var Data = CopyFileToMemory($"preload/data/{Name}/{Name}{DificutyName}.json") ?? CopyFileToMemory($"preload/data/{Name}/{Name}.json"))
             {
                 var JSON = Encoding.UTF8.GetString(Data.ToArray());
-                return JsonConvert.DeserializeObject<SongInfo>(JSON);
+                var Song = JsonConvert.DeserializeObject<SongInfo>(JSON);
+
+                switch (Name.ToLowerInvariant().Trim())
+                {
+                    default:
+                        Song.BG = Map.Stage;
+                        break;
+                    case "spookeez":
+                    case "monster":
+                    case "south":
+                        Song.BG = Map.Halloween;
+                        break;
+                    case "pico":
+                    case "philly":
+                    case "blammed":
+                        break;
+                }
+
+                return Song;
             }
         }
 

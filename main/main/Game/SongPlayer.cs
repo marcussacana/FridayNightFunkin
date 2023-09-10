@@ -18,8 +18,8 @@ namespace Orbis.Game
         bool Ended = false;
 
         SFXHelper SFX => SFXHelper.Default;
-        
-        MusicPlayer MusicPlayer;
+
+        internal MusicPlayer MusicPlayer { get; private set; }
 
         HealthBar Health;
 
@@ -44,9 +44,9 @@ namespace Orbis.Game
         TiledSpriteAtlas2D Player1;
         TiledSpriteAtlas2D Player2;
 
-        CharacterAnim Player1Anim;
-        CharacterAnim Player2Anim;
-        CharacterAnim SpeakerAnim;
+        internal CharacterAnim Player1Anim { get; private set; }
+        internal CharacterAnim Player2Anim { get; private set; }
+        internal CharacterAnim SpeakerAnim { get; private set; }
 
         bool HasPlayer2 => Player2 != null;
 
@@ -86,11 +86,16 @@ namespace Orbis.Game
 
         bool AnimationChanged = true;
 
+        public bool Started { get; private set; }
+
         public SongPlayer(SongInfo SongInfo)
         {
             switch (SongInfo.BG) {
                 case Map.Stage:
                     BG = (IScene)(BGObject = new StageScene());
+                    break;
+                case Map.Halloween:
+                    BG = (IScene)(BGObject = new HalloweenScene(this));
                     break;
                 default:
                     throw new NotImplementedException();
@@ -190,12 +195,10 @@ namespace Orbis.Game
             Player2Menu = new NoteMenu(Notes, this, false, true);
 
             Player1.OnAnimationEnd += OnAnimEnd;
-            (Player2 ?? Speaker).OnAnimationEnd += OnAnimEnd;
+            Speaker.OnAnimationEnd += OnAnimEnd;
 
-            if (Player2 != null)
-            {
-                Speaker.OnAnimationEnd += OnAnimEnd;
-            }
+            if (HasPlayer2)
+                Player2.OnAnimationEnd += OnAnimEnd;
 
             OnProgressChanged?.Invoke(BaseProgress + 8);
 
@@ -333,7 +336,8 @@ namespace Orbis.Game
                     Player1.CurrentSprite == Player1Anim.LEFT_MISS ||
                     Player1.CurrentSprite == Player1Anim.UP_MISS ||
                     Player1.CurrentSprite == Player1Anim.RIGHT_MISS ||
-                    Player1.CurrentSprite == Player1Anim.DOWN_MISS)
+                    Player1.CurrentSprite == Player1Anim.DOWN_MISS ||
+                    Player1.CurrentSprite == Player1Anim.HIT)
                 {
                     Player1CurrentAnim = Player1Anim.DANCING;
                     AnimationChanged = true;
@@ -359,7 +363,8 @@ namespace Orbis.Game
                     Player2.CurrentSprite == Player2Anim.LEFT_MISS ||
                     Player2.CurrentSprite == Player2Anim.UP_MISS ||
                     Player2.CurrentSprite == Player2Anim.RIGHT_MISS ||
-                    Player2.CurrentSprite == Player2Anim.DOWN_MISS)
+                    Player2.CurrentSprite == Player2Anim.DOWN_MISS ||
+                    Player2.CurrentSprite == Player2Anim.HIT)
                 {
                     Player2CurrentAnim = Player2Anim.DANCING;
                     AnimationChanged = true;
@@ -386,7 +391,8 @@ namespace Orbis.Game
                     Speaker.CurrentSprite == SpeakerAnim.LEFT_MISS ||
                     Speaker.CurrentSprite == SpeakerAnim.UP_MISS ||
                     Speaker.CurrentSprite == SpeakerAnim.RIGHT_MISS ||
-                    Speaker.CurrentSprite == SpeakerAnim.DOWN_MISS)
+                    Speaker.CurrentSprite == SpeakerAnim.DOWN_MISS ||
+                    Speaker.CurrentSprite == SpeakerAnim.HIT)
                 {
                     SpeakerCurrentAnim = SpeakerAnim.DANCING;
                     AnimationChanged = true;
@@ -546,6 +552,8 @@ namespace Orbis.Game
 
             ComputePlayer1Position();
 
+            EnableAnimations();
+
             BG.SetCharacterPosition(Player1, Player2, Speaker);
 
             BackLayer.AddChild(BGObject);
@@ -564,8 +572,6 @@ namespace Orbis.Game
 
             Player1Menu.Position = new Vector2(1210, 50);
             Player2Menu.Position = new Vector2(50, 50);
-
-            EnableAnimations();
 
             Player1InitialPos = Player1.Position;
             SpeakerInitialPos = Speaker.Position;
@@ -856,6 +862,7 @@ namespace Orbis.Game
                 {
                     MusicPlayer?.Resume();
                     BeginAudioTick = 0;
+                    Started = true;
                 }
             }
 

@@ -125,7 +125,7 @@ namespace Orbis
                     HAIR_BLOWING = "GF Dancing Beat Hair blowing";
 
                     //wrong context but let's make the thing simpler
-                    HIT = "GF FEAR ";
+                    HIT = "GF FEAR";
                     DIES = DEAD = UP_MISS = DOWN_MISS = LEFT_MISS = RIGHT_MISS = "gf sad";
                     break;
                 case "mom":
