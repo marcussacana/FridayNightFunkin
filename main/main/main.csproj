@@ -108,6 +108,7 @@
     <Compile Include="Program.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
     <Compile Include="Game\SongPlayer.cs" />
+    <Compile Include="Scene\TrainScene.cs" />
     <Compile Include="String\CString.cs" />
     <Compile Include="String\StringBufferA.cs" />
     <Compile Include="Structs.cs" />

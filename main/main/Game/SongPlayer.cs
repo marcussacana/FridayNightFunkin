@@ -97,6 +97,9 @@ namespace Orbis.Game
                 case Map.Halloween:
                     BG = (IScene)(BGObject = new HalloweenScene(this));
                     break;
+                case Map.Philly:
+                    BG = (IScene)(BGObject = new TrainScene(this));
+                    break;
                 default:
                     throw new NotImplementedException();
             };
@@ -540,11 +543,17 @@ namespace Orbis.Game
                     break;
             }
 
-            if (Player2 != null)
+            if (HasPlayer2)
             {
                 Player2.Position = new Vector2(100, 100) * CoordinatesScale;
                 Player2CamPos = Player2.GetMiddle();
             }
+
+            Player1Anim = new CharacterAnim(SongInfo.Player1);
+            SpeakerAnim = new CharacterAnim(SongInfo.Speaker);
+
+            if (HasPlayer2)
+                Player2Anim = new CharacterAnim(SongInfo.Player2);
 
             ComputePlayer2Position();
 
@@ -592,15 +601,6 @@ namespace Orbis.Game
 
         private void EnableAnimations()
         {
-            if (Player1Anim == null)
-            {
-                Player1Anim = new CharacterAnim(SongInfo.Player1);
-                SpeakerAnim = new CharacterAnim(SongInfo.Speaker);
-
-                if (HasPlayer2)
-                    Player2Anim = new CharacterAnim(SongInfo.Player2);
-            }
-
             Player1CurrentAnim = Player1Anim.DANCING;
             SpeakerCurrentAnim = SpeakerAnim.DANCING;
 
@@ -715,7 +715,9 @@ namespace Orbis.Game
                     break;
                 case "pico":
                     Player2CamPos += new Vector2(600, 0) * CoordinatesScale;
-                    Player2.Position += new Vector2(300, 0) * CoordinatesScale;
+                    Player2.Position += new Vector2(100, 200) * CoordinatesScale;
+                    Player2.Mirror = true;
+                    Player2Anim.Mirror = true;
                     break;
                 case "parents-christmas":
                     Player2.Position += new Vector2(-500, 0) * CoordinatesScale;

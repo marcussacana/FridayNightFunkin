@@ -62,6 +62,7 @@ namespace Orbis
         public Vector2 HAIR_BLOWING_OFFSET { get; private set; } = Vector2.Zero;
         public string HAIR_BLOWING { get; private set; }
 
+        public bool Mirror { get; set; }
 
         Dictionary<string, Vector2> OffsetMap = new Dictionary<string, Vector2>();
 
@@ -246,7 +247,7 @@ namespace Orbis
                 return Vector2.Zero;
 
             if (OffsetMap.TryGetValue(Animation, out Vector2 Offset))
-                return Offset;
+                return Mirror ? (Offset * new Vector2(-1, 1)) : Offset;
 
             return Vector2.Zero;
         }

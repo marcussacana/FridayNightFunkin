@@ -56,11 +56,9 @@ public class StartMenuScene : GLObject2D, ILoadable
         Girlfriend = new SpriteAtlas2D(XML, Util.CopyFileToMemory, true);
         Girlfriend.SetActiveAnimation("gfDance");
         Girlfriend.Position = new Vector2(1920, 1080) - new Vector2(Girlfriend.Width, Girlfriend.Height) - new Vector2(50, 50);
-#if ORBIS
+
         Girlfriend.Position -= new Vector2(350, 200);
-#else
-        Girlfriend.Position -= new Vector2(150, 150);
-#endif
+
         Girlfriend.SetZoom(0.8f);
 
         OnProgressChanged?.Invoke(SFX.TotalProgress + 3);

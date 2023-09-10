@@ -280,6 +280,7 @@ namespace Orbis
                 "assets/shared/images",
                 "assets/preload/images/icons",
                 "assets/week2/images",
+                "assets/week3/images/philly",
                 "assets/",
             };
 
@@ -342,6 +343,7 @@ namespace Orbis
                     case "pico":
                     case "philly":
                     case "blammed":
+                        Song.BG = Map.Philly;
                         break;
                 }
 

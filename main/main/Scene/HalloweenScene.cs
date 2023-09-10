@@ -132,9 +132,5 @@ namespace Orbis.Scene
 
             base.Draw(Tick);
         }
-        public override void Dispose()
-        {
-            BG.Dispose();
-        }
     }
 }
