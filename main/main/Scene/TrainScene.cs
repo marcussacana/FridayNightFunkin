@@ -1,6 +1,7 @@
 ﻿using Orbis.Audio;
 using Orbis.Game;
 using Orbis.Interfaces;
+using OrbisGL;
 using OrbisGL.GL;
 using OrbisGL.GL2D;
 using System;
@@ -8,6 +9,7 @@ using System.Collections.Generic;
 using System.Diagnostics;
 using System.Linq;
 using System.Numerics;
+using System.Runtime.InteropServices;
 using System.Text;
 using System.Threading.Tasks;
 
@@ -150,7 +152,7 @@ namespace Orbis.Scene
             City.RefreshVertex();
             Train.RefreshVertex();
 
-            Train.Position = new Vector2(0, City.Height - Train.Height - 190);
+            Train.Position = new Vector2(TraingBeginX, City.Height - Train.Height - 190);
 
             UpdateVisibleWindow();
 
@@ -201,9 +203,100 @@ namespace Orbis.Scene
             NextWindow++;
         }
 
+        const string HairLifitingAnim = "Hair Lifiting";
+
         public void SetCharacterPosition(TiledSpriteAtlas2D Player1, TiledSpriteAtlas2D Player2, TiledSpriteAtlas2D Speaker)
         {
+            Game.SpeakerAnim.AddOffsetAlias(Game.SpeakerAnim.HAIR_LANDING, HairLifitingAnim);
 
+            Speaker.CreateAnimationByIndex(Game.SpeakerAnim.HAIR_LANDING, HairLifitingAnim, false, 11, 10, 9, 8, 7, 6, 5, 4, 3, 2, 1, 0);
+            Speaker.CreateAnimationByIndex(Game.SpeakerAnim.HAIR_LANDING, Game.SpeakerAnim.HAIR_LANDING, true, 0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11);
+            Speaker.CreateAnimationByIndex(Game.SpeakerAnim.HAIR_BLOWING, Game.SpeakerAnim.HAIR_BLOWING, true, 0, 1, 2, 3);
+
+            Speaker.OnAnimationEnd += Speaker_OnAnimationEnd;
+        }
+
+        private void Speaker_OnAnimationEnd(object sender, EventArgs e)
+        {
+            SpriteAtlas2D Target = (SpriteAtlas2D)sender;
+
+            if (Target.CurrentSprite == HairLifitingAnim)
+            {
+                OnMapStatusChanged?.Invoke(this, new NewStatusEvent()
+                {
+                    NewAnimation = Game.SpeakerAnim.HAIR_BLOWING
+                });
+                return;
+            }
+
+            if (Target.CurrentSprite == Game.SpeakerAnim.HAIR_BLOWING && !InTrainAnim)
+            {
+                OnMapStatusChanged?.Invoke(this, new NewStatusEvent()
+                {
+                    NewAnimation = Game.SpeakerAnim.HAIR_LANDING
+                });
+                return;
+            }
+
+            if (Target.CurrentSprite == Game.SpeakerAnim.HAIR_LANDING)
+            {
+                OnMapStatusChanged?.Invoke(this, new NewStatusEvent()
+                {
+                    NewAnimation = Game.SpeakerAnim.DANCING
+                });
+                return;
+            }
+        }
+
+        Random Rnd = new Random();
+
+        bool InTrainAnim = false;
+        long LastTrainTick;
+        int TrainDelayMS;
+        const int TrainDurationMS = 1000;
+        const int TrainTargetX = -4000;
+        const int TraingBeginX = 1920;
+        public override void Draw(long Tick)
+        {
+            if (LastTrainTick == 0)
+            {
+                TrainDelayMS = Rnd.Next(4000, 9000);
+                LastTrainTick = Tick;
+                InTrainAnim = false;
+            }
+
+
+            float ElapsedMS = (Tick - LastTrainTick) / Constants.ORBIS_MILISECOND;
+
+            if (ElapsedMS > TrainDelayMS)
+            {
+                if (!InTrainAnim)
+                {
+                    InTrainAnim = true;
+                    OnMapStatusChanged?.Invoke(this, new NewStatusEvent()
+                    {
+                        Target = EventTarget.Speaker,
+                        NewAnimation = HairLifitingAnim
+                    });
+                }
+
+                //Because we want measure the time after the train begin
+                ElapsedMS -= TrainDelayMS;
+
+                var TrainProgress = Math.Min(ElapsedMS / TrainDurationMS, 1f);
+
+                var TrainXDistance = TraingBeginX - TrainTargetX;
+
+                Train.ZoomPosition = new Vector2(TraingBeginX - (TrainXDistance * TrainProgress), Train.ZoomPosition.Y);
+
+                if (TrainProgress == 1)
+                {
+                    InTrainAnim = false;
+                    LastTrainTick = 0;
+                }
+            }
+
+            base.Draw(Tick);
         }
     }
 }

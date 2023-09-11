@@ -241,6 +241,14 @@ namespace Orbis
 
         }
 
+        public void AddOffsetAlias(string OriAnimation, string TargetAnimation)
+        {
+            if (OffsetMap.TryGetValue(OriAnimation, out Vector2 Offset))
+                OffsetMap[TargetAnimation] = Offset;
+            else
+                throw new KeyNotFoundException(OriAnimation);
+        }
+
         public Vector2 GetAnimOffset(string Animation)
         {
             if (string.IsNullOrWhiteSpace(Animation))
