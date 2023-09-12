@@ -86,6 +86,7 @@ public class SFXHelper : ILoadable
 
         SFXEntries[SFXType.ThunderA] = Util.CopyFileToMemory("thunder_1_48khz.wav");
         SFXEntries[SFXType.ThunderB] = Util.CopyFileToMemory("thunder_2_48khz.wav");
+        SFXEntries[SFXType.Train] = Util.CopyFileToMemory("train_passes_48khz.wav");
         Loaded = true;
         OnProgressChanged?.Invoke(5);
     }

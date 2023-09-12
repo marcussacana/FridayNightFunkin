@@ -12,7 +12,7 @@ using System.Diagnostics.Eventing.Reader;
 
 namespace Orbis
 {
-    internal static class Util
+    public static class Util
     {
         public static Dictionary<char, string> FontBoldMap = new Dictionary<char, string>()
         {

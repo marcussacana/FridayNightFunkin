@@ -5,13 +5,8 @@ using OrbisGL;
 using OrbisGL.GL;
 using OrbisGL.GL2D;
 using System;
-using System.Collections.Generic;
-using System.Diagnostics;
-using System.Linq;
+using System.IO;
 using System.Numerics;
-using System.Runtime.InteropServices;
-using System.Text;
-using System.Threading.Tasks;
 
 namespace Orbis.Scene
 {
@@ -32,6 +27,8 @@ namespace Orbis.Scene
         SongPlayer Game;
 
         MusicPlayer Player => Game.MusicPlayer;
+
+        MemoryStream TrainSFX;
 
         int NextWindow;
 
@@ -154,6 +151,8 @@ namespace Orbis.Scene
 
             Train.Position = new Vector2(TraingBeginX, City.Height - Train.Height - 190);
 
+            TrainSFX = SFXHelper.Default.GetSFX(SFXType.Train);
+
             UpdateVisibleWindow();
 
             Width = City.Width;
@@ -250,9 +249,14 @@ namespace Orbis.Scene
 
         Random Rnd = new Random();
 
+        bool FirstTrain = true;
+        bool SFXStarted = false;
         bool InTrainAnim = false;
         long LastTrainTick;
         int TrainDelayMS;
+        int SoundTrainDelayMS;
+
+        const int TrainPassSFXDelay = 4500;
         const int TrainDurationMS = 1000;
         const int TrainTargetX = -4000;
         const int TraingBeginX = 1920;
@@ -260,13 +264,32 @@ namespace Orbis.Scene
         {
             if (LastTrainTick == 0)
             {
-                TrainDelayMS = Rnd.Next(4000, 9000);
+                if (!FirstTrain)
+                    TrainDelayMS = Rnd.Next(10000, 15000);
+                else
+                    TrainDelayMS = Rnd.Next(5000, 9000);
+                
+                SoundTrainDelayMS = TrainDelayMS - TrainPassSFXDelay;
+
                 LastTrainTick = Tick;
                 InTrainAnim = false;
+                SFXStarted = false;
+                FirstTrain = false;
             }
 
-
             float ElapsedMS = (Tick - LastTrainTick) / Constants.ORBIS_MILISECOND;
+
+            if (!SFXStarted && ElapsedMS >= SoundTrainDelayMS)
+            {
+                SFXStarted = true;
+
+                if (TrainSFX != null)
+                {
+                    TrainSFX.Position = 0;
+                    Player.SetPassiveSFXVol(0.40f);
+                    Player.PlayPassiveSFX(TrainSFX);
+                }
+            }
 
             if (ElapsedMS > TrainDelayMS)
             {

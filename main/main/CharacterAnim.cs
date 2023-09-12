@@ -9,7 +9,7 @@ using System.Threading.Tasks;
 
 namespace Orbis
 {
-    internal class CharacterAnim
+    public class CharacterAnim
     {
         public Vector2 SHAKING_OFFSET { get; private set; } = Vector2.Zero;
         public string SHAKING { get; private set; }

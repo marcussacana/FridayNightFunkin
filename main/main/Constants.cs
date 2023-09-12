@@ -6,7 +6,7 @@ namespace Orbis
 
     //These classes make a clear and safe pattern for all file and animation names.
 
-    static class Character
+    public static class Character
     {
         public const string BoyfriendAssets = "BOYFRIEND.xml";
         public const string BoyfriendChristmasAssets = "bfChristmas.xml";

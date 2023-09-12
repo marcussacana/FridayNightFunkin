@@ -73,6 +73,8 @@ namespace Orbis.Scene
             this.SFXPlayer = SFXPlayer;
             this.SFXDriver = SFXDriver;
             this.LoadScreen = LoadScreen;
+            
+            SFXPlayer.OnTrackEnd += ConfirmTrackEnd;
         }
 
         public bool Loaded { get; set; }
@@ -116,7 +118,7 @@ namespace Orbis.Scene
                 Text.SetZoom(0.8f);
                 SongList.AddChild(Text);
 
-                CurrentPos += new Vector2(Text.Width, Text.Height + 20);
+                CurrentPos += new Vector2(Text.Width, Text.Height + 150);
             }
 
             SongList.Position = SongListPos;
@@ -197,15 +199,20 @@ namespace Orbis.Scene
             UpdateSelection(false);
         }
 
+        bool WaitingSongEnd = false;
         bool MusicConfirmed = false;
         private void SongConfirm()
         {
+            if (WaitingSongEnd)
+                return;
+            
             if (SFXPlayer != null)
             {
+                WaitingSongEnd = true;
+                MusicConfirmed = false;
                 BeginFadeOut = 0;
 
                 SFXPlayer.Open(SFXHelper.Default.GetSFX(SFXType.MenuConfirm));
-                SFXPlayer.OnTrackEnd += ConfirmTrackEnd;
                 ThemeDriver.SetVolume(0);
                 SFXDriver.SetVolume(100);
                 SFXPlayer.Restart();
@@ -215,11 +222,13 @@ namespace Orbis.Scene
                 MusicConfirmed = true;
             }
         }
-
         private void ConfirmTrackEnd(object sender, EventArgs e)
         {
-            SFXPlayer.OnTrackEnd -= ConfirmTrackEnd;
-
+            //Prevents the SFX from the Main Menu trigger this method in the initialization
+            if (!WaitingSongEnd)
+                return;
+            
+            WaitingSongEnd = false;
 
             //Again, the OnTrackEnd event runs in a secondary thread, we can't touch in the OpenGL objects.
             //So, let's just set an flag and let the main draw loop detect it
@@ -341,7 +350,7 @@ namespace Orbis.Scene
 
             DoFade(Tick);
 
-            if (MusicConfirmed)
+            if (MusicConfirmed && BeginFadeOut == -1)
             {
                 MusicConfirmed = false;
 
@@ -380,11 +389,11 @@ namespace Orbis.Scene
 
                 var ElapsedMS = (float)(DeltaTick / Constants.ORBIS_MILISECOND);
 
-                const int AnimDuration = 150;
+                const int AnimDuration = 500;
 
                 float Progress = ElapsedMS / AnimDuration;
 
-                if (Progress > 1)
+                if (Progress >= 1)
                 {
                     Progress = 1;
                     AnimTick = -1;
@@ -416,11 +425,11 @@ namespace Orbis.Scene
 
                 var ElapsedMS = (float)(DeltaTick / Constants.ORBIS_MILISECOND);
 
-                const int FadeDuration = 500;
+                const int FadeDuration = 2000;
 
                 float Progress = ElapsedMS / FadeDuration;
 
-                if (Progress > 1)
+                if (Progress >= 1)
                 {
                     BeginFadeOut = -1;
                     Progress = 1;
@@ -433,6 +442,8 @@ namespace Orbis.Scene
             {
                 if (BeginFadeIn == 0)
                 {
+                    Application.Default.RemoveObjects();
+                    Application.Default.AddObject(this);
                     BeginFadeIn = Tick;
                 }
 
@@ -440,15 +451,13 @@ namespace Orbis.Scene
 
                 var ElapsedMS = (float)(DeltaTick / Constants.ORBIS_MILISECOND);
 
-                const int FadeDuration = 500;
+                const int FadeDuration = 1000;
 
                 float Progress = ElapsedMS / FadeDuration;
 
-                if (Progress > 1)
+                if (Progress >= 1)
                 {
                     BeginFadeIn = -1;
-                    Application.Default.RemoveObjects();
-                    Application.Default.AddObject(this);
                     Progress = 1;
                 }
 

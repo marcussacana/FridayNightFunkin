@@ -253,31 +253,37 @@ namespace Orbis.Game
         {
             Health.OnPlayerDies += OnPlayerDies;
 
-            if (Player2Menu.CPU)
-            {
-                Player1Menu.OnNoteHit += OnScore;
-                Player1Menu.OnNoteMissed += OnScore;
-            }
+            Player1Menu.OnNoteHit += OnScore;
+            Player1Menu.OnNoteMissed += OnScore;
+            Player2Menu.OnNoteHit += OnScore;
+            Player2Menu.OnNoteMissed += OnScore;
         }
 
         private void OnScore(object sender, SongNoteEntry Note)
         {
-            if (sender != Player1Menu)
+            if (sender != Player1Menu && Player2Menu.CPU)
+            {
+                MusicPlayer.UnmuteVoice();
                 return;
+            }
 
             PopupLoaderHelper.Popup Score;
             switch (Note.Score)
             {
                 case 200:
+                    MusicPlayer.UnmuteVoice();
                     Score = PopupLoaderHelper.Popup.Perfect;
                     break;
                 case 100:
+                    MusicPlayer.UnmuteVoice();
                     Score = PopupLoaderHelper.Popup.Good;
                     break;
                 case 50:
+                    MusicPlayer.UnmuteVoice();
                     Score = PopupLoaderHelper.Popup.Bad;
                     break;
                 default:
+                    MusicPlayer.MuteVoice();
                     StatusChanged(null, new NewStatusEvent() { 
                         Target = EventTarget.Speaker,
                         NewAnimation = SpeakerAnim.DOWN_MISS
@@ -684,13 +690,13 @@ namespace Orbis.Game
             {
                 SpeakerAnimOffset = SpeakerOffset;
 
-                Speaker.ZoomPosition += SpeakerOldOffset;
-                Speaker.ZoomPosition -= SpeakerOffset;
+                Speaker.Position += SpeakerOldOffset;
+                Speaker.Position -= SpeakerOffset;
             }
         }
         public void ComputeStep(out int BeatPerMS, out int StepPerMS)
         {
-            BeatPerMS = (int)((60 / SongInfo.song.bpm) * 1000);
+            BeatPerMS = (int)((60f/SongInfo.song.bpm) * 1000);
             StepPerMS = BeatPerMS / 4;
         }
         private void ComputePlayer1Position()
@@ -944,9 +950,9 @@ namespace Orbis.Game
 
                 BGObject.ZoomPosition = (DeltaSize / 2);
 
+                /*
                 Zoom = 1.0f - (0.005f * Progress);
 
-                /*
                 Player1.SetZoom(Zoom);
 
                 NewSize = new Vector2(Player1.ZoomWidth, Player1.ZoomHeight);
@@ -961,12 +967,12 @@ namespace Orbis.Game
                 DeltaSize = Player2InitialSize - NewSize;
 
                 Player2.ZoomPosition = (DeltaSize / 2) + Player2InitialPos - Player2AnimOffset;
-                */
 
                 NewSize = new Vector2(Speaker.ZoomWidth, Speaker.ZoomHeight);
                 DeltaSize = SpeakerInitialSize - NewSize;
 
                 Speaker.ZoomPosition = (DeltaSize / 2) + SpeakerInitialPos;
+                */
             }
 
             LastBeatProgress = Progress;

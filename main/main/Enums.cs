@@ -51,7 +51,8 @@ namespace Orbis
         Girlfriend3,
         Girlfriend4,
         ThunderA,
-        ThunderB
+        ThunderB,
+        Train
     }
 
     [Flags]

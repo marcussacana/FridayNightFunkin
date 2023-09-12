@@ -48,31 +48,35 @@ public class LoadingScene :  GLObject2D, ILoadable
 
             BarWidth = Bar.Width;
             
-            Bar.Position = new Vector2((Width - Bar.Width) - 50, (Height - 150) - Bar.Height / 2);
+            Bar.Position = new Vector2((Width - Bar.Width) - 200, (Height - 80) - Bar.Height / 2);
 
             Bar.AutoSize = false;
         }
-
-        Loaded = true;
         
         Bar.Opacity = 0;
         
         AddChild(BG);
         AddChild(Bar);
+
+        Loaded = true;
+        
         OnProgressChanged?.Invoke(2);
     }
-
+    
     public void Load(ILoadable Target, Action OnLoaded)
     {
         if (!Target.Loaded)
         {
             Target.Load(i =>
             {
-                double Progress = (double)i / Target.TotalProgress;
+                double Progress = Math.Min((double)i / Target.TotalProgress, 1d);
                 
                 Bar.Opacity = 255;
                 Bar.SetVisibleRectangle(0, 0, (int)(BarWidth * Progress), Bar.Height);
-                
+
+                if (i + 1 == Target.TotalProgress)
+                    Bar.ClearVisibleRectangle();
+
                 Application.Default.DrawOnce();
 
                 if (Target.Loaded)
