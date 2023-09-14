@@ -73,8 +73,9 @@ namespace Orbis.Scene
             this.SFXPlayer = SFXPlayer;
             this.SFXDriver = SFXDriver;
             this.LoadScreen = LoadScreen;
-            
-            SFXPlayer.OnTrackEnd += ConfirmTrackEnd;
+
+            if (SFXPlayer != null)
+                SFXPlayer.OnTrackEnd += ConfirmTrackEnd;
         }
 
         public bool Loaded { get; set; }

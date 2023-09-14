@@ -253,6 +253,7 @@ namespace Orbis.Scene
         bool SFXStarted = false;
         bool InTrainAnim = false;
         long LastTrainTick;
+        long LastWindowUpdate;
         int TrainDelayMS;
         int SoundTrainDelayMS;
 
@@ -260,7 +261,27 @@ namespace Orbis.Scene
         const int TrainDurationMS = 1000;
         const int TrainTargetX = -4000;
         const int TraingBeginX = 1920;
+
+        const int WindowDelayMS = 1500;
+
+
         public override void Draw(long Tick)
+        {
+            DoTrainAnim(Tick);
+
+            int ElapsedWindowUpdateMS = (int)((Tick - LastWindowUpdate) / Constants.ORBIS_MILISECOND);
+
+            if (ElapsedWindowUpdateMS > WindowDelayMS)
+            {
+                LastWindowUpdate = Tick;
+                UpdateVisibleWindow();
+            }
+
+
+            base.Draw(Tick);
+        }
+
+        private void DoTrainAnim(long Tick)
         {
             if (LastTrainTick == 0)
             {
@@ -268,7 +289,7 @@ namespace Orbis.Scene
                     TrainDelayMS = Rnd.Next(10000, 15000);
                 else
                     TrainDelayMS = Rnd.Next(5000, 9000);
-                
+
                 SoundTrainDelayMS = TrainDelayMS - TrainPassSFXDelay;
 
                 LastTrainTick = Tick;
@@ -318,8 +339,12 @@ namespace Orbis.Scene
                     LastTrainTick = 0;
                 }
             }
+        }
 
-            base.Draw(Tick);
+        public override void Dispose()
+        {
+            Player.MutePassiveSFX();
+            base.Dispose();
         }
     }
 }

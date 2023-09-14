@@ -69,6 +69,17 @@ namespace Orbis
         public CharacterAnim(string Character)
         {
             switch (Character) {
+                case "bf-car":
+                    SHAKING = DANCING = "BF idle dance";
+                    DOWN = "BF NOTE DOWN";
+                    DOWN_MISS = "BF NOTE DOWN MISS";
+                    LEFT = "BF NOTE LEFT";
+                    LEFT_MISS = "BF NOTE LEFT MISS";
+                    RIGHT = "BF NOTE RIGHT";
+                    RIGHT_MISS = "BF NOTE RIGHT MISS";
+                    UP = "BF NOTE UP";
+                    DIES = DEAD = DEAD_CONFIRM = UP_MISS = "BF NOTE UP MISS";
+                    break;
                 case "bf":
                     SHAKING = "BF idle shaking";
                     DANCING = "BF idle dance";
@@ -129,6 +140,7 @@ namespace Orbis
                     HIT = "GF FEAR";
                     DIES = DEAD = UP_MISS = DOWN_MISS = LEFT_MISS = RIGHT_MISS = "gf sad";
                     break;
+                case "mom-car":
                 case "mom":
                     DANCING = "Mom Idle";
                     DOWN = "MOM DOWN POSE";

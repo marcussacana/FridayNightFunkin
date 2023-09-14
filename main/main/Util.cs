@@ -281,6 +281,7 @@ namespace Orbis
                 "assets/preload/images/icons",
                 "assets/week2/images",
                 "assets/week3/images/philly",
+                "assets/week4/images/limo",
                 "assets/",
             };
 
@@ -344,6 +345,11 @@ namespace Orbis
                     case "philly":
                     case "blammed":
                         Song.BG = Map.Philly;
+                        break;
+                    case "satin-panties":
+                    case "high":
+                    case "milf":
+                        Song.BG = Map.Limo;
                         break;
                 }
 

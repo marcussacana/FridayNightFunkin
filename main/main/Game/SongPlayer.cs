@@ -101,6 +101,9 @@ namespace Orbis.Game
                 case Map.Philly:
                     BG = (IScene)(BGObject = new TrainScene(this));
                     break;
+                case Map.Limo:
+                    BG = (IScene)(BGObject = new LimoScene(this));
+                    break;
                 default:
                     throw new NotImplementedException();
             };
@@ -263,7 +266,7 @@ namespace Orbis.Game
         {
             if (sender != Player1Menu && Player2Menu.CPU)
             {
-                MusicPlayer.UnmuteVoice();
+                MusicPlayer?.UnmuteVoice();
                 return;
             }
 
@@ -271,19 +274,19 @@ namespace Orbis.Game
             switch (Note.Score)
             {
                 case 200:
-                    MusicPlayer.UnmuteVoice();
+                    MusicPlayer?.UnmuteVoice();
                     Score = PopupLoaderHelper.Popup.Perfect;
                     break;
                 case 100:
-                    MusicPlayer.UnmuteVoice();
+                    MusicPlayer?.UnmuteVoice();
                     Score = PopupLoaderHelper.Popup.Good;
                     break;
                 case 50:
-                    MusicPlayer.UnmuteVoice();
+                    MusicPlayer?.UnmuteVoice();
                     Score = PopupLoaderHelper.Popup.Bad;
                     break;
                 default:
-                    MusicPlayer.MuteVoice();
+                    MusicPlayer?.MuteVoice();
                     StatusChanged(null, new NewStatusEvent() { 
                         Target = EventTarget.Speaker,
                         NewAnimation = SpeakerAnim.DOWN_MISS
@@ -566,8 +569,6 @@ namespace Orbis.Game
 
             Player1.Position = new Vector2(640, 350) * CoordinatesScale;
 
-            ComputePlayer1Position();
-
             EnableAnimations();
 
             BG.SetCharacterPosition(Player1, Player2, Speaker);
@@ -699,15 +700,6 @@ namespace Orbis.Game
             BeatPerMS = (int)((60f/SongInfo.song.bpm) * 1000);
             StepPerMS = BeatPerMS / 4;
         }
-        private void ComputePlayer1Position()
-        {
-            switch (SongInfo.BG)
-            {
-                case Map.Limo:
-                    Player1.Position += new Vector2(-220, 260) * CoordinatesScale;
-                    break;
-            }
-        }
 
         private void ComputePlayer2Position()
         {
@@ -815,7 +807,7 @@ namespace Orbis.Game
 #endif
         }
 
-        int BPMTicks;
+        public int BPMTicks { get; private set; }
 
         long BeginFadeOut = -1;
         float LastBeatProgress;

@@ -112,14 +112,16 @@ namespace Orbis
 
     static class Speaker 
     {
-        public const string GirfriendAssets = Character.GirlfriendAssets;
+        public const string GirlfriendAssets = Character.GirlfriendAssets;
+        public const string GirlCarfriendAssets = "bfCar.xml";
         public const string GirlfriendTankmanAssets = "gfTankmen.xml";
         public const string GirlfriendPixelAssets = "gfPixel.xml";
         public const string PicoAssets = "picoSpeaker.xml";
 
         public static readonly ReadOnlyDictionary<string, string> AssetsMap = new ReadOnlyDictionary<string, string>(
             new Dictionary<string, string> {
-                { "gf" , GirfriendAssets },
+                { "gf" , GirlfriendAssets },
+                { "gf-car", GirlfriendAssets },
                 { "gf-pixel" , GirlfriendPixelAssets },
                 { "gf-tankman", GirlfriendTankmanAssets },
                 { "pico", PicoAssets }
