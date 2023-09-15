@@ -1,4 +1,5 @@
 ﻿using OrbisGL;
+using OrbisGL.GL;
 
 namespace Orbis
 {
@@ -9,6 +10,7 @@ namespace Orbis
         {
 #if ORBIS
             var Display = new Entrypoint();
+            Display.ClearColor = RGBColor.Black;
             Shader.PrecompileShaders();
             Display.Run();
 #endif

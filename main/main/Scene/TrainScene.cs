@@ -166,6 +166,9 @@ namespace Orbis.Scene
 
         public override void SetZoom(float Value)
         {
+            if (Disposed)
+                return;
+            
             var ZoomVal = Coordinates2D.ParseZoomFactor(Value);
             var AditionalZoom = ZoomVal + 30;
             base.SetZoom(Coordinates2D.ParseZoomFactor(AditionalZoom));
@@ -267,6 +270,9 @@ namespace Orbis.Scene
 
         public override void Draw(long Tick)
         {
+            if (Disposed)
+                return;
+
             DoTrainAnim(Tick);
 
             int ElapsedWindowUpdateMS = (int)((Tick - LastWindowUpdate) / Constants.ORBIS_MILISECOND);

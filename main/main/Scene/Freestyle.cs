@@ -8,6 +8,7 @@ using OrbisGL.GL;
 using OrbisGL.GL2D;
 using System;
 using System.Collections.Generic;
+using System.Diagnostics;
 using System.Linq;
 using System.Numerics;
 
@@ -355,25 +356,32 @@ namespace Orbis.Scene
             {
                 MusicConfirmed = false;
 
-                SongPlayer SP = new SongPlayer(Util.GetSongByName(Songs[SelectedIndex], CurrentDifficulty));
-                SP.OnSongEnd += SongEnd;
-                
-                Application.Default.RemoveObjects();
-                Application.Default.AddObject(LoadScreen);
-
-                LoadScreen.Load(SP, () =>
-                {
-                    Application.Default.RemoveObjects();
-                    Application.Default.AddObject(SP);
-                    LastFrameTick = 0;
-                    Started = true;
-                    SP.Begin();
-                });
+                StartSong();
 
                 return;
             }
 
             base.Draw(Tick);
+        }
+
+        private void StartSong() => StartSong(Util.GetSongByName(Songs[SelectedIndex], CurrentDifficulty));
+        private void StartSong(SongInfo Song)
+        {
+            SongPlayer SP = new SongPlayer(Song);
+            SP.OnSongEnd += SongEnd;
+            SP.OnSongRestart += SongRestart;
+
+            Application.Default.RemoveObjects();
+            Application.Default.AddObject(LoadScreen);
+
+            LoadScreen.Load(SP, () =>
+            {
+                Application.Default.RemoveObjects();
+                Application.Default.AddObject(SP);
+                LastFrameTick = 0;
+                Started = true;
+                SP.Begin();
+            });
         }
 
         private void DoSongSelection(long Tick)
@@ -475,6 +483,15 @@ namespace Orbis.Scene
 
             BeginFadeIn = 0;
             Started = false;
+        }
+        
+        private void SongRestart(object sender, EventArgs e)
+        {
+            var Player = (SongPlayer)sender;
+            var Info = Player.SongInfo; 
+            Player.Dispose();
+
+            StartSong(Info);
         }
     }
 }

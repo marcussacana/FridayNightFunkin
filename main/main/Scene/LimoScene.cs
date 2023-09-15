@@ -1,4 +1,5 @@
 ﻿using ICSharpCode.SharpZipLib.Core;
+using Orbis.Audio;
 using Orbis.Game;
 using Orbis.Interfaces;
 using OrbisGL;
@@ -6,6 +7,7 @@ using OrbisGL.GL;
 using OrbisGL.GL2D;
 using System;
 using System.Collections.Generic;
+using System.IO;
 using System.Linq;
 using System.Numerics;
 using System.Runtime.InteropServices;
@@ -18,12 +20,17 @@ namespace Orbis.Scene
     {
         SongPlayer Game;
 
+        MemoryStream SFXA;
+        MemoryStream SFXB;
+
+        MemoryStream GameoverTheme;
+        MemoryStream GameoverEnd;
         public LimoScene(SongPlayer Player)
         {
             Game = Player;
         }
 
-        const int DancerDistance = 300;
+        const int DancerDistance = 350;
 
         const int FPS30 = (int)(1000f/20);
 
@@ -92,13 +99,13 @@ namespace Orbis.Scene
             LimoBG.FrameDelay = FPS30;
             LimoDriver.FrameDelay = FPS30;
 
-            LimoDancerA.Position = new Vector2(300, 50);
+            LimoDancerA.Position = new Vector2(200, 150);
             LimoDancerB.Position = new Vector2(LimoDancerA.Position.X + (DancerDistance * 1), LimoDancerA.Position.Y);
             LimoDancerC.Position = new Vector2(LimoDancerA.Position.X + (DancerDistance * 2), LimoDancerA.Position.Y);
             LimoDancerD.Position = new Vector2(LimoDancerA.Position.X + (DancerDistance * 3), LimoDancerA.Position.Y);
 
 
-            LimoBG.Position = new Vector2(0, LimoDancerA.Rectangle.Bottom - 30);
+            LimoBG.Position = new Vector2(-100, LimoDancerA.Rectangle.Bottom - 30);
 
             LimoDriver.Position = new Vector2(-500, 320);
 
@@ -125,19 +132,25 @@ namespace Orbis.Scene
 
             Car.Position = new Vector2(1920, 500);
 
+            SFXA = SFXHelper.Default.GetSFX(SFXType.CarPass0);
+            SFXB = SFXHelper.Default.GetSFX(SFXType.CarPass1);
+
             Loaded = true;
             OnProgressChanged?.Invoke(5);
         }
 
         public override void SetZoom(float Value = 1)
         {
+            if (Disposed)
+                return;
+            
             SunBG.SetZoom(Value);
         }
 
         public void SetCharacterPosition(TiledSpriteAtlas2D Player1, TiledSpriteAtlas2D Player2, TiledSpriteAtlas2D Speaker)
         {
             Speaker.Position += new Vector2(-50, 100);
-            Player2.Position += new Vector2(250, -50);
+            Player2.Position += new Vector2(200, -50);
             Player1.Position += new Vector2(300, -250);
             Speaker.AddChild(LimoDriver);
             LimoDriver.SetZoom(1.0f);
@@ -145,22 +158,39 @@ namespace Orbis.Scene
 
         long LastCarPassTick;
         int CarPassDelayMS;
-        const int CarPassDuration = 600;
-        const int TotalDeltaCarX = -3500;
+        const int CarPassDuration = 500;
+        const int TotalDeltaCarX = 3200;
+        const int CarPassSoundDelay = 1000;
+        bool CarPassSoundStarted = false;
 
         Random Rand = new Random();
 
         public override void Draw(long Tick)
         {
+            if (Disposed)
+                return;
+            
             DoDancerAnim(Tick);
 
             if (CarPassDelayMS == 0)
             {
-                CarPassDelayMS = Rand.Next(5000, 15000);
+                CarPassDelayMS = Rand.Next(5000, 15000) + CarPassSoundDelay;
                 LastCarPassTick = Tick;
+                CarPassSoundStarted = false;
             }
 
             int CarPassElapsedMS = (int)((Tick - LastCarPassTick) / Constants.ORBIS_MILISECOND);
+
+            if (!CarPassSoundStarted && CarPassElapsedMS > CarPassDelayMS - CarPassSoundDelay)
+            {
+                CarPassSoundStarted = true;
+
+                var Sound = Rand.NextDouble() > 0.5f ? SFXA : SFXB;
+                Sound.Position = 0;
+
+                Game.MusicPlayer?.PlayPassiveSFX(Sound);
+                Game.MusicPlayer?.SetPassiveSFXVol(0.40f);
+            }
 
             if (CarPassElapsedMS > CarPassDelayMS)
             {
@@ -174,7 +204,7 @@ namespace Orbis.Scene
                     CarPassDelayMS = 0;
                 }
 
-                Car.Position = new Vector2(1920 + (TotalDeltaCarX * Progress), Car.Position.Y);
+                Car.Position = new Vector2(-1280 + (TotalDeltaCarX * Progress), Car.Position.Y);
             }
 
             base.Draw(Tick);
@@ -192,11 +222,6 @@ namespace Orbis.Scene
                 LimoDancerC?.NextFrame();
                 LimoDancerD?.NextFrame();
             }
-        }
-
-        public void Dispose()
-        {
-
         }
     }
 }

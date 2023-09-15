@@ -78,7 +78,6 @@ namespace Orbis
                     RIGHT = "BF NOTE RIGHT";
                     RIGHT_MISS = "BF NOTE RIGHT MISS";
                     UP = "BF NOTE UP";
-                    DIES = DEAD = DEAD_CONFIRM = UP_MISS = "BF NOTE UP MISS";
                     break;
                 case "bf":
                     SHAKING = "BF idle shaking";

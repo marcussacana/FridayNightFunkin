@@ -65,6 +65,9 @@ namespace Orbis.Scene
 
         public override void SetZoom(float Factor)
         {
+            if (Disposed)
+                return;
+
             var ZoomLevel = Coordinates2D.ParseZoomFactor(Factor);
             var Plus5Percent = Coordinates2D.ParseZoomFactor(ZoomLevel + 5);
 
@@ -113,6 +116,9 @@ namespace Orbis.Scene
 
         public override void Draw(long Tick)
         {
+            if (Disposed)
+                return;
+
             if (Game.Started)
             {
                 if (CurrentDelay == 0)

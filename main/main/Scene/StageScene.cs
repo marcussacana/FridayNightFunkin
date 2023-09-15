@@ -72,6 +72,14 @@ namespace Orbis.Scene
             //default map, no changes
         }
 
+        public override void Draw(long Tick)
+        {
+            if (Disposed)
+                return;
+
+            base.Draw(Tick);
+        }
+
         public override void Dispose()
         {
             StageBackTex?.Dispose();

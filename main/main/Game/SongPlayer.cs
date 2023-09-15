@@ -14,7 +14,9 @@ namespace Orbis.Game
     public class SongPlayer : GLObject2D, ILoadable
     {
         public event EventHandler OnSongEnd;
+        public event EventHandler OnSongRestart;
 
+        private bool Restart = false;
         bool Ended = false;
 
         SFXHelper SFX => SFXHelper.Default;
@@ -40,11 +42,17 @@ namespace Orbis.Game
 
         GLObject2D BGObject;
 
-        TiledSpriteAtlas2D Speaker;
-        TiledSpriteAtlas2D Player1;
-        TiledSpriteAtlas2D Player2;
+        bool ForceBoyfriend = false;
 
-        internal CharacterAnim Player1Anim { get; private set; }
+        TiledSpriteAtlas2D Speaker;
+        TiledSpriteAtlas2D _Player1;
+        TiledSpriteAtlas2D Player1 { get => ForceBoyfriend ? Boyfriend : _Player1; set => _Player1 = value; }
+        TiledSpriteAtlas2D Player2;
+        TiledSpriteAtlas2D Boyfriend;
+
+        CharacterAnim _Player1Anim;
+        internal CharacterAnim BoyfriendAnim { get; private set; }
+        internal CharacterAnim Player1Anim { get => ForceBoyfriend ? BoyfriendAnim : _Player1Anim; private set => _Player1Anim = value; }
         internal CharacterAnim Player2Anim { get; private set; }
         internal CharacterAnim SpeakerAnim { get; private set; }
 
@@ -325,13 +333,13 @@ namespace Orbis.Game
 
             if (IsPlayer1)
             {
-                Player1CurrentAnim = Player1Anim.DIES;
+                Player1CurrentAnim = Player1Anim.DIES ?? BoyfriendAnim?.DIES;
                 AnimationChanged = true;
                 UpdateAnimations();
             }
             else
             {
-                Player2CurrentAnim = Player2Anim.DIES;
+                Player2CurrentAnim = Player2Anim.DIES ?? BoyfriendAnim?.DIES;
                 AnimationChanged = true;
                 UpdateAnimations();
             }
@@ -362,10 +370,21 @@ namespace Orbis.Game
                 {
                     DiePlayerPos += Player1Anim.GetAnimOffset(Player1Anim.DIES);
                     DiePlayerPos -= Player1Anim.GetAnimOffset(Player1Anim.DEAD);
+                    
+#if ORBIS
+                    MusicPlayer.PlayOther(SFX.GetSFX(SFXType.DeadLoop));
+#endif
 
                     Player1CurrentAnim = Player1Anim.DEAD;
                     AnimationChanged = true;
                     UpdateAnimations();
+                    return;
+                }
+                
+                if (Player1.CurrentSprite == Player1Anim.DEAD_CONFIRM)
+                {
+                    Restart = true;
+                    Ended = true;
                     return;
                 }
             }
@@ -494,50 +513,42 @@ namespace Orbis.Game
         {
             if (DieTime == 0)
             {
-                switch (Args.Button)
-                {
-                    case OrbisPadButton.Triangle:
-                    case OrbisPadButton.Up:
-                        Player1Menu.SetPress(Note.Up);
-                        break;
-                    case OrbisPadButton.Square:
-                    case OrbisPadButton.Left:
-                        Player1Menu.SetPress(Note.Left);
-                        break;
-                    case OrbisPadButton.Circle:
-                    case OrbisPadButton.Right:
-                        Player1Menu.SetPress(Note.Right);
-                        break;
-                    case OrbisPadButton.Cross:
-                    case OrbisPadButton.Down:
-                        Player1Menu.SetPress(Note.Down);
-                        break;
-                }
+                //While keyboard key up/down event is triggred by individual buttons,
+                //the Gamepad events are triggered by state change, so it may hold more
+                //than one button pressed/released, therefore switch should not be used
+                if (Args.Button.HasFlag(OrbisPadButton.Triangle) || Args.Button.HasFlag(OrbisPadButton.Up))
+                    Player1Menu.SetPress(Note.Up);
+                if (Args.Button.HasFlag(OrbisPadButton.Square) || Args.Button.HasFlag(OrbisPadButton.Left))
+                    Player1Menu.SetPress(Note.Left);
+                if (Args.Button.HasFlag(OrbisPadButton.Circle) || Args.Button.HasFlag(OrbisPadButton.Right))
+                    Player1Menu.SetPress(Note.Right);
+                if (Args.Button.HasFlag(OrbisPadButton.Cross) || Args.Button.HasFlag(OrbisPadButton.Down))
+                    Player1Menu.SetPress(Note.Down);
             }
         }
         private void Gamepad_OnButtonUp(object Sender, ButtonEventArgs Args)
         {
             if (DieTime == 0)
             {
-                switch (Args.Button)
-                {
-                    case OrbisPadButton.Triangle:
-                    case OrbisPadButton.Up:
-                        Player1Menu.UnsetPress(Note.Up);
-                        break;
-                    case OrbisPadButton.Square:
-                    case OrbisPadButton.Left:
-                        Player1Menu.UnsetPress(Note.Left);
-                        break;
-                    case OrbisPadButton.Circle:
-                    case OrbisPadButton.Right:
-                        Player1Menu.UnsetPress(Note.Right);
-                        break;
-                    case OrbisPadButton.Cross:
-                    case OrbisPadButton.Down:
-                        Player1Menu.UnsetPress(Note.Down);
-                        break;
-                }
+                if (Args.Button.HasFlag(OrbisPadButton.Triangle) || Args.Button.HasFlag(OrbisPadButton.Up))
+                    Player1Menu.UnsetPress(Note.Up);
+                if (Args.Button.HasFlag(OrbisPadButton.Square) || Args.Button.HasFlag(OrbisPadButton.Left))
+                    Player1Menu.UnsetPress(Note.Left);
+                if (Args.Button.HasFlag(OrbisPadButton.Circle) || Args.Button.HasFlag(OrbisPadButton.Right))
+                    Player1Menu.UnsetPress(Note.Right);
+                if (Args.Button.HasFlag(OrbisPadButton.Cross) || Args.Button.HasFlag(OrbisPadButton.Down))
+                    Player1Menu.UnsetPress(Note.Down);
+            } else if (Args.Button.HasFlag(OrbisPadButton.Options) || Args.Button.HasFlag(OrbisPadButton.Cross))
+            {
+                MusicPlayer.Pause();
+                MusicPlayer.PlayPassiveSFX(SFX.GetSFX(SFXType.DeadRetry));
+                
+                if (Player1Dead)
+                    Player1.SetActiveAnimation(Player1Anim.DEAD_CONFIRM);
+                else
+                    Player2.SetActiveAnimation(Player2Anim.DEAD_CONFIRM);
+                
+                UpdateAnimations();
             }
         }
 
@@ -561,6 +572,13 @@ namespace Orbis.Game
 
             Player1Anim = new CharacterAnim(SongInfo.Player1);
             SpeakerAnim = new CharacterAnim(SongInfo.Speaker);
+
+            if (Player1Anim.DIES == null || Player1Anim.DEAD == null || Player1Anim.DEAD_CONFIRM == null)
+            {
+                BoyfriendAnim = new CharacterAnim("bf");
+                Boyfriend = new TiledSpriteAtlas2D(Util.GetXML(Character.BoyfriendAssets), Util.CopyFileToMemory, false);
+                Boyfriend.OnAnimationEnd += OnAnimEnd;
+            }
 
             if (HasPlayer2)
                 Player2Anim = new CharacterAnim(SongInfo.Player2);
@@ -635,11 +653,37 @@ namespace Orbis.Game
             string PrefixOnlyAnimation = $"{Player1AnimPrefix}{Player1CurrentAnim}";
             string SuffixOnlyAnimation = $"{Player1CurrentAnim}{Player1AnimSufix}";
 
-            if (!Player1.SetActiveAnimation(FullAnimationName) &&
-                !Player1.SetActiveAnimation(PrefixOnlyAnimation) &&
-                !Player1.SetActiveAnimation(SuffixOnlyAnimation))
+            bool AnimFound = true;
+
+            if (!_Player1.SetActiveAnimation(FullAnimationName) &&
+                !_Player1.SetActiveAnimation(PrefixOnlyAnimation) &&
+                !_Player1.SetActiveAnimation(SuffixOnlyAnimation))
             {
-                Player1.SetActiveAnimation(Player1CurrentAnim);
+                if (!_Player1.SetActiveAnimation(Player1CurrentAnim))
+                {
+                    AnimFound = false;
+                    //No animation found in this player 1 sprite, fallback to boyfriend default
+                    if (Boyfriend.SetActiveAnimation(Player1CurrentAnim))
+                    {
+                        Boyfriend.SetZoom(Player1.Zoom);
+                        Boyfriend.Position = Player1.Position;
+
+                        AddChild(Boyfriend);
+                        RemoveChild(Boyfriend);
+                        ForceBoyfriend = true;
+                    }
+                }
+            }
+
+            if (AnimFound && ForceBoyfriend)
+            {
+                _Player1.SetZoom(Boyfriend.Zoom);
+                _Player1.Position = Boyfriend.Position;
+
+                RemoveChild(Boyfriend);
+                AddChild(_Player1);
+
+                ForceBoyfriend = false;
             }
 
             if (HasPlayer2)
@@ -833,6 +877,9 @@ namespace Orbis.Game
             ExecuteDeadAnim(Tick);
             DoFadeOut(Tick);
 
+            if (Disposed)
+                return;
+
             if (Tick > NextUpdateFrame)
             {
                 if (NextUpdateFrame == 0)
@@ -905,7 +952,13 @@ namespace Orbis.Game
                     if (Ended)
                     {
                         Ended = false;
-                        OnSongEnd?.Invoke(this, EventArgs.Empty);
+
+                        if (Restart)
+                            OnSongRestart?.Invoke(this, EventArgs.Empty);
+                        else
+                            OnSongEnd?.Invoke(this, EventArgs.Empty);
+                        
+                        return;
                     }
                 }
 
@@ -982,7 +1035,6 @@ namespace Orbis.Game
                 {
                     BG.Dispose();
 
-
                     if (Player1Dead)
                     {
                         Fade.AddChild(Player1);
@@ -1037,8 +1089,9 @@ namespace Orbis.Game
 
             BG?.Dispose();
             Speaker?.Dispose();
-            Player1?.Dispose();
+            _Player1?.Dispose();
             Player2?.Dispose();
+            Boyfriend?.Dispose();
             Player1Menu?.Dispose();
             Player2Menu?.Dispose();
             MusicPlayer?.Dispose();
