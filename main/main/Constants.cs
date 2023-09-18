@@ -19,6 +19,7 @@ namespace Orbis
         public const string MonsterChristmasAssets = "monsterChristmas.xml";
         public const string MomAssets = "Mom_Assets.xml";
         public const string MomCarAssets = "momCar.xml";
+        public const string ParentsChristmasAssets = "mom_dad_christmas_assets.xml";
         public const string PicoAssets = "Pico_FNF_assetss.xml";
         public const string Senpai = "senpai.xml";
 
@@ -51,7 +52,8 @@ namespace Orbis
                 { "senpai", Senpai},
                 { "senpai-angry" , Senpai },
                 { "spooky" , SpookyKidsAssets },
-                { "gf" , GirlfriendAssets }
+                { "gf" , GirlfriendAssets },
+                { "parents-christmas", ParentsChristmasAssets }
             });
 
         public static readonly ReadOnlyDictionary<string, string> IconMap = new ReadOnlyDictionary<string, string>(
@@ -69,7 +71,8 @@ namespace Orbis
                 { "senpai", SenpaiIcon },
                 { "senpai-angry" , SenpaiIcon },
                 { "spooky" , SpookyIcon },
-                { "gf" , GirlfriendIcon }
+                { "gf" , GirlfriendIcon },
+                { "parents-christmas", ParentsIcon }
             });
     }
 
@@ -113,7 +116,8 @@ namespace Orbis
     static class Speaker 
     {
         public const string GirlfriendAssets = Character.GirlfriendAssets;
-        public const string GirlCarfriendAssets = "bfCar.xml";
+        public const string GirlfriendChristmas = "gfChristmas.xml";
+        public const string GirlfriendCarAssets = "bfCar.xml";
         public const string GirlfriendTankmanAssets = "gfTankmen.xml";
         public const string GirlfriendPixelAssets = "gfPixel.xml";
         public const string PicoAssets = "picoSpeaker.xml";

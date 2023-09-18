@@ -66,9 +66,7 @@ namespace Orbis.Scene
 
             using (var Stream = Util.CopyFileToMemory("fastCarLol.dds"))
             {
-                Car = new Texture2D();
-                Car.Texture = new Texture(true);
-                Car.Texture.SetDDS(Stream, true);
+                Car = new Texture2D(Stream, true);
                 Car.RefreshVertex();
             }
 
@@ -76,9 +74,7 @@ namespace Orbis.Scene
 
             using (var Stream = Util.CopyFileToMemory("limoSunset.dds"))
             {
-                SunBG = new Texture2D();
-                SunBG.Texture = new Texture(true);
-                SunBG.Texture.SetDDS(Stream, true);
+                SunBG = new Texture2D(Stream, true);
                 SunBG.RefreshVertex();
             }
 
@@ -185,11 +181,14 @@ namespace Orbis.Scene
             {
                 CarPassSoundStarted = true;
 
-                var Sound = Rand.NextDouble() > 0.5f ? SFXA : SFXB;
-                Sound.Position = 0;
+                if (Game.MusicPlayer != null)
+                {
+                    var Sound = Rand.NextDouble() > 0.5f ? SFXA : SFXB;
+                    Sound.Position = 0;
 
-                Game.MusicPlayer?.PlayPassiveSFX(Sound);
-                Game.MusicPlayer?.SetPassiveSFXVol(0.40f);
+                    Game.MusicPlayer.PlayPassiveSFX(Sound);
+                    Game.MusicPlayer.SetPassiveSFXVol(0.40f);
+                }
             }
 
             if (CarPassElapsedMS > CarPassDelayMS)

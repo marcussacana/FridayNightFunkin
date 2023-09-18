@@ -112,6 +112,9 @@ namespace Orbis.Game
                 case Map.Limo:
                     BG = (IScene)(BGObject = new LimoScene(this));
                     break;
+                case Map.Christmas:
+                    BG = (IScene)(BGObject = new Christmas(this));
+                    break;
                 default:
                     throw new NotImplementedException();
             };

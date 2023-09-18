@@ -282,6 +282,7 @@ namespace Orbis
                 "assets/week2/images",
                 "assets/week3/images/philly",
                 "assets/week4/images/limo",
+                "assets/week5/images/christmas",
                 "assets/",
             };
 
@@ -350,6 +351,10 @@ namespace Orbis
                     case "high":
                     case "milf":
                         Song.BG = Map.Limo;
+                        break;
+                    case "cocoa":
+                    case "eggnog":
+                        Song.BG = Map.Christmas;
                         break;
                 }
 

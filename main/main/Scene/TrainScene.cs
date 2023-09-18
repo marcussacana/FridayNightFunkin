@@ -49,90 +49,52 @@ namespace Orbis.Scene
                 return;
 
             using (var Data = Util.CopyFileToMemory("sky.dds"))
-            {
-                Sky = new Texture2D();
-                Sky.Texture = new Texture(true);
-                Sky.Texture.SetDDS(Data, true);
-            }
+                Sky = new Texture2D(Data, true);
 
             OnProgressChanged?.Invoke(1);
 
             using (var Data = Util.CopyFileToMemory("city.dds"))
-            {
-                City = new Texture2D();
-                City.Texture = new Texture(true);
-                City.Texture.SetDDS(Data, true);
-            }
+                City = new Texture2D(Data, true);
+            
 
             OnProgressChanged?.Invoke(2);
 
             using (var Data = Util.CopyFileToMemory("behindTrain.dds"))
-            {
-                BehindTrain = new Texture2D();
-                BehindTrain.Texture = new Texture(true);
-                BehindTrain.Texture.SetDDS(Data, true);
-            }
+                BehindTrain = new Texture2D(Data, true);
+            
 
             OnProgressChanged?.Invoke(3);
 
             using (var Data = Util.CopyFileToMemory("train.dds"))
-            {
-                Train = new Texture2D();
-                Train.Texture = new Texture(true);
-                Train.Texture.SetDDS(Data, true);
-            }
+                Train = new Texture2D(Data, true);
 
             using (var Data = Util.CopyFileToMemory("street.dds"))
-            {
-                Street = new Texture2D();
-                Street.Texture = new Texture(true);
-                Street.Texture.SetDDS(Data, true);
-            }
+                Street = new Texture2D(Data, true);
 
             OnProgressChanged?.Invoke(4);
 
             using (var Data = Util.CopyFileToMemory("win0.dds"))
-            {
-                WindowA = new Texture2D();
-                WindowA.Texture = new Texture(true);
-                WindowA.Texture.SetDDS(Data, true);
-            }
+                WindowA = new Texture2D(Data, true);
 
             OnProgressChanged?.Invoke(5);
 
             using (var Data = Util.CopyFileToMemory("win1.dds"))
-            {
-                WindowB = new Texture2D();
-                WindowB.Texture = new Texture(true);
-                WindowB.Texture.SetDDS(Data, true);
-            }
+                WindowB = new Texture2D(Data, true);
 
             OnProgressChanged?.Invoke(6);
 
             using (var Data = Util.CopyFileToMemory("win2.dds"))
-            {
-                WindowC = new Texture2D();
-                WindowC.Texture = new Texture(true);
-                WindowC.Texture.SetDDS(Data, true);
-            }
+                WindowC = new Texture2D(Data, true);
 
             OnProgressChanged?.Invoke(7);
 
             using (var Data = Util.CopyFileToMemory("win3.dds"))
-            {
-                WindowD = new Texture2D();
-                WindowD.Texture = new Texture(true);
-                WindowD.Texture.SetDDS(Data, true);
-            }
+                WindowD = new Texture2D(Data, true);
 
             OnProgressChanged?.Invoke(8);
 
             using (var Data = Util.CopyFileToMemory("win4.dds"))
-            {
-                WindowE = new Texture2D();
-                WindowE.Texture = new Texture(true);
-                WindowE.Texture.SetDDS(Data, true);
-            }
+                WindowE = new Texture2D(Data, true);
 
             AddChild(Sky);
             AddChild(City);

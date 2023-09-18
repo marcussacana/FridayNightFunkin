@@ -1,65 +1,30 @@
-﻿using System;
-using System.Collections.Generic;
-using System.ComponentModel;
-using System.ComponentModel.Design;
-using System.Linq;
+﻿using System.Collections.Generic;
 using System.Numerics;
 using System.Text;
-using System.Threading.Tasks;
 
 namespace Orbis
 {
     public class CharacterAnim
     {
-        public Vector2 SHAKING_OFFSET { get; private set; } = Vector2.Zero;
         public string SHAKING { get; private set; }
-        public Vector2 DANCING_OFFSET { get; private set; } = Vector2.Zero;
         public string DANCING { get; private set; }
-
-        public Vector2 UP_OFFSET { get; private set; } = Vector2.Zero;
         public string UP { get; private set; }
-        public Vector2 DOWN_OFFSET { get; private set; } = Vector2.Zero;
         public string DOWN { get; private set; }
-        public Vector2 LEFT_OFFSET { get; private set; } = Vector2.Zero;
         public string LEFT { get; private set; }
-        public Vector2 RIGHT_OFFSET { get; private set; } = Vector2.Zero;
         public string RIGHT { get; private set; }
-
-        public Vector2 UP_MISS_OFFSET { get; private set; } = Vector2.Zero;
         public string UP_MISS { get; private set; }
-        public Vector2 DOWN_MISS_OFFSET { get; private set; } = Vector2.Zero;
         public string DOWN_MISS { get; private set; }
-        public Vector2 LEFT_MISS_OFFSET { get; private set; } = Vector2.Zero;
         public string LEFT_MISS { get; private set; }
-        public Vector2 RIGHT_MISS_OFFSET { get; private set; } = Vector2.Zero;
         public string RIGHT_MISS { get; private set; }
-
-        public Vector2 DIES_OFFSET { get; private set; } = Vector2.Zero;
         public string DIES { get; private set; }
-        public Vector2 DEAD_OFFSET { get; private set; } = Vector2.Zero;
         public string DEAD { get; private set; }
-        public Vector2 DEAD_CONFIRM_OFFSET { get; private set; } = Vector2.Zero;
         public string DEAD_CONFIRM { get; private set; }
-
-
-        public Vector2 PRE_ATTACK_OFFSET { get; private set; } = Vector2.Zero;
         public string PRE_ATTACK { get; private set; }
-
-        public Vector2 ATTACKING_OFFSET { get; private set; } = Vector2.Zero;
         public string ATTACKING { get; private set; }
-
-        public Vector2 DOGGLE_OFFSET { get; private set; } = Vector2.Zero;
         public string DOGGLE { get; set; }
-
-        public Vector2 HIT_OFFSET { get; private set; } = Vector2.Zero;
         public string HIT { get; private set; }
-
-        public Vector2 HEY_OFFSET { get; private set; } = Vector2.Zero;
         public string HEY { get; private set; }
-
-        public Vector2 HAIR_LANDING_OFFSET { get; private set; } = Vector2.Zero;
         public string HAIR_LANDING { get; private set; }
-        public Vector2 HAIR_BLOWING_OFFSET { get; private set; } = Vector2.Zero;
         public string HAIR_BLOWING { get; private set; }
 
         public bool Mirror { get; set; }
@@ -68,6 +33,7 @@ namespace Orbis
 
         public CharacterAnim(string Character)
         {
+            bool Alt = false;
             switch (Character) {
                 case "bf-car":
                     SHAKING = DANCING = "BF idle dance";
@@ -78,6 +44,18 @@ namespace Orbis
                     RIGHT = "BF NOTE RIGHT";
                     RIGHT_MISS = "BF NOTE RIGHT MISS";
                     UP = "BF NOTE UP";
+                    break;
+                case "bf-christmas":
+                    SHAKING = DANCING = "BF idle dance";
+                    HEY = "BF HEY!!";
+                    DOWN = "BF NOTE DOWN";
+                    DOWN_MISS = "BF NOTE DOWN MISS";
+                    LEFT = "BF NOTE LEFT";
+                    LEFT_MISS = "BF NOTE LEFT MISS";
+                    RIGHT = "BF NOTE RIGHT";
+                    RIGHT_MISS = "BF NOTE RIGHT MISS";
+                    UP = "BF NOTE UP";
+                    UP_MISS = "BF NOTE UP MISS";
                     break;
                 case "bf":
                     SHAKING = "BF idle shaking";
@@ -147,6 +125,25 @@ namespace Orbis
                     RIGHT = "Mom Pose Left";//WTF
                     UP = "Mom Up Pose";
                     break;
+                case "parents-christmas":
+                    Character = "parents-christmas";
+                    SHAKING = DANCING = "Parent Christmas Idle";
+
+                    DOWN = "Parent Down Note Dad";
+                    LEFT = "Parent Left Note Dad";
+                    RIGHT = "Parent Right Note Dad";
+                    UP = "Parent Up Note Dad";
+                    break;
+                case "parents-christmas-alt":
+                    Alt = true;
+                    Character = "parents-christmas";
+                    SHAKING = DANCING = "Parent Christmas Idle";
+
+                    DOWN = "Parent Down Note Mom";
+                    LEFT = "Parent Left Note Mom";
+                    RIGHT = "Parent Right Note Mom";
+                    UP = "Parent Up Note Mom";
+                    break;
             }
 
             string[] OffsetList;
@@ -166,90 +163,129 @@ namespace Orbis
                     Vector = new Vector2(float.Parse(Info[1]), float.Parse(Info[2]));
                 }
 
-
-                switch (Info[0])
-                {
-                    case "hey":
-                    case "cheer":
-                        HEY_OFFSET = Vector;
-                        OffsetMap[HEY ?? ""] = Vector;
-                        break;
-                    case "sad":
-                        DIES_OFFSET = DEAD_OFFSET = UP_MISS_OFFSET = DOWN_MISS_OFFSET = LEFT_MISS_OFFSET = RIGHT_MISS_OFFSET = Vector;
-                        OffsetMap[DIES ?? ""] = OffsetMap[DEAD ?? ""] = OffsetMap[UP_MISS ?? ""] = OffsetMap[DOWN_MISS ?? ""] = OffsetMap[LEFT_MISS ?? ""] = OffsetMap[RIGHT_MISS ?? ""] = Vector;
-                        break;
-                    case "idle":
-                    case "danceRight":
-                    case "danceLeft":
-                        DANCING_OFFSET = Vector;
-                        OffsetMap[DANCING ?? ""] = Vector;
-                        break;
-                    case "singUPmiss":
-                        UP_MISS_OFFSET = Vector;
-                        OffsetMap[UP_MISS ?? ""] = Vector;
-                        break;
-                    case "singRIGHTmiss":
-                        RIGHT_MISS_OFFSET = Vector;
-                        OffsetMap[RIGHT_MISS ?? ""] = Vector;
-                        break;
-                    case "singLEFTmiss":
-                        LEFT_MISS_OFFSET = Vector;
-                        OffsetMap[LEFT_MISS ?? ""] = Vector;
-                        break;
-                    case "singDOWNmiss":
-                        DOWN_MISS_OFFSET = Vector;
-                        OffsetMap[DOWN_MISS ?? ""] = Vector;
-                        break;
-                    case "singUP":
-                        UP_OFFSET = Vector;
-                        OffsetMap[UP ?? ""] = Vector;
-                        break;
-                    case "singRIGHT":
-                        RIGHT_OFFSET = Vector;
-                        OffsetMap[RIGHT ?? ""] = Vector;
-                        break;
-                    case "singLEFT":
-                        LEFT_OFFSET = Vector;
-                        OffsetMap[LEFT ?? ""] = Vector;
-                        break;
-                    case "singDOWN":
-                        DOWN_OFFSET = Vector;
-                        OffsetMap[DOWN ?? ""] = Vector;
-                        break;
-                    case "hairBlow":
-                        HAIR_BLOWING_OFFSET = Vector;
-                        OffsetMap[HAIR_BLOWING ?? ""] = Vector;
-                        break;
-                    case "hairFall":
-                        HAIR_LANDING_OFFSET = Vector;
-                        OffsetMap[HAIR_LANDING ?? ""] = Vector;
-                        break;
-                    case "scared":
-                        SHAKING_OFFSET = Vector;
-                        OffsetMap[SHAKING ?? ""] = Vector;
-
-                        if (Character != "bf")
-                        {
-                            HIT_OFFSET = Vector;
-                            OffsetMap[HIT ?? ""] = Vector;
-                        }
-
-                        break;
-                    case "firstDeath":
-                        DIES_OFFSET = Vector;
-                        OffsetMap[DIES ?? ""] = Vector;
-                        break;
-                    case "deathLoop":
-                        DEAD_OFFSET = Vector;
-                        OffsetMap[DEAD ?? ""] = Vector;
-                        break;
-                    case "deathConfirm":
-                        DEAD_CONFIRM_OFFSET = Vector;
-                        OffsetMap[DEAD_CONFIRM ?? ""] = Vector;
-                        break;
-                }
+                ParseOffset(Character, Info, Vector);
             }
 
+            if (Alt)
+            {
+                foreach (var Line in OffsetList)
+                {
+                    var Info = Line.Split(' ', '\t');
+                    var Vector = Vector2.Zero;
+
+                    if (Info.Length >= 3)
+                    {
+                        Vector = new Vector2(float.Parse(Info[1]), float.Parse(Info[2]));
+                    }
+
+                    if (Info[0].EndsWith("-alt"))
+                    {
+                        Info[0] = Info[0].Substring(0, Info[0].IndexOf("-alt"));
+                        ParseOffset(Character, Info, Vector);
+                    }
+                }
+            }
+        }
+
+        private void ParseOffset(string Character, string[] Info, Vector2 Value)
+        {
+            switch (Info[0])
+            {
+                case "hey":
+                case "cheer":
+                    OffsetMap[HEY ?? ""] = Value;
+                    break;
+                case "sad":                    
+                    OffsetMap[DIES ?? ""] = OffsetMap[DEAD ?? ""] = OffsetMap[UP_MISS ?? ""] = OffsetMap[DOWN_MISS ?? ""] = OffsetMap[LEFT_MISS ?? ""] = OffsetMap[RIGHT_MISS ?? ""] = Value;
+                    break;
+                case "idle":
+                case "danceRight":
+                case "danceLeft":
+                    OffsetMap[DANCING ?? ""] = Value;
+                    break;
+                case "singUPmiss":
+                    OffsetMap[UP_MISS ?? ""] = Value;
+                    break;
+                case "singRIGHTmiss":
+                    OffsetMap[RIGHT_MISS ?? ""] = Value;
+                    break;
+                case "singLEFTmiss":
+                    OffsetMap[LEFT_MISS ?? ""] = Value;
+                    break;
+                case "singDOWNmiss":
+                    OffsetMap[DOWN_MISS ?? ""] = Value;
+                    break;
+                case "singUP":
+                    OffsetMap[UP ?? ""] = Value;
+                    break;
+                case "singRIGHT":
+                    OffsetMap[RIGHT ?? ""] = Value;
+                    break;
+                case "singLEFT":
+                    OffsetMap[LEFT ?? ""] = Value;
+                    break;
+                case "singDOWN":
+                    OffsetMap[DOWN ?? ""] = Value;
+                    break;
+                case "hairBlow":
+                    OffsetMap[HAIR_BLOWING ?? ""] = Value;
+                    break;
+                case "hairFall":
+                    OffsetMap[HAIR_LANDING ?? ""] = Value;
+                    break;
+                case "scared":
+                    OffsetMap[SHAKING ?? ""] = Value;
+
+                    if (Character != "bf")                    
+                        OffsetMap[HIT ?? ""] = Value;
+
+                    break;
+                case "firstDeath":
+                    OffsetMap[DIES ?? ""] = Value;
+                    break;
+                case "deathLoop":
+                    OffsetMap[DEAD ?? ""] = Value;
+                    break;
+                case "deathConfirm":
+                    OffsetMap[DEAD_CONFIRM ?? ""] = Value;
+                    break;
+            }
+        }
+
+        public void CopyAnimFrom(CharacterAnim Source)
+        {
+            foreach (var Offset in Source.OffsetMap)
+            {
+                OffsetMap[Offset.Key] = Offset.Value;
+            }
+
+            SHAKING = Source.SHAKING;
+            DANCING = Source.DANCING;
+            UP = Source.UP;
+            DOWN = Source.DOWN;
+            LEFT = Source.LEFT;
+            RIGHT = Source.RIGHT;
+            UP_MISS = Source.UP_MISS;
+            DOWN_MISS = Source.DOWN_MISS;
+            LEFT_MISS = Source.LEFT_MISS;
+            RIGHT_MISS = Source.RIGHT_MISS;
+            DIES = Source.DIES;
+            DEAD = Source.DEAD;
+            DEAD_CONFIRM = Source.DEAD_CONFIRM;
+
+
+            PRE_ATTACK = Source.PRE_ATTACK;
+
+            ATTACKING = Source.ATTACKING;
+
+            DOGGLE = Source.DOGGLE;
+
+            HIT = Source.HIT;
+
+            HEY = Source.HEY;
+
+            HAIR_LANDING = Source.HAIR_LANDING;
+            HAIR_BLOWING = Source.HAIR_BLOWING;
         }
 
         public void AddOffsetAlias(string OriAnimation, string TargetAnimation)
