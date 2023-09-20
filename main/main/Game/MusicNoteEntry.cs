@@ -23,6 +23,8 @@ namespace Orbis.Game
 
         public bool Hitted { get; set; }
 
+        public bool AltAnimation { get; set; }
+
         const float HitZoneOffset = ((10f / 60) * 1000);
 
         const float GoodDistance = HitZoneOffset * 0.2f;
@@ -39,6 +41,7 @@ namespace Orbis.Game
         long SongBeginTick;
 
         public event EventHandler OnNoteElapsed;
+        public event EventHandler OnNoteHeaderElapsed;
         public event EventHandler OnNoteReached;
 
         public SongNoteEntry(GLObject2D Render, Note Type, float TargetMS, float DurationMS, float YPerMS)
@@ -165,8 +168,11 @@ namespace Orbis.Game
                     OnNoteReached?.Invoke(this, EventArgs.Empty);
                 }
 
-                if (DistanceMS < -HitZoneOffset)
+                if (DistanceMS < -HitZoneOffset && Render.Opacity != 0)
+                {
                     Render.Opacity = 0;
+                    OnNoteHeaderElapsed?.Invoke(this, EventArgs.Empty);
+                }
 
                 if (DistanceMS + DurationMS < -HitZoneOffset)
                 {
@@ -178,13 +184,9 @@ namespace Orbis.Game
                 {
                     Render.Visible = false;
                     ComputeScore(DistanceMS);
-
-                    //Not sustain, let's dispose the note
-                    if (!BackLayer.Childs.Any())
-                    {
-                        EndNote();
-                        return;
-                    }
+                    
+                    // if we dispose the note too fast, no animation will be saw
+                    // so, let's keep the note active while it still in HitZoneOffset
 
                     SustainPoints = Score * 0.2f;
                 }

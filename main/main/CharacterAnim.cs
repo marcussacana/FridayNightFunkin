@@ -33,8 +33,16 @@ namespace Orbis
 
         public CharacterAnim(string Character)
         {
-            bool Alt = false;
-            switch (Character) {
+            SetupAnimNames(ref Character, out bool Alt);
+            SetupAnimOffsets(Character, Alt);
+        }
+
+        private void SetupAnimNames(ref string Character, out bool Alt)
+        {
+            Alt = false;
+
+            switch (Character)
+            {
                 case "bf-car":
                     SHAKING = DANCING = "BF idle dance";
                     DOWN = "BF NOTE DOWN";
@@ -145,7 +153,10 @@ namespace Orbis
                     UP = "Parent Up Note Mom";
                     break;
             }
+        }
 
+        private void SetupAnimOffsets(string Character, bool Alt)
+        {
             string[] OffsetList;
             using (var OffsetStream = Util.CopyFileToMemory($"{Character}Offsets.txt"))
             {

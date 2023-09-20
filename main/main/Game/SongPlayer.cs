@@ -42,6 +42,8 @@ namespace Orbis.Game
 
         GLObject2D BGObject;
 
+        public bool AltPlayer2 { get; set; }
+
         bool ForceBoyfriend = false;
 
         TiledSpriteAtlas2D Speaker;
@@ -50,10 +52,13 @@ namespace Orbis.Game
         TiledSpriteAtlas2D Player2;
         TiledSpriteAtlas2D Boyfriend;
 
+        CharacterAnim _Player2Anim;
+        CharacterAnim _Player2AltAnim;
+
         CharacterAnim _Player1Anim;
         internal CharacterAnim BoyfriendAnim { get; private set; }
         internal CharacterAnim Player1Anim { get => ForceBoyfriend ? BoyfriendAnim : _Player1Anim; private set => _Player1Anim = value; }
-        internal CharacterAnim Player2Anim { get; private set; }
+        internal CharacterAnim Player2Anim { get => AltPlayer2 ? _Player2AltAnim : _Player2Anim ; private set => _Player2Anim = value; }
         internal CharacterAnim SpeakerAnim { get; private set; }
 
         bool HasPlayer2 => Player2 != null;
@@ -71,13 +76,6 @@ namespace Orbis.Game
         Vector2 Player1AnimOffset;
         Vector2 Player2AnimOffset;
         Vector2 SpeakerAnimOffset;
-
-        string Player1AnimPrefix = string.Empty;
-        string Player2AnimPrefix = string.Empty;
-        string SpeakerAnimPrefix = string.Empty;
-        string Player1AnimSufix = string.Empty;
-        string Player2AnimSufix = string.Empty;
-        string SpeakerAnimSufix = string.Empty;
 
         string Player1CurrentAnim = string.Empty;
         string Player2CurrentAnim = string.Empty;
@@ -584,7 +582,15 @@ namespace Orbis.Game
             }
 
             if (HasPlayer2)
+            {
                 Player2Anim = new CharacterAnim(SongInfo.Player2);
+
+                try
+                {
+                    _Player2AltAnim = new CharacterAnim(SongInfo.Player2 + "-alt");
+                }
+                catch { }
+            }
 
             ComputePlayer2Position();
 
@@ -652,29 +658,20 @@ namespace Orbis.Game
 
             AnimationChanged = false;
 
-            string FullAnimationName = $"{Player1AnimPrefix}{Player1CurrentAnim}{Player1AnimSufix}";
-            string PrefixOnlyAnimation = $"{Player1AnimPrefix}{Player1CurrentAnim}";
-            string SuffixOnlyAnimation = $"{Player1CurrentAnim}{Player1AnimSufix}";
-
             bool AnimFound = true;
 
-            if (!_Player1.SetActiveAnimation(FullAnimationName) &&
-                !_Player1.SetActiveAnimation(PrefixOnlyAnimation) &&
-                !_Player1.SetActiveAnimation(SuffixOnlyAnimation))
+            if (!_Player1.SetActiveAnimation(Player1CurrentAnim))
             {
-                if (!_Player1.SetActiveAnimation(Player1CurrentAnim))
+                AnimFound = false;
+                //No animation found in this player 1 sprite, fallback to boyfriend default
+                if (Boyfriend.SetActiveAnimation(Player1CurrentAnim))
                 {
-                    AnimFound = false;
-                    //No animation found in this player 1 sprite, fallback to boyfriend default
-                    if (Boyfriend.SetActiveAnimation(Player1CurrentAnim))
-                    {
-                        Boyfriend.SetZoom(Player1.Zoom);
-                        Boyfriend.Position = Player1.Position;
+                    Boyfriend.SetZoom(Player1.Zoom);
+                    Boyfriend.Position = Player1.Position;
 
-                        AddChild(Boyfriend);
-                        RemoveChild(Boyfriend);
-                        ForceBoyfriend = true;
-                    }
+                    AddChild(Boyfriend);
+                    RemoveChild(Boyfriend);
+                    ForceBoyfriend = true;
                 }
             }
 
@@ -691,28 +688,10 @@ namespace Orbis.Game
 
             if (HasPlayer2)
             {
-                FullAnimationName = $"{Player2AnimPrefix}{Player2CurrentAnim}{Player2AnimSufix}";
-                PrefixOnlyAnimation = $"{Player2AnimPrefix}{Player2CurrentAnim}";
-                SuffixOnlyAnimation = $"{Player2CurrentAnim}{Player2AnimSufix}";
-
-                if (!Player2.SetActiveAnimation(FullAnimationName) &&
-                    !Player2.SetActiveAnimation(PrefixOnlyAnimation) &&
-                    !Player2.SetActiveAnimation(SuffixOnlyAnimation))
-                {
-                    Player2.SetActiveAnimation(Player2CurrentAnim);
-                }
+                Player2.SetActiveAnimation(Player2CurrentAnim);
             }
 
-            FullAnimationName = $"{SpeakerAnimPrefix}{SpeakerCurrentAnim}{SpeakerAnimSufix}";
-            PrefixOnlyAnimation = $"{SpeakerAnimPrefix}{SpeakerCurrentAnim}";
-            SuffixOnlyAnimation = $"{SpeakerCurrentAnim}{SpeakerAnimSufix}";
-
-            if (!Speaker.SetActiveAnimation(FullAnimationName) &&
-                !Speaker.SetActiveAnimation(PrefixOnlyAnimation) &&
-                !Speaker.SetActiveAnimation(SuffixOnlyAnimation))
-            {
-                Speaker.SetActiveAnimation(SpeakerCurrentAnim);
-            }
+            Speaker.SetActiveAnimation(SpeakerCurrentAnim);
 
             var P1Offset = Player1Anim.GetAnimOffset(Player1.CurrentSprite);
             var P2Offset = Player2Anim?.GetAnimOffset(Player2.CurrentSprite);
@@ -802,20 +781,14 @@ namespace Orbis.Game
             switch (Status.Target)
             {
                 case EventTarget.Player1:
-                    Player1AnimPrefix = Status.AnimationPrefix;
-                    Player1AnimSufix = Status.AnimationSufix;
                     if (!string.IsNullOrWhiteSpace(Status.NewAnimation))
                         Player1CurrentAnim = Status.NewAnimation;
                     break;
                 case EventTarget.Player2:
-                    Player2AnimPrefix = Status.AnimationPrefix;
-                    Player2AnimSufix = Status.AnimationSufix;
                     if (!string.IsNullOrWhiteSpace(Status.NewAnimation))
                         Player2CurrentAnim = Status.NewAnimation;
                     break;
                 case EventTarget.Speaker:
-                    SpeakerAnimPrefix = Status.AnimationPrefix;
-                    SpeakerAnimSufix = Status.AnimationSufix;
                     if (!string.IsNullOrWhiteSpace(Status.NewAnimation))
                         SpeakerCurrentAnim = Status.NewAnimation;
                     break;
@@ -826,6 +799,9 @@ namespace Orbis.Game
             if (sender is NoteMenu Menu)
             {
                 bool IsPlayer1 = Menu == Player1Menu;
+
+                if (!IsPlayer1)
+                    AltPlayer2 = Status.AltAnimation;
 
                 if (LastNoteIsFromPlayer1 && !IsPlayer1)
                     Player1CurrentAnim = Player1Anim.HEY;

@@ -9,6 +9,7 @@ using System.Security.Policy;
 using System.Text;
 using System.Threading.Tasks;
 using System.Xml;
+using static System.Collections.Specialized.BitVector32;
 
 namespace Orbis.Game
 {
@@ -16,7 +17,8 @@ namespace Orbis.Game
     {
         public bool CPU { get; set; }
 
-        CharacterAnim Character;
+        CharacterAnim CharAnim => IsPlayer1 ? Game.Player1Anim : Game.Player2Anim;
+
         public int Missed { get; private set; } = 0;
         public int Score { get; private set; } = 0;
         public SongPlayer Game { get; private set; }
@@ -25,6 +27,8 @@ namespace Orbis.Game
 
         public event EventHandler<SongNoteEntry> OnNoteMissed;
         public event EventHandler<SongNoteEntry> OnNoteHit;
+
+        public event EventHandler OnNoteSectionEnd;
 
         public const int NoteOffset = 155;
 
@@ -163,9 +167,7 @@ namespace Orbis.Game
         }
 
         public void SetupSong(SongData Song, bool IsPlayer1)
-        {
-            Character = new CharacterAnim(IsPlayer1 ? Song.player1 : Song.player2 ?? "gf");
-            
+        {            
             Game.ComputeStep(out int BPMS, out int SPMS);
 
             NoteCreator = CreateNotes(Song, IsPlayer1, SPMS);
@@ -173,20 +175,31 @@ namespace Orbis.Game
             EnsureEnoughtNotes();
         }
 
+        private bool FirstSection = true;
         private void EnsureEnoughtNotes()
         {
-            while (SongNotes.Count() < 20)
+            //Load up 40 notes or 2 sections
+            while (SongNotes.Count() < 40)
             {
-                if (!AddNextNote())
-                    break;
+                var Rst = AddNextNote();
+                if (Rst == null || Rst.Value == false)
+                {
+                    if (!FirstSection || Rst == false)
+                        break;
+                    
+                    FirstSection = false;
+                }
             }
         }
 
-        private bool AddNextNote()
+        private bool? AddNextNote()
         {
             if (NoteCreator.MoveNext())
             {
                 var CurNote = NoteCreator.Current;
+
+                if (CurNote == null)
+                    return null;
 
                 switch (CurNote.Type)
                 {
@@ -221,15 +234,16 @@ namespace Orbis.Game
             //var YPerMS = (SPMS / 100f * 1.5f * Song.speed) / 6; //slower, for debugging
 
 
-            foreach (var Section in Song.notes)
-            {
-                bool OwnNote = (Section.mustHitSection && IsPlayer1) || (!Section.mustHitSection && !IsPlayer1);
+            var OwnedSections = Song.notes.Where(Section => (Section.mustHitSection && IsPlayer1) || (!Section.mustHitSection && !IsPlayer1));
 
-                if (!OwnNote)
-                    continue;
+            foreach (var Section in OwnedSections)
+            {
+                var LastNote = Section.sectionNotes.Count > 0 ? Section.sectionNotes.Last() : null;
 
                 foreach (var NoteData in Section.sectionNotes)
                 {
+                    bool LastSectionNote = LastNote == NoteData;
+
                     float Milisecond = NoteData[0] + StartDelayMS;
                     float Type = NoteData[1];
                     float Duration = NoteData[2];
@@ -256,10 +270,20 @@ namespace Orbis.Game
 
                     var CurNote = new SongNoteEntry(NoteSprite.Clone(false), NType, Milisecond, Duration, YPerMS);
                     CurNote.OnNoteReached += NoteEntryReached;
+                    CurNote.OnNoteHeaderElapsed += NoteEntryHeaderElapsed;
                     CurNote.OnNoteElapsed += NoteEntryElapsed;
+                    CurNote.AltAnimation = Section.altAnim;
+
+                    if (LastSectionNote)
+                    {
+                        CurNote.OnNoteElapsed += (sender, e) => EnsureEnoughtNotes();
+                        CurNote.OnNoteElapsed += (sender, e) => OnNoteSectionEnd?.Invoke(this, e);
+                    }
 
                     yield return CurNote;
                 }
+
+                yield return null;
             }
         }
 
@@ -270,15 +294,16 @@ namespace Orbis.Game
             if (CPU)
                 SetPress(ReachedNote.Type);
         }
-        private void NoteEntryElapsed(object sender, EventArgs e)
+
+        private void NoteEntryHeaderElapsed(object sender, EventArgs e)
         {
             var ElapsedNote = ((SongNoteEntry)sender);
             var NoteScore = (int)ElapsedNote.Score;
 
-
             var NewState = new NewStatusEvent();
+            NewState.AltAnimation = Game.AltPlayer2 = ElapsedNote.AltAnimation;
             NewState.Target = IsPlayer1 ? EventTarget.Player1 : EventTarget.Player2;
-            NewState.NewAnimation = Character.DANCING;
+            NewState.NewAnimation = CharAnim.DANCING;
 
             if (NoteScore == 0)
             {
@@ -294,13 +319,23 @@ namespace Orbis.Game
                 SetPlayerHit(ElapsedNote, NewState);
             }
 
+            //Reset Score count because the NoteEntryElapsed should sum only the sustain note;
+            ElapsedNote.Score = 0;
+        }
+
+        private void NoteEntryElapsed(object sender, EventArgs e)
+        {
+            var ElapsedNote = ((SongNoteEntry)sender);
+            var NoteScore = (int)ElapsedNote.Score;
+
+            Score += NoteScore;
+
             if (CPU)
             {
                 UnsetPress(ElapsedNote.Type);
             }
 
             DeleteNote(ElapsedNote);
-            EnsureEnoughtNotes();
         }
 
         private void DeleteNote(SongNoteEntry Target)
@@ -329,16 +364,16 @@ namespace Orbis.Game
             switch (ElapsedNote.Type)
             {
                 case Note.Up:
-                    NewState.NewAnimation = Character.UP;
+                    NewState.NewAnimation = CharAnim.UP;
                     break;
                 case Note.Down:
-                    NewState.NewAnimation = Character.DOWN;
+                    NewState.NewAnimation = CharAnim.DOWN;
                     break;
                 case Note.Left:
-                    NewState.NewAnimation = Character.LEFT;
+                    NewState.NewAnimation = CharAnim.LEFT;
                     break;
                 case Note.Right:
-                    NewState.NewAnimation = Character.RIGHT;
+                    NewState.NewAnimation = CharAnim.RIGHT;
                     break;
             }
 
@@ -350,13 +385,13 @@ namespace Orbis.Game
             switch (ElapsedNote.Type)
             {
                 case Note.Up:
-                    NewState.NewAnimation = Character.UP_MISS;
+                    NewState.NewAnimation = CharAnim.UP_MISS;
                     break;
                 case Note.Down:
-                    NewState.NewAnimation = Character.DOWN_MISS;
+                    NewState.NewAnimation = CharAnim.DOWN_MISS;
                     break;
                 case Note.Left:
-                    NewState.NewAnimation = Character.LEFT_MISS;
+                    NewState.NewAnimation = CharAnim.LEFT_MISS;
                     break;
                 case Note.Right:
                     break;

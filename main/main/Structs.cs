@@ -7,9 +7,9 @@ namespace Orbis
     public struct NewStatusEvent
     {
         public EventTarget Target;
-        public string AnimationSufix;
-        public string AnimationPrefix;
         public string NewAnimation;
+
+        public bool AltAnimation;
 
         public SongNoteEntry NoteInfo;
     }
