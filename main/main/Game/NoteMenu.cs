@@ -413,8 +413,14 @@ namespace Orbis.Game
 
         public override void Dispose()
         {
+            Up?.Dispose();
+            Down?.Dispose();
+            Left?.Dispose();
+            Right?.Dispose();
+            
             NoteCreator?.Dispose();
             NoteSprite.Dispose();
+            
             base.Dispose();
         }
     }

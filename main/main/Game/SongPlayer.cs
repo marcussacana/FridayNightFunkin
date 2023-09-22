@@ -1076,6 +1076,8 @@ namespace Orbis.Game
             MusicPlayer?.Dispose();
             Health?.Dispose();
             
+            PopupHelper?.Dispose();
+            
             Voices?.Dispose();
             Instrumental?.Dispose();
 
