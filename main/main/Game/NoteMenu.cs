@@ -58,7 +58,9 @@ namespace Orbis.Game
         PlayerNoteEntry Right;
 
 
-        private IEnumerable<SongNoteEntry> SongNotes => UpNotes.Concat(DownNotes).Concat(LeftNotes).Concat(RightNotes); 
+        private IEnumerable<SongNoteEntry> SongNotes => UpNotes.Concat(DownNotes).Concat(LeftNotes).Concat(RightNotes);
+
+        private int LoadedSections;
 
         List<SongNoteEntry> UpNotes = new List<SongNoteEntry>();
         List<SongNoteEntry> DownNotes = new List<SongNoteEntry>();
@@ -178,16 +180,17 @@ namespace Orbis.Game
         private bool FirstSection = true;
         private void EnsureEnoughtNotes()
         {
-            //Load up 40 notes or 2 sections
-            while (SongNotes.Count() < 40)
+            //Ensure it was 3 sections loaded
+            while (LoadedSections < 3)
             {
                 var Rst = AddNextNote();
-                if (Rst == null || Rst.Value == false)
+                
+                if (Rst == null)
+                    LoadedSections++;
+                
+                if (Rst is false)
                 {
-                    if (!FirstSection || Rst == false)
-                        break;
-                    
-                    FirstSection = false;
+                    break;
                 }
             }
         }
@@ -239,6 +242,9 @@ namespace Orbis.Game
             foreach (var Section in OwnedSections)
             {
                 var LastNote = Section.sectionNotes.Count > 0 ? Section.sectionNotes.Last() : null;
+                
+                if (LastNote == null)
+                    continue;
 
                 foreach (var NoteData in Section.sectionNotes)
                 {
@@ -277,7 +283,11 @@ namespace Orbis.Game
                     if (LastSectionNote)
                     {
                         CurNote.OnNoteElapsed += (sender, e) => EnsureEnoughtNotes();
-                        CurNote.OnNoteElapsed += (sender, e) => OnNoteSectionEnd?.Invoke(this, e);
+                        CurNote.OnNoteElapsed += (sender, e) =>
+                        {
+                            LoadedSections--;
+                            OnNoteSectionEnd?.Invoke(this, e);
+                        };
                     }
 
                     yield return CurNote;

@@ -294,7 +294,8 @@ namespace Orbis.Game
                     MusicPlayer?.UnmuteVoice();
                     Score = PopupLoaderHelper.Popup.Bad;
                     break;
-                default:
+                
+                case 0:
                     MusicPlayer?.MuteVoice();
                     StatusChanged(null, new NewStatusEvent() { 
                         Target = EventTarget.Speaker,
@@ -302,6 +303,9 @@ namespace Orbis.Game
                     });
                     Score = PopupLoaderHelper.Popup.Miss;
                     break;
+                
+                default:
+                    return;
             }
 
             var Texture = PopupHelper.GetTexture(Score);

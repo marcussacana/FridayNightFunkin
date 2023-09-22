@@ -188,7 +188,7 @@ namespace Orbis.Game
                     // if we dispose the note too fast, no animation will be saw
                     // so, let's keep the note active while it still in HitZoneOffset
 
-                    SustainPoints = Score * 0.2f;
+                    SustainPoints = Math.Max(Score * 0.2f, 5);
                 }
 
                 float CurrentY = YPerMS * DistanceMS;
