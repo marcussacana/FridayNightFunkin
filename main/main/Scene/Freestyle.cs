@@ -317,19 +317,21 @@ namespace Orbis.Scene
         {
             if (Audio == null)
                 return;
-
-            Audio.Position = 0;
             
             if (AudioSwap)
             {
+                SFXBPlayer?.Close();
                 SFXBDriver?.SetVolume(0);
                 SFXDriver?.SetVolume(80);
+                Audio.Position = 0;
                 SFXPlayer?.Open(Audio);
             }
             else
             {
+                SFXPlayer?.Close();
                 SFXDriver?.SetVolume(0);
                 SFXBDriver?.SetVolume(80);
+                Audio.Position = 0;
                 SFXBPlayer?.Open(Audio);
             }
 
