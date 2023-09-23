@@ -19,6 +19,7 @@ namespace Orbis.Scene
     {
         private MemoryStream SFXA;
         private MemoryStream SFXB;
+        private MemoryStream SFXC;
         
         bool Active = false;
 
@@ -61,6 +62,8 @@ namespace Orbis.Scene
         private OrbisAudioOut SFXDriver;
         private WavePlayer SFXBPlayer;
         private OrbisAudioOut SFXBDriver;
+        private WavePlayer SFXCPlayer;
+        private OrbisAudioOut SFXCDriver;
 
         private AtlasText2D DifficultyView;
 
@@ -81,16 +84,28 @@ namespace Orbis.Scene
             this.LoadScreen = LoadScreen;
 
 #if ORBIS
-            this.SFXBPlayer = new WavePlayer();
-            this.SFXBDriver = new OrbisAudioOut();
-
-            this.SFXBPlayer.SetAudioDriver(SFXBDriver);
+            SFXPlayer.Close();
+            SFXDriver.SetVolume(0);
+            SFXDriver.Stop();
             
+            SFXBPlayer = new WavePlayer();
+            SFXBDriver = new OrbisAudioOut();
+
+            SFXBPlayer.SetAudioDriver(SFXBDriver);
+            
+            SFXCPlayer = new WavePlayer();
+            SFXCDriver = new OrbisAudioOut();
+
+            SFXCPlayer.SetAudioDriver(SFXCDriver);
             
 
             SFXA = SFXHelper.Default.GetSFX(SFXType.MenuChoice);
             SFXB = new MemoryStream();
             SFXA.CopyTo(SFXB);
+
+            SFXA.Position = 0;
+            SFXC = new MemoryStream();
+            SFXA.CopyTo(SFXC);
 #endif
 
             if (SFXPlayer != null)
@@ -98,6 +113,9 @@ namespace Orbis.Scene
 
             if (SFXBPlayer != null)
                 SFXBPlayer.OnTrackEnd += ConfirmTrackEnd;
+            
+            if (SFXCPlayer != null)
+                SFXCPlayer.OnTrackEnd += ConfirmTrackEnd;
         }
 
         public bool Loaded { get; set; }
@@ -234,11 +252,10 @@ namespace Orbis.Scene
                 WaitingSongEnd = true;
                 MusicConfirmed = false;
                 BeginFadeOut = 0;
-
-                SFXPlayer.Open(SFXHelper.Default.GetSFX(SFXType.MenuConfirm));
+                
+                PlayAudioSwap(SFXHelper.Default.GetSFX(SFXType.MenuConfirm));
+                
                 ThemeDriver.SetVolume(0);
-                SFXDriver.SetVolume(100);
-                SFXPlayer.Restart();
             }
             else
             {
@@ -258,7 +275,7 @@ namespace Orbis.Scene
             MusicConfirmed = true;
         }
 
-        bool AudioSwap;
+        int SFXTrack = 1;
 
         const int XSelectionDistance = 50;
         const int AnimSelectionDuration = 250;
@@ -302,40 +319,74 @@ namespace Orbis.Scene
             else
             {
                 AnimTick = 0;
-                PlayAudioSwap(AudioSwap ? SFXA : SFXB);
+                
+                MemoryStream SelSFX;
+                switch (SFXTrack)
+                {
+                    case 0:
+                        SelSFX = SFXA;
+                        break;
+                    case 1:
+                        SelSFX = SFXB;
+                        break;
+                    default:
+                        SelSFX = SFXC;
+                        break;
+                }
+                PlayAudioSwap(SelSFX);
             }
         }
 
         /// <summary>
         /// Our Audio Player can't instant supend the current track and swap to a new one,
         /// due the buffering, if we want interrupt the audio we may swap to a new instance
-        /// and mute the old one, this class has 2 instances and the audio duration is 500ms
+        /// and mute the old one, this class has 3 instances and the audio duration is 500ms
         /// with two instances we can asume that changing the bettewen both instances with the 
-        /// max of 250ms of delay the last audio will be finished.
+        /// max of 250ms of delay the last audio will be finished, then 3 should be safe.
         /// </summary>
         private void PlayAudioSwap(MemoryStream Audio)
         {
             if (Audio == null)
                 return;
-            
-            if (AudioSwap)
+
+            Audio.Position = 0;
+
+            switch (SFXTrack++)
             {
-                SFXBPlayer?.Close();
-                SFXBDriver?.SetVolume(0);
-                SFXDriver?.SetVolume(80);
-                Audio.Position = 0;
-                SFXPlayer?.Open(Audio);
-            }
-            else
-            {
-                SFXPlayer?.Close();
-                SFXDriver?.SetVolume(0);
-                SFXBDriver?.SetVolume(80);
-                Audio.Position = 0;
-                SFXBPlayer?.Open(Audio);
+                case 0:
+                    SFXBDriver?.SetVolume(0);
+                    SFXCDriver?.SetVolume(0);
+                    SFXBPlayer?.Close();
+                    SFXCPlayer?.Close();
+                        
+                    SFXDriver?.SetVolume(80);
+                    SFXPlayer?.Open(Audio);
+                    SFXPlayer?.Restart();
+                    break;
+                case 1:
+                    SFXDriver?.SetVolume(0);
+                    SFXCDriver?.SetVolume(0);
+                    SFXPlayer?.Close();
+                    SFXCPlayer?.Close();
+                    
+                    SFXBDriver?.SetVolume(80);
+                    SFXBPlayer?.Open(Audio);
+                    SFXBPlayer?.Restart();
+                    break;
+                default:
+                    SFXDriver?.SetVolume(0);
+                    SFXBDriver?.SetVolume(0);
+                    SFXPlayer?.Close();
+                    SFXBPlayer?.Close();
+                    
+                    SFXCDriver?.SetVolume(80);
+                    SFXCPlayer?.Open(Audio);
+                    SFXCPlayer?.Restart();
+                    break;
             }
 
-            AudioSwap = !AudioSwap;
+            if (SFXTrack > 2)
+                SFXTrack = 0;
         }
 
         private void DecreaseDifficulty()
