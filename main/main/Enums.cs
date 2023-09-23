@@ -78,7 +78,8 @@ namespace Orbis
         Philly,
         Limo,
         Halloween,
-        Christmas
+        Christmas,
+        ChristmasEvil
     }
 
     public enum EventTarget : byte

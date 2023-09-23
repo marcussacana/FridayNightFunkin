@@ -9,6 +9,7 @@ using OrbisGL.GL2D;
 using System;
 using System.Collections.Generic;
 using System.Diagnostics;
+using System.IO;
 using System.Linq;
 using System.Numerics;
 
@@ -16,7 +17,9 @@ namespace Orbis.Scene
 {
     internal class FreestyleScene : GLObject2D, ILoadable
     {
-
+        private MemoryStream SFXA;
+        private MemoryStream SFXB;
+        
         bool Active = false;
 
         static readonly List<string> Songs = new List<string>() {
@@ -56,6 +59,8 @@ namespace Orbis.Scene
         private OrbisAudioOut ThemeDriver;
         private WavePlayer SFXPlayer;
         private OrbisAudioOut SFXDriver;
+        private WavePlayer SFXBPlayer;
+        private OrbisAudioOut SFXBDriver;
 
         private AtlasText2D DifficultyView;
 
@@ -75,8 +80,24 @@ namespace Orbis.Scene
             this.SFXDriver = SFXDriver;
             this.LoadScreen = LoadScreen;
 
+#if ORBIS
+            this.SFXBPlayer = new WavePlayer();
+            this.SFXBDriver = new OrbisAudioOut();
+
+            this.SFXBPlayer.SetAudioDriver(SFXBDriver);
+            
+            
+
+            SFXA = SFXHelper.Default.GetSFX(SFXType.MenuChoice);
+            SFXB = new MemoryStream();
+            SFXA.CopyTo(SFXB);
+#endif
+
             if (SFXPlayer != null)
                 SFXPlayer.OnTrackEnd += ConfirmTrackEnd;
+
+            if (SFXBPlayer != null)
+                SFXBPlayer.OnTrackEnd += ConfirmTrackEnd;
         }
 
         public bool Loaded { get; set; }
@@ -120,7 +141,7 @@ namespace Orbis.Scene
                 Text.SetZoom(0.8f);
                 SongList.AddChild(Text);
 
-                CurrentPos += new Vector2(Text.Width, Text.Height + 150);
+                CurrentPos += new Vector2(Text.Width, Text.Height + 50);
             }
 
             SongList.Position = SongListPos;
@@ -237,7 +258,10 @@ namespace Orbis.Scene
             MusicConfirmed = true;
         }
 
+        bool AudioSwap;
+
         const int XSelectionDistance = 50;
+        const int AnimSelectionDuration = 250;
 
         GLObject2D LastSelection;
         AtlasText2D Selection;
@@ -278,11 +302,38 @@ namespace Orbis.Scene
             else
             {
                 AnimTick = 0;
-                var SFX = SFXHelper.Default.GetSFX(SFXType.MenuChoice);
-
-                if (SFX != null)
-                    SFXPlayer.Open(SFX);
+                PlayAudioSwap(AudioSwap ? SFXA : SFXB);
             }
+        }
+
+        /// <summary>
+        /// Our Audio Player can't instant supend the current track and swap to a new one,
+        /// due the buffering, if we want interrupt the audio we may swap to a new instance
+        /// and mute the old one, this class has 2 instances and the audio duration is 500ms
+        /// with two instances we can asume that changing the bettewen both instances with the 
+        /// max of 250ms of delay the last audio will be finished.
+        /// </summary>
+        private void PlayAudioSwap(MemoryStream Audio)
+        {
+            if (Audio == null)
+                return;
+
+            Audio.Position = 0;
+            
+            if (AudioSwap)
+            {
+                SFXBDriver?.SetVolume(0);
+                SFXDriver?.SetVolume(80);
+                SFXPlayer?.Open(Audio);
+            }
+            else
+            {
+                SFXDriver?.SetVolume(0);
+                SFXBDriver?.SetVolume(80);
+                SFXBPlayer?.Open(Audio);
+            }
+
+            AudioSwap = !AudioSwap;
         }
 
         private void DecreaseDifficulty()
@@ -398,9 +449,7 @@ namespace Orbis.Scene
 
                 var ElapsedMS = (float)(DeltaTick / Constants.ORBIS_MILISECOND);
 
-                const int AnimDuration = 500;
-
-                float Progress = ElapsedMS / AnimDuration;
+                float Progress = ElapsedMS / AnimSelectionDuration;
 
                 if (Progress >= 1)
                 {

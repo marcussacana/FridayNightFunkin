@@ -91,6 +91,7 @@
     <Compile Include="Game\FallObj.cs" />
     <Compile Include="Game\PopupLoaderHelper.cs" />
     <Compile Include="Scene\Christmas.cs" />
+    <Compile Include="Scene\ChristmasEvil.cs" />
     <Compile Include="Scene\HalloweenScene.cs" />
     <Compile Include="Scene\LimoScene.cs" />
     <Compile Include="Scene\LoadingScene.cs" />

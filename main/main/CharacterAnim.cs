@@ -152,6 +152,14 @@ namespace Orbis
                     RIGHT = "Parent Right Note Mom";
                     UP = "Parent Up Note Mom";
                     break;
+                case "monster":
+                case "monster-christmas":
+                    SHAKING = DANCING = "monster idle";
+                    LEFT = "Monster left note";
+                    RIGHT = "Monster Right note";
+                    DOWN = "monster down";
+                    UP = "monster up note";
+                    break;
             }
         }
 

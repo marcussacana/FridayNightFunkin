@@ -356,6 +356,9 @@ namespace Orbis
                     case "eggnog":
                         Song.BG = Map.Christmas;
                         break;
+                    case "winter-horrorland":
+                        Song.BG = Map.ChristmasEvil;
+                        break;
                 }
 
                 return Song;
