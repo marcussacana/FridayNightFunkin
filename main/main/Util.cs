@@ -1,14 +1,11 @@
 ﻿using Newtonsoft.Json;
-using Orbis.Internals;
 using System;
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
-using System.Reflection;
 using System.Text;
 using System.Xml;
 using ICSharpCode.SharpZipLib.Zip;
-using System.Diagnostics.Eventing.Reader;
 
 namespace Orbis
 {
@@ -226,10 +223,11 @@ namespace Orbis
             {
 #if ORBIS
                 string RootDir = IO.GetAppBaseDirectory();
+                var ZipPath = Path.Combine(RootDir, "assets/misc/assets.zip");
 #else
                 string RootDir = AppDomain.CurrentDomain.BaseDirectory;
+                var ZipPath = Path.Combine(RootDir, "assets.zip");
 #endif
-                var ZipPath = Path.Combine(RootDir, "assets/misc/assets.zip");
 
                 if (!File.Exists(ZipPath))
                     return null;
@@ -358,6 +356,14 @@ namespace Orbis
                         break;
                     case "winter-horrorland":
                         Song.BG = Map.ChristmasEvil;
+                        break;
+                    case "senpai":
+                        Song.BG = Map.WeebSchool;
+                        Song.Speaker = "gf-pixel";
+                        break;
+                    case "roses":
+                        Song.BG = Map.WeebSchool;
+                        Song.Speaker = "gf-pixel";
                         break;
                 }
 

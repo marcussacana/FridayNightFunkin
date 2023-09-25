@@ -79,7 +79,8 @@ namespace Orbis
         Limo,
         Halloween,
         Christmas,
-        ChristmasEvil
+        ChristmasEvil,
+        WeebSchool
     }
 
     public enum EventTarget : byte

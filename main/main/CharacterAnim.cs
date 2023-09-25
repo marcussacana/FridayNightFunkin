@@ -41,7 +41,7 @@ namespace Orbis
         {
             Alt = false;
 
-            switch (Character)
+            switch (Character.ToLower())
             {
                 case "bf-car":
                     SHAKING = DANCING = "BF idle dance";
@@ -64,6 +64,17 @@ namespace Orbis
                     RIGHT_MISS = "BF NOTE RIGHT MISS";
                     UP = "BF NOTE UP";
                     UP_MISS = "BF NOTE UP MISS";
+                    break;
+                case "bf-pixel":
+                    SHAKING = DANCING = "BF IDLE instance";
+                    LEFT = "BF LEFT NOTE instance";
+                    RIGHT = "BF RIGHT NOTE instance";
+                    UP = "BF UP NOTE instance";
+                    DOWN = "BF DOWN NOTE instance";
+                    LEFT_MISS = "BF LEFT MISS instance";
+                    RIGHT_MISS = "BF RIGHT MISS instance";
+                    DOWN_MISS = "BF DOWN MISS instance";
+                    UP_MISS = "BF UP MISS instance";
                     break;
                 case "bf":
                     SHAKING = "BF idle shaking";
@@ -125,6 +136,9 @@ namespace Orbis
                     HIT = "GF FEAR";
                     DIES = DEAD = UP_MISS = DOWN_MISS = LEFT_MISS = RIGHT_MISS = "gf sad";
                     break;
+                case "gf-pixel":
+                    HEY = DANCING = "GF IDLE";
+                    break;
                 case "mom-car":
                 case "mom":
                     DANCING = "Mom Idle";
@@ -160,6 +174,13 @@ namespace Orbis
                     DOWN = "monster down";
                     UP = "monster up note";
                     break;
+                case "senpai":
+                    SHAKING = DANCING = "Senpai Idle instance";
+                    LEFT = "SENPAI LEFT NOTE instance";
+                    RIGHT = "SENPAI RIGHT NOTE instance";
+                    UP = "SENPAI UP NOTE instance";
+                    DOWN = "SENPAI DOWN NOTE instance";
+                    break;
             }
         }
 
@@ -168,6 +189,9 @@ namespace Orbis
             string[] OffsetList;
             using (var OffsetStream = Util.CopyFileToMemory($"{Character}Offsets.txt"))
             {
+                if (OffsetStream == null)
+                    return;
+
                 var OffsetData = OffsetStream.ToArray();
                 OffsetList = Encoding.UTF8.GetString(OffsetData).Replace("\r\n", "\n").Trim().Split('\n');
             }

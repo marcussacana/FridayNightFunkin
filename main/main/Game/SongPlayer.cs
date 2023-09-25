@@ -81,6 +81,9 @@ namespace Orbis.Game
         string Player2CurrentAnim = string.Empty;
         string SpeakerCurrentAnim = string.Empty;
 
+
+        public SpriteAtlas2D NoteSprite { get; set; }
+
         NoteMenu Player1Menu;
         NoteMenu Player2Menu;
 
@@ -115,6 +118,9 @@ namespace Orbis.Game
                     break;
                 case Map.ChristmasEvil:
                     BG = (IScene)(BGObject = new ChristmasEvil());
+                    break;
+                case Map.WeebSchool:
+                    BG = (IScene)(BGObject = new WeebSchool(this));
                     break;
                 default:
                     throw new NotImplementedException();
@@ -203,15 +209,18 @@ namespace Orbis.Game
             OnProgressChanged?.Invoke(BaseProgress + 6);
 
             //7 - Load Notes Sprite Info
-            var NotesAssetData = Util.GetXML(NotesNames.NotesAssets);
+            if (NoteSprite == null)
+            {
+                var NotesAssetData = Util.GetXML(NotesNames.NotesAssets);
 
-            OnProgressChanged?.Invoke(BaseProgress + 7);
+                OnProgressChanged?.Invoke(BaseProgress + 7);
 
-            //8 - Load Notes
-            var Notes = new SpriteAtlas2D(NotesAssetData, Util.CopyFileToMemory, true);
+                //8 - Load Notes
+                NoteSprite = new SpriteAtlas2D(NotesAssetData, Util.CopyFileToMemory, true);
+            }
 
-            Player1Menu = new NoteMenu(Notes, this, true, false);
-            Player2Menu = new NoteMenu(Notes, this, false, true);
+            Player1Menu = new NoteMenu(NoteSprite, this, true, false);
+            Player2Menu = new NoteMenu(NoteSprite, this, false, true);
 
             Player1.OnAnimationEnd += OnAnimEnd;
             Speaker.OnAnimationEnd += OnAnimEnd;
