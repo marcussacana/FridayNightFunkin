@@ -329,6 +329,14 @@ namespace Orbis
             using (var Data = CopyFileToMemory($"preload/data/{Name}/{Name}{DificutyName}.json") ?? CopyFileToMemory($"preload/data/{Name}/{Name}.json"))
             {
                 var JSON = Encoding.UTF8.GetString(Data.ToArray());
+
+                if (Name == "ugh")
+                {
+                    //Bad JSON in the original file, I wanna to make my code works
+                    //with original assets so I'm 'fixing' with this instead
+                    JSON = JSON.Replace(",true]]}", "]]}");
+                }
+
                 var Song = JsonConvert.DeserializeObject<SongInfo>(JSON);
 
                 switch (Name.ToLowerInvariant().Trim())

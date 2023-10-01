@@ -78,6 +78,9 @@ namespace Orbis.Scene
 
         private void DoThunder()
         {
+            if (SFXA == null)
+                return;
+
             var SFX = Rnd.NextDouble() > 0.5f ? SFXA : SFXB;
             SFX.Position = 0;
             

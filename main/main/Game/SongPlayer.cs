@@ -756,6 +756,12 @@ namespace Orbis.Game
             switch (SongInfo.Player2)
             {
                 case null:
+                case "bf-pixel":
+                    Player2.SetZoom(Coordinates2D.ParseZoomFactor(700));
+                    Player2.ZoomPosition = new Vector2(100, 400);
+                    Player2.Textures[0].AntiAliasing(false);
+                    Player2.Mirror = true;
+                    break;
                 case "gf":
                     Player2CamPos = Speaker.GetMiddle();
                     break;

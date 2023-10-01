@@ -186,6 +186,15 @@ namespace Orbis
                     UP = "SENPAI UP NOTE instance";
                     DOWN = "SENPAI DOWN NOTE instance";
                     break;
+                case "tankman":
+                    Alt = true;
+                    SHAKING = DANCING = "PRETTY GOOD tankman instance";
+                    DOWN = "Tankman DOWN note instance";
+                    LEFT = "Tankman Note Left instance";
+                    RIGHT = "Tankman Right Note instance";
+                    UP = "Tankman UP note instance";
+                    DOWN_MISS = LEFT_MISS = RIGHT_MISS = UP_MISS = "TANKMAN UGH instance";
+                    break;
             }
         }
 

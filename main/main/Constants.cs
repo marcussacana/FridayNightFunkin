@@ -23,6 +23,7 @@ namespace Orbis
         public const string ParentsChristmasAssets = "mom_dad_christmas_assets.xml";
         public const string PicoAssets = "Pico_FNF_assetss.xml";
         public const string Senpai = "senpai.xml";
+        public const string TankmanAssets = "tankmanCaptain.xml";
 
         public const string BoyfriendIcon = "icon-bf.dds";
         public const string BoyfriendPixelIcon = "icon-bf-pixel.dds";
@@ -54,7 +55,8 @@ namespace Orbis
                 { "senpai-angry" , Senpai },
                 { "spooky" , SpookyKidsAssets },
                 { "gf" , GirlfriendAssets },
-                { "parents-christmas", ParentsChristmasAssets }
+                { "parents-christmas", ParentsChristmasAssets },
+                { "tankman", TankmanAssets}
             });
 
         public static readonly ReadOnlyDictionary<string, string> IconMap = new ReadOnlyDictionary<string, string>(
@@ -73,7 +75,8 @@ namespace Orbis
                 { "senpai-angry" , SenpaiIcon },
                 { "spooky" , SpookyIcon },
                 { "gf" , GirlfriendIcon },
-                { "parents-christmas", ParentsIcon }
+                { "parents-christmas", ParentsIcon },
+                { "tankman", TankmanIcon }
             });
     }
 
