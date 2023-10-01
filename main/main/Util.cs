@@ -6,6 +6,7 @@ using System.Linq;
 using System.Text;
 using System.Xml;
 using ICSharpCode.SharpZipLib.Zip;
+using Orbis.Internals;
 
 namespace Orbis
 {

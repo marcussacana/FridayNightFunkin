@@ -5,8 +5,12 @@ using System.Collections.Generic;
 
 namespace Orbis.Game
 {
-    internal class PopupLoaderHelper : ILoadable
+    public class PopupLoaderHelper : ILoadable
     {
+        public string Sufix = null;
+
+        public float ZoomFactor = 0;
+
         public enum Popup {
             Perfect,
             Good,
@@ -46,7 +50,7 @@ namespace Orbis.Game
             if (Loaded)
                 return;
 
-            using (var TexData = Util.CopyFileToMemory("sick.dds"))
+            using (var TexData = Util.CopyFileToMemory(Sufix != null ? $"sick{Sufix}.dds" : "sick.dds"))
             {
                 Texture Tex = new Texture(true);
                 Tex.SetDDS(TexData, true);
@@ -56,7 +60,7 @@ namespace Orbis.Game
 
             OnProgressChanged(1);
 
-            using (var TexData = Util.CopyFileToMemory("good.dds"))
+            using (var TexData = Util.CopyFileToMemory(Sufix != null ? $"good{Sufix}.dds" : "good.dds"))
             {
                 Texture Tex = new Texture(true);
                 Tex.SetDDS(TexData, true);
@@ -66,7 +70,7 @@ namespace Orbis.Game
 
             OnProgressChanged(2);
 
-            using (var TexData = Util.CopyFileToMemory("bad.dds"))
+            using (var TexData = Util.CopyFileToMemory(Sufix != null ? $"bad{Sufix}.dds" : "bad.dds"))
             {
                 Texture Tex = new Texture(true);
                 Tex.SetDDS(TexData, true);
@@ -76,7 +80,7 @@ namespace Orbis.Game
 
             OnProgressChanged(3);
 
-            using (var TexData = Util.CopyFileToMemory("shit.dds"))
+            using (var TexData = Util.CopyFileToMemory(Sufix != null ? $"shit{Sufix}.dds" : "shit.dds"))
             {
                 Texture Tex = new Texture(true);
                 Tex.SetDDS(TexData, true);
@@ -86,7 +90,7 @@ namespace Orbis.Game
 
             OnProgressChanged(4);
 
-            using (var TexData = Util.CopyFileToMemory("num0.dds"))
+            using (var TexData = Util.CopyFileToMemory(Sufix != null ? $"num0{Sufix}.dds" : "num0.dds"))
             {
                 Texture Tex = new Texture(true);
                 Tex.SetDDS(TexData, true);
@@ -96,7 +100,7 @@ namespace Orbis.Game
 
             OnProgressChanged(5);
 
-            using (var TexData = Util.CopyFileToMemory("num1.dds"))
+            using (var TexData = Util.CopyFileToMemory(Sufix != null ? $"num1{Sufix}.dds" : "num1.dds"))
             {
                 Texture Tex = new Texture(true);
                 Tex.SetDDS(TexData, true);
@@ -106,7 +110,7 @@ namespace Orbis.Game
 
             OnProgressChanged(6);
 
-            using (var TexData = Util.CopyFileToMemory("num2.dds"))
+            using (var TexData = Util.CopyFileToMemory(Sufix != null ? $"num2{Sufix}.dds" : "num2.dds"))
             {
                 Texture Tex = new Texture(true);
                 Tex.SetDDS(TexData, true);
@@ -116,7 +120,7 @@ namespace Orbis.Game
 
             OnProgressChanged(7);
 
-            using (var TexData = Util.CopyFileToMemory("num3.dds"))
+            using (var TexData = Util.CopyFileToMemory(Sufix != null ? $"num3{Sufix}.dds" : "num3.dds"))
             {
                 Texture Tex = new Texture(true);
                 Tex.SetDDS(TexData, true);
@@ -126,7 +130,7 @@ namespace Orbis.Game
 
             OnProgressChanged(8);
 
-            using (var TexData = Util.CopyFileToMemory("num4.dds"))
+            using (var TexData = Util.CopyFileToMemory(Sufix != null ? $"num4{Sufix}.dds" : "num4.dds"))
             {
                 Texture Tex = new Texture(true);
                 Tex.SetDDS(TexData, true);
@@ -136,7 +140,7 @@ namespace Orbis.Game
 
             OnProgressChanged(9);
 
-            using (var TexData = Util.CopyFileToMemory("num5.dds"))
+            using (var TexData = Util.CopyFileToMemory(Sufix != null ? $"num5{Sufix}.dds" : "num5.dds"))
             {
                 Texture Tex = new Texture(true);
                 Tex.SetDDS(TexData, true);
@@ -146,7 +150,7 @@ namespace Orbis.Game
 
             OnProgressChanged(10);
 
-            using (var TexData = Util.CopyFileToMemory("num6.dds"))
+            using (var TexData = Util.CopyFileToMemory(Sufix != null ? $"num6{Sufix}.dds" : "num6.dds"))
             {
                 Texture Tex = new Texture(true);
                 Tex.SetDDS(TexData, true);
@@ -156,7 +160,7 @@ namespace Orbis.Game
 
             OnProgressChanged(11);
 
-            using (var TexData = Util.CopyFileToMemory("num7.dds"))
+            using (var TexData = Util.CopyFileToMemory(Sufix != null ? $"num7{Sufix}.dds" : "num7.dds"))
             {
                 Texture Tex = new Texture(true);
                 Tex.SetDDS(TexData, true);
@@ -166,7 +170,7 @@ namespace Orbis.Game
 
             OnProgressChanged(12);
 
-            using (var TexData = Util.CopyFileToMemory("num8.dds"))
+            using (var TexData = Util.CopyFileToMemory(Sufix != null ? $"num8{Sufix}.dds" : "num8.dds"))
             {
                 Texture Tex = new Texture(true);
                 Tex.SetDDS(TexData, true);
@@ -176,7 +180,7 @@ namespace Orbis.Game
 
             OnProgressChanged(13);
 
-            using (var TexData = Util.CopyFileToMemory("num9.dds"))
+            using (var TexData = Util.CopyFileToMemory(Sufix != null ? $"num9{Sufix}.dds" : "num9.dds"))
             {
                 Texture Tex = new Texture(true);
                 Tex.SetDDS(TexData, true);

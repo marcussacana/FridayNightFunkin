@@ -12,6 +12,7 @@ namespace Orbis
         public const string BoyfriendChristmasAssets = "bfChristmas.xml";
         public const string BoyfriendCarAssets = "bfCar.xml";
         public const string BoyfriendPixelAssets = "bfPixel.xml";
+        public const string BoyfriendDeadPixelAssets = "bfPixelsDEAD.xml";
         public const string GirlfriendAssets = "GF_assets.xml";
         public const string DadAssets = "DADDY_DEAREST.xml";
         public const string SpookyKidsAssets = "spooky_kids_assets.xml";

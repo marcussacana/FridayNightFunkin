@@ -23,7 +23,7 @@ namespace Orbis.Game
             this.Type = Type;
             
             Overlay = (SpriteAtlas2D)this.Render.Clone(false);
-            Overlay.Position -= new Vector2(40, 40);
+            Overlay.ZoomPosition -= new Vector2(40, 40);
 
             switch (Type)
             {

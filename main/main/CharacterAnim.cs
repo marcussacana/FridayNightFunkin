@@ -76,6 +76,11 @@ namespace Orbis
                     DOWN_MISS = "BF DOWN MISS instance";
                     UP_MISS = "BF UP MISS instance";
                     break;
+                case "bf-pixel-dead":
+                    DIES = "BF Dies pixel";
+                    DEAD = "Retry Loop";
+                    DEAD_CONFIRM = "RETRY CONFIRM";
+                    break;
                 case "bf":
                     SHAKING = "BF idle shaking";
                     DANCING = "BF idle dance";

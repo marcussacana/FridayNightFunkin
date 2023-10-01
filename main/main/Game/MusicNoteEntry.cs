@@ -206,7 +206,7 @@ namespace Orbis.Game
                 if (!Sustain.Visible)
                     continue;
 
-                float SustainDistance = ((-Sustain.Position.Y) + Height / 2);
+                float SustainDistance = ((-Sustain.ZoomPosition.Y) + Height / 2);
                 if (SustainDistance > CurrentY)
                 {
                     if (CanBeHit && Hitted)

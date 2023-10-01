@@ -83,10 +83,10 @@ namespace Orbis.Game
             AddChild(Left.Render);
             AddChild(Right.Render);
 
-            Left.Render.Position = new Vector2(LeftX, 0);
-            Down.Render.Position = new Vector2(DownX, 0);
-            Up.Render.Position = new Vector2(UpX, 0);
-            Right.Render.Position = new Vector2(RightX, 0);
+            Left.Render.ZoomPosition = new Vector2(LeftX, 0);
+            Down.Render.ZoomPosition = new Vector2(DownX, 0);
+            Up.Render.ZoomPosition = new Vector2(UpX, 0);
+            Right.Render.ZoomPosition = new Vector2(RightX, 0);
 
             SetupSong(Game.SongInfo.song, IsPlayer1 = Player1);
         }

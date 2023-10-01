@@ -4,6 +4,7 @@ using OrbisGL.GL;
 using OrbisGL.GL2D;
 using System;
 using System.Collections.Generic;
+using System.Diagnostics;
 using System.Linq;
 using System.Numerics;
 using System.Text;
@@ -32,7 +33,7 @@ namespace Orbis.Scene
 
         public bool Loaded { get; private set; }
 
-        public int TotalProgress => 5;
+        public int TotalProgress => 6;
 
         public event EventHandler<NewStatusEvent> OnMapStatusChanged;
 
@@ -76,6 +77,11 @@ namespace Orbis.Scene
 
             OnProgressChanged?.Invoke(4);
 
+            Game.NoteSprite = CreatePixelNote();
+            Game.NoteSprite.SetZoom(1);
+
+            OnProgressChanged?.Invoke(5);
+
             var XML = Util.GetXML("bgFreaks.xml");
             Freaks = new SpriteAtlas2D(XML, Util.CopyFileToMemory, false);
 
@@ -109,9 +115,172 @@ namespace Orbis.Scene
             Freaks.FrameDelay = 16;
             Freaks.ZoomPosition = new Vector2(0, 300);
 
+            Game.PopupHelper.Sufix = "-pixel";
+            Game.PopupHelper.ZoomFactor -= 1f;
+            Game.PopupOffset -= new Vector2(90, 60);
+
             Loaded = true;
 
-            OnProgressChanged?.Invoke(5);
+            OnProgressChanged?.Invoke(6);
+        }
+
+        public class ZoomNote : SpriteAtlas2D
+        {
+            public override void SetZoom(float Value = 1)
+            {
+                var FriendlyZoom = Coordinates2D.ParseZoomFactor(Value);
+                FriendlyZoom += 600;
+                base.SetZoom(Coordinates2D.ParseZoomFactor(FriendlyZoom));
+            }
+
+            public override GLObject2D Clone(bool AllowDisposal)
+            {
+                var Note = new ZoomNote()
+                {
+                    FrameOffsets = FrameOffsets,
+                    Sprites = Sprites,
+                    AllowTexDisposal = AllowDisposal,
+                    Width = Width,
+                    Height = Height,
+                    Texture = Texture
+                };
+                Note.SetZoom(1);
+                return Note;
+            }
+        }
+
+        private SpriteAtlas2D CreatePixelNote()
+        {
+            using (var Stream = Util.CopyFileToMemory("arrows-pixels-mod.dds"))
+            {
+                var PixelNotes = new ZoomNote();
+                PixelNotes.Texture = new Texture(true);
+                PixelNotes.Texture.SetDDS(Stream, false);
+
+                PixelNotes.CreateAnimation(NotesNames.STATIC_ARROW, new Rectangle[] {
+                    new Rectangle(0, 0, 17, 16),
+                    new Rectangle(17, 0, 17, 16),
+                    new Rectangle(52, 0, 17, 16),
+                    new Rectangle(34, 0, 17, 16)
+                });
+
+                PixelNotes.CreateAnimation(NotesNames.LEFT_NOTE, new Rectangle[] {
+                    new Rectangle(0, 16, 17, 16)
+                });
+
+                PixelNotes.CreateAnimation(NotesNames.DOWN_NOTE, new Rectangle[] {
+                    new Rectangle(17, 16, 17, 16)
+                });
+
+                PixelNotes.CreateAnimation(NotesNames.UP_NOTE, new Rectangle[] {
+                    new Rectangle(34, 16, 17, 16)
+                });
+
+                PixelNotes.CreateAnimation(NotesNames.RIGHT_NOTE, new Rectangle[] {
+                    new Rectangle(52, 16, 17, 16)
+                });
+
+                PixelNotes.CreateAnimation(NotesNames.LEFT_PRESS, new Rectangle[] {
+                    new Rectangle(0, 34, 17, 16)
+                });
+
+                PixelNotes.CreateAnimation(NotesNames.DOWN_PRESS, new Rectangle[] {
+                    new Rectangle(17, 34, 17, 16)
+                });
+
+                PixelNotes.CreateAnimation(NotesNames.UP_PRESS, new Rectangle[] {
+                    new Rectangle(34, 34, 17, 16)
+                });
+
+                PixelNotes.CreateAnimation(NotesNames.RIGHT_PRESS, new Rectangle[] {
+                    new Rectangle(52, 34, 17, 16)
+                });
+
+                PixelNotes.CreateAnimation(NotesNames.LEFT_HIT, new Rectangle[] {
+                    new Rectangle(0, 16, 17, 16),
+                    new Rectangle(0, 68, 17, 16),
+                    new Rectangle(0, 51, 17, 16),
+                    new Rectangle(0, 68, 17, 16),
+                }, new Vector2[] {
+                    new Vector2(-6.5f,  -6.5f),
+                    new Vector2(-6.5f,  -6.5f),
+                    new Vector2(-6.5f,  -6.5f),
+                    new Vector2(-6.5f,  -6.5f)
+                });
+
+                PixelNotes.CreateAnimation(NotesNames.DOWN_HIT, new Rectangle[] {
+                    new Rectangle(17, 16, 17, 16),
+                    new Rectangle(17, 68, 17, 16),
+                    new Rectangle(17, 51, 17, 16),
+                    new Rectangle(17, 68, 17, 16),
+                }, new Vector2[] {
+                    new Vector2(-6.5f,  -6.5f),
+                    new Vector2(-6.5f,  -6.5f),
+                    new Vector2(-6.5f,  -6.5f),
+                    new Vector2(-6.5f,  -6.5f)
+                });
+
+                PixelNotes.CreateAnimation(NotesNames.UP_HIT, new Rectangle[] {
+                    new Rectangle(34, 16, 17, 16),
+                    new Rectangle(34, 68, 17, 16),
+                    new Rectangle(34, 51, 17, 16),
+                    new Rectangle(34, 68, 17, 16),
+                }, new Vector2[] {
+                    new Vector2(-6.5f,  -6.5f),
+                    new Vector2(-6.5f,  -6.5f),
+                    new Vector2(-6.5f,  -6.5f),
+                    new Vector2(-6.5f,  -6.5f)
+                });
+
+                PixelNotes.CreateAnimation(NotesNames.RIGHT_HIT, new Rectangle[] {
+                    new Rectangle(52, 16, 17, 16),
+                    new Rectangle(52, 68, 17, 16),
+                    new Rectangle(52, 51, 17, 16),
+                    new Rectangle(52, 68, 17, 16),
+                }, new Vector2[] {
+                    new Vector2(-6.5f,  -6.5f),
+                    new Vector2(-6.5f,  -6.5f),
+                    new Vector2(-6.5f,  -6.5f),
+                    new Vector2(-6.5f,  -6.5f)
+                });
+
+                PixelNotes.CreateAnimation(NotesNames.LEFT_BAR, new Rectangle[]
+                {
+                    new Rectangle(0, 92, 7, 8)
+                });
+                PixelNotes.CreateAnimation(NotesNames.DOWN_BAR, new Rectangle[]
+                {
+                    new Rectangle(7, 92, 7, 8)
+                });
+                PixelNotes.CreateAnimation(NotesNames.UP_BAR, new Rectangle[]
+                {
+                    new Rectangle(14, 92, 7, 8)
+                });
+                PixelNotes.CreateAnimation(NotesNames.RIGHT_BAR, new Rectangle[]
+                {
+                    new Rectangle(21, 92, 7, 8)
+                });
+
+                PixelNotes.CreateAnimation(NotesNames.LEFT_BAR_END, new Rectangle[]
+                {
+                    new Rectangle(0, 100, 7, 4)
+                });
+                PixelNotes.CreateAnimation(NotesNames.DOWN_BAR_END, new Rectangle[]
+                {
+                    new Rectangle(7, 100, 7, 4)
+                });
+                PixelNotes.CreateAnimation(NotesNames.UP_BAR_END, new Rectangle[]
+                {
+                    new Rectangle(14, 100, 7, 4)
+                });
+
+                PixelNotes.CreateAnimation(NotesNames.RIGHT_BAR_END, new Rectangle[]
+                {
+                    new Rectangle(21, 100, 7, 4)
+                });
+
+                return PixelNotes;
+            }
         }
 
         public override void SetZoom(float Value = 1)
@@ -124,6 +293,8 @@ namespace Orbis.Scene
         public void SetCharacterPosition(TiledSpriteAtlas2D Player1, TiledSpriteAtlas2D Player2, TiledSpriteAtlas2D Speaker)
         {
             var Zoom = Coordinates2D.ParseZoomFactor(700);
+
+            Game.Boyfriend.SetZoom(Zoom);
             Player1.SetZoom(Zoom);
             Player2.SetZoom(Zoom);
             Speaker.SetZoom(Zoom);

@@ -47,10 +47,10 @@ namespace Orbis.Game
         bool ForceBoyfriend = false;
 
         TiledSpriteAtlas2D Speaker;
-        TiledSpriteAtlas2D _Player1;
+        internal TiledSpriteAtlas2D _Player1;
         TiledSpriteAtlas2D Player1 { get => ForceBoyfriend ? Boyfriend : _Player1; set => _Player1 = value; }
         TiledSpriteAtlas2D Player2;
-        TiledSpriteAtlas2D Boyfriend;
+        internal TiledSpriteAtlas2D Boyfriend;
 
         CharacterAnim _Player2Anim;
         CharacterAnim _Player2AltAnim;
@@ -92,7 +92,8 @@ namespace Orbis.Game
         Rectangle2D Fade = null;
         bool Player1Dead;
 
-        PopupLoaderHelper PopupHelper;
+        public PopupLoaderHelper PopupHelper;
+        public Vector2 PopupOffset = new Vector2(30, -150);
 
         bool AnimationChanged = true;
 
@@ -323,9 +324,9 @@ namespace Orbis.Game
             var Texture = PopupHelper.GetTexture(Score);
 
             FallObj Obj = new FallObj(Texture, 50, 1000);
-            var Pos = Speaker.GetMiddle(Obj);            
-            Obj.SetZoom(1.2f);
-            Obj.ZoomPosition = Pos + new Vector2(30, -150);
+            var Pos = Speaker.GetZoomMiddle(Obj);            
+            Obj.SetZoom(1.2f + PopupHelper.ZoomFactor);
+            Obj.ZoomPosition = Pos + PopupOffset;
 
             Speaker.AddChild(Obj);
         }
@@ -345,23 +346,25 @@ namespace Orbis.Game
             MusicPlayer.PlayActiveSFX(SFX.GetSFX(SFXType.Dies));
 #endif
 
+            DieTime = LastDrawTick;
+
             Player1Dead = IsPlayer1;
             DiePlayerPos = IsPlayer1 ? Player1.ZoomPosition : Player2.ZoomPosition;
 
             if (IsPlayer1)
             {
+                Fade.AddChild(Player1);
                 Player1CurrentAnim = Player1Anim.DIES ?? BoyfriendAnim?.DIES;
                 AnimationChanged = true;
                 UpdateAnimations();
             }
             else
             {
+                Fade.AddChild(Player2);
                 Player2CurrentAnim = Player2Anim.DIES ?? BoyfriendAnim?.DIES;
                 AnimationChanged = true;
                 UpdateAnimations();
             }
-
-            DieTime = LastDrawTick;
 
             AddChild(Fade);
         }
@@ -592,8 +595,10 @@ namespace Orbis.Game
 
             if (Player1Anim.DIES == null || Player1Anim.DEAD == null || Player1Anim.DEAD_CONFIRM == null)
             {
-                BoyfriendAnim = new CharacterAnim("bf");
-                Boyfriend = new TiledSpriteAtlas2D(Util.GetXML(Character.BoyfriendAssets), Util.CopyFileToMemory, false);
+                bool IsPixel = SongInfo.Player1 == "bf-pixel";
+                BoyfriendAnim = IsPixel ? new CharacterAnim("bf-pixel-dead"): new CharacterAnim("bf");
+                var XML = Util.GetXML(IsPixel ? Character.BoyfriendDeadPixelAssets : Character.BoyfriendAssets);
+                Boyfriend = new TiledSpriteAtlas2D(XML, Util.CopyFileToMemory, false);
                 Boyfriend.OnAnimationEnd += OnAnimEnd;
             }
 
@@ -685,8 +690,10 @@ namespace Orbis.Game
                     Boyfriend.SetZoom(Player1.Zoom);
                     Boyfriend.Position = Player1.Position;
 
-                    AddChild(Boyfriend);
-                    RemoveChild(Boyfriend);
+                    var PlayerRoot = Player1.Parent;
+                    PlayerRoot.RemoveChild(_Player1);
+                    PlayerRoot.AddChild(Boyfriend);
+
                     ForceBoyfriend = true;
                 }
             }
@@ -696,8 +703,9 @@ namespace Orbis.Game
                 _Player1.SetZoom(Boyfriend.Zoom);
                 _Player1.Position = Boyfriend.Position;
 
-                RemoveChild(Boyfriend);
-                AddChild(_Player1);
+                var PlayerRoot = Player1.Parent;
+                PlayerRoot.RemoveChild(Boyfriend);
+                PlayerRoot.AddChild(_Player1);
 
                 ForceBoyfriend = false;
             }
@@ -1049,7 +1057,7 @@ namespace Orbis.Game
             else if (DieTime != 0) // Screen is black, start second animation step
             {
                 var CenterBG = new Vector2(Fade.Width, Fade.Height) / 2;
-                var PlayerCenter = (Player1Dead ? new Vector2(Player1.Width, Player1.Height) : new Vector2(Player2.Width, Player2.Height)) / 2;
+                var PlayerCenter = (Player1Dead ? new Vector2(Player1.ZoomWidth, Player1.ZoomHeight) : new Vector2(Player2.ZoomWidth, Player2.ZoomHeight)) / 2;
 
                 var CenteredPoint = CenterBG - PlayerCenter;
 
@@ -1060,12 +1068,14 @@ namespace Orbis.Game
 
                 long ElapsedTick = Tick - DieTime;
                 int ElapsedMS = (int)(ElapsedTick / Constants.ORBIS_MILISECOND);
-                var MoveProgress = Math.Min(ElapsedMS / 1500f, 1f);
+                var MoveProgress = Math.Min(ElapsedMS / 10000f, 1f);
+
+                MoveProgress = Geometry.CubicBezier(new Vector2(0.13f, 1.05f), new Vector2(0.5f, 1f), MoveProgress);
 
                 if (Player1Dead)
-                    Player1.Position = (Distance * MoveProgress) + DiePlayerPos;
+                    Player1.ZoomPosition = (Distance * MoveProgress) + DiePlayerPos;
                 else
-                    Player2.Position = (Distance * MoveProgress) + DiePlayerPos;
+                    Player2.ZoomPosition = (Distance * MoveProgress) + DiePlayerPos;
             }
         }
 
