@@ -129,14 +129,14 @@ namespace Orbis.Audio
         {
             SFXADriver.SetVolume(Volume);
             SFXA.Open(Sound);
-            SFXA.Resume();
+            SFXA.Restart();
         }
         
         public void PlayPassiveSFX(MemoryStream Sound, byte Volume = 80)
         {
             SFXBDriver.SetVolume(Volume);
             SFXB.Open(Sound);
-            SFXB.Resume();
+            SFXB.Restart();
         }
 
         public void PlayOther(MemoryStream Sound, byte Volume = 80)

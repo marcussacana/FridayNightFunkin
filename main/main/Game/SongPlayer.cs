@@ -293,7 +293,7 @@ namespace Orbis.Game
             }
 
             PopupLoaderHelper.Popup Score;
-            switch (Note.Score)
+            switch (Note?.Score ?? 0)
             {
                 case 200:
                     MusicPlayer?.UnmuteVoice();
@@ -309,11 +309,19 @@ namespace Orbis.Game
                     break;
                 
                 case 0:
-                    MusicPlayer?.MuteVoice();
+                    if (Note != null)
+                        MusicPlayer?.MuteVoice();
+                    
+                    var SFX = GetMissSFX();
+                    
+                    if (SFX != null)
+                        MusicPlayer?.PlayActiveSFX(SFX);
+                    
                     StatusChanged(null, new NewStatusEvent() { 
                         Target = EventTarget.Speaker,
                         NewAnimation = SpeakerAnim.DOWN_MISS
                     });
+                    
                     Score = PopupLoaderHelper.Popup.Miss;
                     break;
                 
@@ -329,6 +337,31 @@ namespace Orbis.Game
             Obj.ZoomPosition = Pos + PopupOffset;
 
             Speaker.AddChild(Obj);
+        }
+
+        private int LastMissSFX = 0;
+        private long LastMissTick;
+
+        private MemoryStream GetMissSFX()
+        {
+            if ((LastDrawTick - LastMissTick) / Constants.ORBIS_MILISECOND < 100)
+                return null;
+            
+            switch (LastMissSFX++)
+            {
+                case 0:
+                    LastMissTick = LastDrawTick;
+                    return SFX.GetSFX(SFXType.NoteMiss1);
+                case 1:
+                    LastMissTick = LastDrawTick;
+                    return SFX.GetSFX(SFXType.NoteMiss2);
+                case 2:
+                    LastMissTick = LastDrawTick;
+                    LastMissSFX = 0;
+                    return SFX.GetSFX(SFXType.NoteMiss3);
+            }
+
+            throw new InvalidOperationException("Appplication invariants violated");
         }
 
         private void OnPlayerDies(object sender, NoteMenu e)

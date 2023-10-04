@@ -319,14 +319,9 @@ namespace Orbis.Scene
             Player2.ZoomPosition = new Vector2(40, 100);
         }
 
-        public void Draw(long Tick)
+        public override void Dispose()
         {
-            throw new NotImplementedException();
-        }
-
-        public void Dispose()
-        {
-
+            base.Dispose();
         }
     }
 }
