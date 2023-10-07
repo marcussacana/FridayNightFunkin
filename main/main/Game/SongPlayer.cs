@@ -282,6 +282,11 @@ namespace Orbis.Game
             Player1Menu.OnNoteMissed += OnScore;
             Player2Menu.OnNoteHit += OnScore;
             Player2Menu.OnNoteMissed += OnScore;
+
+            Player1Menu.OnSustainMissed += (sender, e) => MusicPlayer.MuteVoice();
+            Player1Menu.OnSustainHit += (sender, e) => MusicPlayer.UnmuteVoice();
+            Player2Menu.OnSustainMissed += (sender, e) => MusicPlayer.MuteVoice();
+            Player2Menu.OnSustainHit += (sender, e) => MusicPlayer.UnmuteVoice();
         }
 
         private void OnScore(object sender, SongNoteEntry Note)
@@ -788,7 +793,6 @@ namespace Orbis.Game
         {
             switch (SongInfo.Player2)
             {
-                case null:
                 case "bf-pixel":
                     Player2.SetZoom(Coordinates2D.ParseZoomFactor(700));
                     Player2.ZoomPosition = new Vector2(100, 400);

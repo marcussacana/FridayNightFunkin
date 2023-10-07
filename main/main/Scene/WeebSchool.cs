@@ -144,6 +144,10 @@ namespace Orbis.Scene
                     Height = Height,
                     Texture = Texture
                 };
+                
+                if (!AllowDisposal)
+                    ((Texture2D)Note.SpriteView.Target).SharedTexture = true;
+                
                 Note.SetZoom(1);
                 return Note;
             }

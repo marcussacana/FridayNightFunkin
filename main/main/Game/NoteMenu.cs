@@ -28,6 +28,9 @@ namespace Orbis.Game
         public event EventHandler<SongNoteEntry> OnNoteMissed;
         public event EventHandler<SongNoteEntry> OnNoteHit;
 
+        public event EventHandler OnSustainHit;
+        public event EventHandler OnSustainMissed;
+
         public event EventHandler OnNoteSectionEnd;
 
         public const int NoteOffset = 155;
@@ -183,8 +186,8 @@ namespace Orbis.Game
         private bool FirstSection = true;
         private void EnsureEnoughtNotes()
         {
-            //Ensure it was 3 sections loaded
-            while (LoadedSections < 3)
+            //Ensure it was 5 sections loaded
+            while (LoadedSections < 5)
             {
                 var Rst = AddNextNote();
                 
@@ -281,6 +284,8 @@ namespace Orbis.Game
                     CurNote.OnNoteReached += NoteEntryReached;
                     CurNote.OnNoteHeaderElapsed += NoteEntryHeaderElapsed;
                     CurNote.OnNoteElapsed += NoteEntryElapsed;
+                    CurNote.OnSustainHit += (sender, e) => OnSustainHit?.Invoke(this, null);
+                    CurNote.OnSustainMissed += (sender, e) => OnSustainMissed?.Invoke(this, null);
                     CurNote.AltAnimation = Section.altAnim;
 
                     if (LastSectionNote)

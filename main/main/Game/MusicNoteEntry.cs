@@ -17,6 +17,9 @@ namespace Orbis.Game
         public Blank2D BackLayer { get; private set; } = new Blank2D();
         public SpriteAtlas2D Render { get; private set; }
 
+        public SpriteAtlas2D SustainRender { get; private set; }
+        public SpriteAtlas2D SustainEndRender { get; private set; }
+
         public Note Type { get; private set; }
 
         public bool CanBeHit { get; private set; }
@@ -40,6 +43,12 @@ namespace Orbis.Game
         float YPerMS;
         long SongBeginTick;
 
+        private float SustainBegin;
+        private float SustainLength;
+        private float SustainHeight;
+
+        public event EventHandler OnSustainMissed;
+        public event EventHandler OnSustainHit;
         public event EventHandler OnNoteElapsed;
         public event EventHandler OnNoteHeaderElapsed;
         public event EventHandler OnNoteReached;
@@ -87,61 +96,48 @@ namespace Orbis.Game
 
         private void SetupSustain()
         {
-            List<SpriteAtlas2D> SustainNotes = new List<SpriteAtlas2D>();
+            SustainLength = DurationMS * YPerMS;
+            SustainRender = (SpriteAtlas2D)Render.Clone(false);
+            SustainRender.Opacity = 150;
 
-            float SustainY = DurationMS * YPerMS;
-            for (int i = 0, x = 0; i < SustainY; x++)
+            SustainBegin = SustainRender.ZoomPosition.Y;
+        }
+        private void SetSustainFrame()
+        {
+            switch (Type)
             {
-                var Sustain = (SpriteAtlas2D)Render.Clone(false);
-                Sustain.Opacity = 150;
-                Sustain.Position = new Vector2(Width / 2, i - (x * 1.5f));
-
-                switch (Type)
-                {
-                    case Note.Up:
-                        Sustain.SetActiveAnimation(NotesNames.UP_BAR);
-                        break;
-                    case Note.Down:
-                        Sustain.SetActiveAnimation(NotesNames.DOWN_BAR);
-                        break;
-                    case Note.Left:
-                        Sustain.SetActiveAnimation(NotesNames.LEFT_BAR);
-                        break;
-                    case Note.Right:
-                        Sustain.SetActiveAnimation(NotesNames.RIGHT_BAR);
-                        break;
-                }
-
-                i += Sustain.Height;
-
-                Sustain.Position += new Vector2(-(Sustain.Width / 2), Height / 2);
-
-                SustainNotes.Add(Sustain);
+                case Note.Up:
+                    SustainRender.SetActiveAnimation(NotesNames.UP_BAR);
+                    break;
+                case Note.Down:
+                    SustainRender.SetActiveAnimation(NotesNames.DOWN_BAR);
+                    break;
+                case Note.Left:
+                    SustainRender.SetActiveAnimation(NotesNames.LEFT_BAR);
+                    break;
+                case Note.Right:
+                    SustainRender.SetActiveAnimation(NotesNames.RIGHT_BAR);
+                    break;
             }
+        }
 
-            if (SustainNotes.Any())
+        private void SetSustainEndFrame()
+        {
+            switch (Type)
             {
-                var LastNote = SustainNotes.Last();
-
-                switch (Type)
-                {
-                    case Note.Up:
-                        LastNote.SetActiveAnimation(NotesNames.UP_BAR_END);
-                        break;
-                    case Note.Down:
-                        LastNote.SetActiveAnimation(NotesNames.DOWN_BAR_END);
-                        break;
-                    case Note.Left:
-                        LastNote.SetActiveAnimation(NotesNames.LEFT_BAR_END);
-                        break;
-                    case Note.Right:
-                        LastNote.SetActiveAnimation(NotesNames.RIGHT_BAR_END);
-                        break;
-                }
+                case Note.Up:
+                    SustainRender.SetActiveAnimation(NotesNames.UP_BAR_END);
+                    break;
+                case Note.Down:
+                    SustainRender.SetActiveAnimation(NotesNames.DOWN_BAR_END);
+                    break;
+                case Note.Left:
+                    SustainRender.SetActiveAnimation(NotesNames.LEFT_BAR_END);
+                    break;
+                case Note.Right:
+                    SustainRender.SetActiveAnimation(NotesNames.RIGHT_BAR_END);
+                    break;
             }
-
-            foreach (var Note in SustainNotes)
-                BackLayer.AddChild(Note);
         }
 
         public void SetSongBegin(long Tick)
@@ -192,31 +188,60 @@ namespace Orbis.Game
                 }
 
                 float CurrentY = YPerMS * DistanceMS;
-                UpdateSustainVisibility(CurrentY);
-
                 Position = new Vector2(Position.X, CurrentY);
+
+                UpdateSustainVisibility(ZoomPosition.Y);
             }
+
+            DrawSustain(Tick);
             base.Draw(Tick);
+        }
+        private void DrawSustain(long Tick)
+        {
+            if (!Visible || SustainLength <= 0 || ZoomPosition.Y > 2000)
+                return;
+            
+            SetSustainFrame();
+            SustainRender.Position = AbsolutePosition;
+            SustainRender.ZoomPosition += new Vector2(ZoomWidth / 2 - (SustainRender.ZoomWidth / 2), ZoomHeight / 2);
+            SustainHeight = SustainRender.ZoomHeight;
+
+            for (float y = SustainBegin; y < SustainLength; y += SustainRender.ZoomHeight)
+            {
+                bool Last = y + SustainRender.ZoomHeight > SustainLength;
+
+                if (Last)
+                {
+                    SetSustainEndFrame();
+
+                    SustainRender.ZoomPosition -= new Vector2(0, 20);
+                }
+
+                SustainRender.ZoomPosition += new Vector2(0, SustainRender.ZoomHeight);
+                SustainRender.Draw(Tick);
+                
+                if (Last)
+                    break;
+            }
         }
 
         private void UpdateSustainVisibility(float CurrentY)
         {
-            foreach (var Sustain in BackLayer.Childs)
+            if (SustainLength <= 0 && SustainBegin < SustainLength)
+                return;
+
+            while (CurrentY + (SustainBegin + SustainHeight / 2) <= 0)
             {
-                if (!Sustain.Visible)
-                    continue;
+                SustainBegin += SustainRender.ZoomHeight;
 
-                float SustainDistance = ((-Sustain.ZoomPosition.Y) + Height / 2);
-                if (SustainDistance > CurrentY)
+                if (CanBeHit && Hitted)
                 {
-                    if (CanBeHit && Hitted)
-                        Score += SustainPoints;
-
-                    if (Hitted && Sustain.Opacity == 150)
-                        Sustain.Visible = false;
-                    else
-                        Sustain.Opacity = 140;
+                    Score += SustainPoints;
+                    OnSustainHit?.Invoke(this, null);
+                    continue;
                 }
+
+                OnSustainMissed?.Invoke(this, null);
             }
         }
 

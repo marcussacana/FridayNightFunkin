@@ -35,9 +35,15 @@ public class SFXHelper : ILoadable
         if (!SFXEntries.ContainsKey(Type))
             return null;
 
-        var Entry= SFXEntries[Type];
+        var Entry = SFXEntries[Type];
         Entry.Position = 0;
-        return Entry;
+
+        var MStream = new MemoryStream();
+        Entry.CopyTo(MStream);
+
+        MStream.Position = 0;
+        return MStream;
+
     }
 
     public bool Loaded { get; private set; }
