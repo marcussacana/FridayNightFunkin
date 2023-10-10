@@ -42,7 +42,7 @@ namespace Orbis.Game
 
         private long SongStartTick;
         
-        public const int StartDelayMS = 3000;
+        public const int StartDelayMS = 5000;
 
         IEnumerator<SongNoteEntry> NoteCreator;
 

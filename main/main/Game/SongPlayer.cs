@@ -263,7 +263,7 @@ namespace Orbis.Game
             MusicPlayer = new MusicPlayer(Instrumental, Voices, (s, a) => { Ended = true; }, false);
 #endif
             OnProgressChanged?.Invoke(BaseProgress + 10);
-
+            
             //11 - Setup Env
             SetupDisplay();
             SetupInput();
@@ -283,10 +283,11 @@ namespace Orbis.Game
             Player2Menu.OnNoteHit += OnScore;
             Player2Menu.OnNoteMissed += OnScore;
 
-            Player1Menu.OnSustainMissed += (sender, e) => MusicPlayer.MuteVoice();
-            Player1Menu.OnSustainHit += (sender, e) => MusicPlayer.UnmuteVoice();
-            Player2Menu.OnSustainMissed += (sender, e) => MusicPlayer.MuteVoice();
-            Player2Menu.OnSustainHit += (sender, e) => MusicPlayer.UnmuteVoice();
+            Player1Menu.OnSustainMissed += (sender, e) => MusicPlayer?.MuteVoice();
+            Player2Menu.OnSustainMissed += (sender, e) => MusicPlayer?.MuteVoice();
+            
+            Player1Menu.OnSustainHit += (sender, e) => MusicPlayer?.UnmuteVoice();
+            Player2Menu.OnSustainHit += (sender, e) => MusicPlayer?.UnmuteVoice();
         }
 
         private void OnScore(object sender, SongNoteEntry Note)
@@ -344,6 +345,33 @@ namespace Orbis.Game
             Speaker.AddChild(Obj);
         }
 
+        private FallObj CreateSongCountdown(int Num)
+        {
+            PopupLoaderHelper.Popup Pop;
+
+            switch (Num)
+            {
+                case 0:
+                    Pop = PopupLoaderHelper.Popup.Ready;
+                    break;
+                case 1:
+                    Pop = PopupLoaderHelper.Popup.Set;
+                    break;
+                default:
+                    Pop = PopupLoaderHelper.Popup.Go;
+                    break;
+            }
+
+            var Texture = PopupHelper.GetTexture(Pop);
+
+            FallObj Obj = new FallObj(Texture, 50, 500);
+            var Pos = this.GetZoomMiddle(Obj);
+            Obj.SetZoom(1.2f + PopupHelper.ZoomFactor);
+            Obj.ZoomPosition = Pos + PopupOffset;
+
+            return Obj;
+        }
+
         private int LastMissSFX = 0;
         private long LastMissTick;
 
@@ -380,8 +408,9 @@ namespace Orbis.Game
                 return;
 
 #if ORBIS
+            MusicPlayer.MuteAll();
             MusicPlayer.Pause();
-            MusicPlayer.PlayActiveSFX(SFX.GetSFX(SFXType.Dies));
+            MusicPlayer.PlayPassiveSFX(SFX.GetSFX(SFXType.Dies));
 #endif
 
             DieTime = LastDrawTick;
@@ -430,7 +459,7 @@ namespace Orbis.Game
                     DiePlayerPos -= Player1Anim.GetAnimOffset(Player1Anim.DEAD);
                     
 #if ORBIS
-                    MusicPlayer.PlayOther(SFX.GetSFX(SFXType.DeadLoop));
+                    MusicPlayer.PlayOther(SFX.GetSFX(SFXType.DeadLoop), 80, true);
 #endif
 
                     Player1CurrentAnim = Player1Anim.DEAD;
@@ -495,6 +524,12 @@ namespace Orbis.Game
         bool CanBegin = true;
         bool BeginRequested = false;
         long BeginAudioTick = 0;
+
+        long ThreeTick = 0;
+        long ReadyAnimTick = 0;
+        long SetAnimTick = 0;
+        long GoAnimTick = 0;
+
         public void Begin()
         {
             if (!CanBegin)
@@ -691,6 +726,9 @@ namespace Orbis.Game
             Fade = new Rectangle2D(Application.Default.Width, Application.Default.Height, true);
             Fade.Color = RGBColor.Black;
             Fade.Opacity = 0;
+
+            Width = 1920;
+            Height = 1080;
         }
 
         private void EnableAnimations()
@@ -898,6 +936,7 @@ namespace Orbis.Game
         }
 
         public int BPMTicks { get; private set; }
+        public bool IsPixel { get; internal set; }
 
         long BeginFadeOut = -1;
         float LastBeatProgress;
@@ -946,12 +985,17 @@ namespace Orbis.Game
             //Firt frame may have an delayed tick due the loading,
             //Let's skip the timmer related events to the next one,
             //that will have an updated tick.
-            if (!FirstFrame)
+            if (!FirstFrame && !Started)
             {
                 if (BeginRequested)
                 {
                     BeginRequested = false;
                     BeginAudioTick = Tick + (Constants.ORBIS_MILISECOND * NoteMenu.StartDelayMS);
+
+                    ThreeTick = Tick;
+                    ReadyAnimTick = Tick + (Constants.ORBIS_MILISECOND * 500);
+                    SetAnimTick = Tick + (Constants.ORBIS_MILISECOND * 1000);
+                    GoAnimTick = Tick + (Constants.ORBIS_MILISECOND * 1500);
 
                     //Preload Audio
                     MusicPlayer?.Resume();
@@ -961,16 +1005,72 @@ namespace Orbis.Game
                     Player2Menu.SetSongBegin(Tick);
                 }
 
-                if (BeginAudioTick != 0 && Tick >= BeginAudioTick)
-                {
-                    MusicPlayer?.Resume();
-                    BeginAudioTick = 0;
-                    Started = true;
-                }
+                DoStart(Tick);
             }
 
             LastDrawTick = Tick;
             base.Draw(Tick);
+        }
+
+        private void DoStart(long Tick)
+        {
+            if (ThreeTick != 0 && Tick >= ThreeTick)
+            {
+#if ORBIS
+                var SFX = SFXHelper.Default.GetSFX(IsPixel ? SFXType.Countdown3Pixel : SFXType.Countdown3);
+                MusicPlayer.PlayActiveSFX(SFX);
+#endif
+
+                ThreeTick = 0;
+            }
+
+            if (ReadyAnimTick != 0 && Tick >= ReadyAnimTick)
+            {
+#if ORBIS
+                var SFX = SFXHelper.Default.GetSFX(IsPixel ? SFXType.Countdown2Pixel : SFXType.Countdown2);
+                MusicPlayer.PlayPassiveSFX(SFX);
+#endif
+
+                var Obj = CreateSongCountdown(0);
+                AddChild(Obj);
+
+                ReadyAnimTick = 0;
+            }
+
+            if (SetAnimTick != 0 && Tick >= SetAnimTick)
+            {
+#if ORBIS
+                var SFX = SFXHelper.Default.GetSFX(IsPixel ? SFXType.Countdown1Pixel : SFXType.Countdown1);
+                MusicPlayer.PlayActiveSFX(SFX);
+#endif
+
+                var Obj = CreateSongCountdown(1);
+                AddChild(Obj);
+
+                SetAnimTick = 0;
+            }
+
+            if (GoAnimTick != 0 && Tick >= GoAnimTick)
+            {
+#if ORBIS
+                var SFX = SFXHelper.Default.GetSFX(IsPixel ? SFXType.CountdownGoPixel : SFXType.CountdownGo);
+                MusicPlayer.PlayPassiveSFX(SFX);
+#endif
+
+                var Obj = CreateSongCountdown(2);
+                AddChild(Obj);
+
+                GoAnimTick = 0;
+            }
+
+            if (BeginAudioTick != 0 && Tick >= BeginAudioTick)
+            {
+                MusicPlayer.CloseSFX();
+                
+                MusicPlayer?.Resume();
+                BeginAudioTick = 0;
+                Started = true;
+            }
         }
 
         private void DoFadeOut(long Tick)
@@ -1092,6 +1192,7 @@ namespace Orbis.Game
                         Player1.Dispose();
                     }
 
+                    Speaker.Dispose();
                     Player1Menu.Dispose();
                     Player2Menu.Dispose();
                     Health.Dispose();

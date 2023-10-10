@@ -227,7 +227,7 @@ namespace Orbis.Game
 
         private void UpdateSustainVisibility(float CurrentY)
         {
-            if (SustainLength <= 0 && SustainBegin < SustainLength)
+            if (SustainLength <= 0 || SustainBegin < SustainLength)
                 return;
 
             while (CurrentY + (SustainBegin + SustainHeight / 2) <= 0)

@@ -6,6 +6,8 @@ namespace Orbis.Audio
 {
     internal class MusicPlayer : IDisposable
     {
+        bool Ogg = false;
+        
         IAudioPlayer Other;
         IAudioPlayer Instrumental;
         IAudioPlayer Voices;
@@ -24,6 +26,8 @@ namespace Orbis.Audio
             VoiceDriver = new OrbisAudioOut();
             SFXADriver = new OrbisAudioOut();
             SFXBDriver = new OrbisAudioOut();
+
+            this.Ogg = Ogg;
 
             this.Instrumental = Ogg ? new VorbisPlayer() : new WavePlayer();
             this.Other = Ogg ? new VorbisPlayer() : new WavePlayer();
@@ -49,8 +53,7 @@ namespace Orbis.Audio
             SFXADriver.Resume();
             SFXBDriver.Resume();
         }
-
-
+        
         public void Resume()
         {
             Voices.Resume();
@@ -65,6 +68,23 @@ namespace Orbis.Audio
             SFXADriver.Resume();
         }
 
+        public void CloseSFX()
+        {
+            SFXA.Dispose();
+            SFXB.Dispose();
+            SFXADriver.Dispose();
+            SFXBDriver.Dispose();
+
+            SFXA = Ogg ? new VorbisPlayer() : new WavePlayer();
+            SFXB = Ogg ? new VorbisPlayer() : new WavePlayer();
+
+            SFXADriver = new OrbisAudioOut();
+            SFXBDriver = new OrbisAudioOut();
+            
+            SFXA.SetAudioDriver(SFXADriver);
+            SFXB.SetAudioDriver(SFXBDriver);
+        }
+
         public void Pause()
         {
             //When you pause the wave/ogg player
@@ -77,14 +97,22 @@ namespace Orbis.Audio
             //but after look a bit more seems that we need
             //jailbreak the process to call the pthread functions
             //so it became a bit overkill just to pause the sound.
-            InstrumentalDriver.Suspend();
-            OtherDriver.Suspend();
-            VoiceDriver.Suspend();
-            SFXADriver.Suspend();
-            SFXBDriver.Suspend();
+            InstrumentalDriver.Interrupt();
+            OtherDriver.Interrupt();
+            VoiceDriver.Interrupt();
+            SFXADriver.Interrupt();
+            SFXBDriver.Interrupt();
         }
 
 
+        public void MuteAll()
+        {
+            VoiceDriver.SetVolume(0);
+            InstrumentalDriver.SetVolume(0);
+            SFXADriver.SetVolume(0);
+            SFXBDriver.SetVolume(0);
+            OtherDriver.SetVolume(0);
+        }
         public void MuteVoice()
         {
             VoiceDriver.SetVolume(0);
@@ -139,10 +167,11 @@ namespace Orbis.Audio
             SFXB.Restart();
         }
 
-        public void PlayOther(MemoryStream Sound, byte Volume = 80)
+        public void PlayOther(MemoryStream Sound, byte Volume = 80, bool Loop = false)
         {
             OtherDriver.SetVolume(Volume);
             Other.Open(Sound);
+            Other.Loop = Loop;
             Other.Restart();
         }
         
@@ -168,6 +197,13 @@ namespace Orbis.Audio
             VoiceDriver?.Dispose();
             Instrumental?.Dispose();
             InstrumentalDriver?.Dispose();
+            
+            SFXA?.Dispose();
+            SFXB?.Dispose();
+            SFXADriver?.Dispose();
+            SFXBDriver?.Dispose();
+            Other?.Dispose();
+            OtherDriver?.Dispose();
         }
     }
 }

@@ -25,12 +25,16 @@ namespace Orbis.Game
             Combo6,
             Combo7,
             Combo8,
-            Combo9
+            Combo9,
+            Ready,
+            Set,
+            Go
         }
+
         Dictionary<Popup, Texture> Textures = new Dictionary<Popup, Texture>();
         public bool Loaded { get; private set; }
 
-        public int TotalProgress => 14;
+        public int TotalProgress => 17;
 
         public void Dispose()
         {
@@ -187,10 +191,40 @@ namespace Orbis.Game
 
                 Textures[Popup.Combo9] = Tex;
             }
-            
-            Loaded = true;
 
             OnProgressChanged(14);
+
+            using (var TexData = Util.CopyFileToMemory(Sufix != null ? $"ready{Sufix}.dds" : "ready.dds"))
+            {
+                Texture Tex = new Texture(true);
+                Tex.SetDDS(TexData, true);
+
+                Textures[Popup.Ready] = Tex;
+            }
+
+            OnProgressChanged(15);
+
+            using (var TexData = Util.CopyFileToMemory(Sufix != null ? $"set{Sufix}.dds" : "set.dds"))
+            {
+                Texture Tex = new Texture(true);
+                Tex.SetDDS(TexData, true);
+
+                Textures[Popup.Set] = Tex;
+            }
+
+            OnProgressChanged(16);
+
+            using (var TexData = Util.CopyFileToMemory(Sufix != null ? $"go{Sufix}.dds" : "go.dds"))
+            {
+                Texture Tex = new Texture(true);
+                Tex.SetDDS(TexData, true);
+
+                Textures[Popup.Go] = Tex;
+            }
+
+            Loaded = true;
+
+            OnProgressChanged(17);
         }
 
     }

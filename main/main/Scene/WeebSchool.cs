@@ -321,6 +321,8 @@ namespace Orbis.Scene
             Player1.ZoomPosition = new Vector2(1000, 550);
             Speaker.ZoomPosition = new Vector2(500, 200);
             Player2.ZoomPosition = new Vector2(40, 100);
+
+            Game.IsPixel = true;
         }
 
         public override void Dispose()

@@ -53,8 +53,15 @@ namespace Orbis.Scene
 
         private WavePlayer Theme;
         private OrbisAudioOut ThemeDriver;
-        private WavePlayer SFXPlayer;
-        private OrbisAudioOut SFXDriver;
+
+        private WavePlayer SFXAPlayer;
+        private OrbisAudioOut SFXADriver;
+
+        private WavePlayer SFXBPlayer;
+        private OrbisAudioOut SFXBDriver;
+
+        private WavePlayer SFXCPlayer;
+        private OrbisAudioOut SFXCDriver;
 
         private AtlasText2D DifficultyView;
 
@@ -70,18 +77,33 @@ namespace Orbis.Scene
         {
             this.Theme = Theme;
             this.ThemeDriver = ThemeDriver;
-            this.SFXPlayer = SFXPlayer;
-            this.SFXDriver = SFXDriver;
+            this.SFXAPlayer = SFXPlayer;
+            this.SFXADriver = SFXDriver;
             this.LoadScreen = LoadScreen;
 
 #if ORBIS
-            SFXPlayer.Close();
-            SFXDriver.SetVolume(0);
-            SFXDriver.Stop();
+            SFXAPlayer.Close();
+            SFXADriver.SetVolume(0);
+            SFXADriver.Stop();
+
+            SFXBPlayer = new WavePlayer();
+            SFXBDriver = new OrbisAudioOut();
+            SFXBDriver.SetVolume(0);
+
+            SFXCPlayer = new WavePlayer();
+            SFXCDriver = new OrbisAudioOut();
+            SFXCDriver.SetVolume(0);
+            
+            SFXBPlayer.SetAudioDriver(SFXBDriver);
+            SFXCPlayer.SetAudioDriver(SFXCDriver);
 #endif
 
-            if (SFXPlayer != null)
-                SFXPlayer.OnTrackEnd += ConfirmTrackEnd;
+            if (SFXAPlayer != null)
+                SFXAPlayer.OnTrackEnd += ConfirmTrackEnd;
+            if (SFXBPlayer != null)
+                SFXBPlayer.OnTrackEnd += ConfirmTrackEnd;
+            if (SFXCPlayer != null)
+                SFXCPlayer.OnTrackEnd += ConfirmTrackEnd;
         }
 
         public bool Loaded { get; set; }
@@ -213,7 +235,7 @@ namespace Orbis.Scene
             if (WaitingSongEnd)
                 return;
             
-            if (SFXPlayer != null)
+            if (SFXAPlayer != null)
             {
                 WaitingSongEnd = true;
                 MusicConfirmed = false;
@@ -290,6 +312,7 @@ namespace Orbis.Scene
             }
         }
 
+        int LastTrack = 0;
         private void PlayAudio(MemoryStream Audio)
         {
             if (Audio == null)
@@ -297,9 +320,36 @@ namespace Orbis.Scene
 
             Audio.Position = 0;
 
-            SFXDriver?.SetVolume(80);
-            SFXPlayer?.Open(Audio);
-            SFXPlayer?.Restart();
+            switch (LastTrack++)
+            {
+                case 0:
+                    SFXCDriver.SetVolume(0);
+                    SFXBDriver.SetVolume(0);
+
+                    SFXADriver?.SetVolume(80);
+                    SFXAPlayer?.Open(Audio);
+                    SFXAPlayer?.Restart();
+                    break;
+                case 1:
+                    SFXCDriver.SetVolume(0);
+                    SFXADriver.SetVolume(0);
+
+                    SFXBDriver?.SetVolume(80);
+                    SFXBPlayer?.Open(Audio);
+                    SFXBPlayer?.Restart();
+                    break;
+                default:
+                    SFXADriver.SetVolume(0);
+                    SFXBDriver.SetVolume(0);
+
+                    SFXCDriver?.SetVolume(80);
+                    SFXCPlayer?.Open(Audio);
+                    SFXCPlayer?.Restart();
+
+                    LastTrack = 0;
+                    break;
+
+            }
         }
 
         private void DecreaseDifficulty()
