@@ -115,6 +115,7 @@ namespace Orbis.Scene
             Freaks.FrameDelay = 16;
             Freaks.ZoomPosition = new Vector2(0, 300);
 
+            Game.PopupHelper.AntiAlising = false;
             Game.PopupHelper.Sufix = "-pixel";
             Game.PopupHelper.ZoomFactor -= 1f;
             Game.PopupOffset -= new Vector2(90, 60);

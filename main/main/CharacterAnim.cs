@@ -87,14 +87,16 @@ namespace Orbis
                     DEAD = "BF Dead Loop";
                     DEAD_CONFIRM = "BF Dead confirm";
                     HEY = "BF HEY!!";
-                    DOWN = "BF NOTE DOWN";
-                    DOWN_MISS = "BF NOTE DOWN MISS";
+
                     LEFT = "BF NOTE LEFT";
                     LEFT_MISS = "BF NOTE LEFT MISS";
                     RIGHT = "BF NOTE RIGHT";
                     RIGHT_MISS = "BF NOTE RIGHT MISS";
                     UP = "BF NOTE UP";
                     UP_MISS = "BF NOTE UP MISS";
+                    DOWN = "BF NOTE DOWN";
+                    DOWN_MISS = "BF NOTE DOWN MISS";
+
                     DIES = "BF dies";
                     HIT = "BF hit";
                     PRE_ATTACK = "bf pre attack";
@@ -102,37 +104,38 @@ namespace Orbis
                     DOGGLE = "boyfriend dodge";
                     break;
                 case "dad":
-                    DOWN = "Dad Sing Note DOWN";
                     LEFT = "Dad Sing Note LEFT";
                     RIGHT = "Dad Sing Note RIGHT";
                     UP = "Dad Sing Note UP";
+                    DOWN = "Dad Sing Note DOWN";
                     DANCING = "Dad idle dance";
                     break;
                 case "spooky":
                     LEFT = "note sing left";
-                    DOWN = "spooky DOWN note";
                     RIGHT = "spooky sing right";
                     UP = "spooky UP NOTE";
+                    DOWN = "spooky DOWN note";
                     DANCING = "spooky dance idle";
                     break;
                 case "pico":
                     DANCING = "Pico Idle Dance";
-                    DOWN = "Pico Down Note";
-                    DOWN_MISS = "Pico Down Note MISS";
                     LEFT = "Pico NOTE LEFT";
                     LEFT_MISS = "Pico NOTE LEFT miss";
                     RIGHT = "Pico Note Right";
                     RIGHT_MISS = "Pico Note Right Miss";
                     UP = "pico Up note";
                     UP_MISS = "pico Up note miss";
+                    DOWN = "Pico Down Note";
+                    DOWN_MISS = "Pico Down Note MISS";
                     break;
                 case "gf":
                     HEY = "GF Cheer";
                     DANCING = "GF Dancing Beat";
-                    DOWN = "GF Down Note";
+
+                    LEFT = "GF left note";
                     RIGHT = "GF Right Note";
                     UP = "GF Up Note";
-                    LEFT = "GF left note";
+                    DOWN = "GF Down Note";
 
                     HAIR_LANDING = "GF Dancing Beat Hair Landing";
                     HAIR_BLOWING = "GF Dancing Beat Hair blowing";
@@ -147,37 +150,37 @@ namespace Orbis
                 case "mom-car":
                 case "mom":
                     DANCING = "Mom Idle";
-                    DOWN = "MOM DOWN POSE";
                     LEFT = "Mom Left Pose";
                     RIGHT = "Mom Pose Left";//WTF
                     UP = "Mom Up Pose";
+                    DOWN = "MOM DOWN POSE";
                     break;
                 case "parents-christmas":
                     Character = "parents-christmas";
                     SHAKING = DANCING = "Parent Christmas Idle";
 
-                    DOWN = "Parent Down Note Dad";
                     LEFT = "Parent Left Note Dad";
                     RIGHT = "Parent Right Note Dad";
                     UP = "Parent Up Note Dad";
+                    DOWN = "Parent Down Note Dad";
                     break;
                 case "parents-christmas-alt":
                     Alt = true;
                     Character = "parents-christmas";
                     SHAKING = DANCING = "Parent Christmas Idle";
 
-                    DOWN = "Parent Down Note Mom";
                     LEFT = "Parent Left Note Mom";
                     RIGHT = "Parent Right Note Mom";
                     UP = "Parent Up Note Mom";
+                    DOWN = "Parent Down Note Mom";
                     break;
                 case "monster":
                 case "monster-christmas":
                     SHAKING = DANCING = "monster idle";
                     LEFT = "Monster left note";
                     RIGHT = "Monster Right note";
-                    DOWN = "monster down";
                     UP = "monster up note";
+                    DOWN = "monster down";
                     break;
                 case "senpai":
                     SHAKING = DANCING = "Senpai Idle instance";
@@ -185,6 +188,13 @@ namespace Orbis
                     RIGHT = "SENPAI RIGHT NOTE instance";
                     UP = "SENPAI UP NOTE instance";
                     DOWN = "SENPAI DOWN NOTE instance";
+                    break;
+                case "senpai-angry":
+                    SHAKING = DANCING = "Angry Senpai Idle instance";
+                    LEFT = "Angry Senpai LEFT NOTE instance";
+                    RIGHT = "Angry Senpai RIGHT NOTE instance";
+                    UP = "Angry Senpai UP NOTE instance";
+                    DOWN = "Angry Senpai DOWN NOTE instance";
                     break;
                 case "tankman":
                     Alt = true;

@@ -159,7 +159,7 @@ public class StartMenuScene : GLObject2D, ILoadable
             Application.Default.AddObject(LoadBG);
             Dispose();
 
-            var Freestyle = new FreestyleScene(Theme, ThemeDriver, SFXPlayer, SFXDriver, LoadBG);
+            var Freestyle = new FreestyleScene(Theme, ThemeDriver, LoadBG);
             LoadBG.Load(Freestyle, () =>
             {
                 Application.Default.RemoveObjects();
@@ -225,6 +225,8 @@ public class StartMenuScene : GLObject2D, ILoadable
     {
         Logo?.Dispose();
         Girlfriend?.Dispose();
+        SFXDriver?.Dispose();
+        SFXPlayer?.Dispose();
         base.Dispose();
     }
 }

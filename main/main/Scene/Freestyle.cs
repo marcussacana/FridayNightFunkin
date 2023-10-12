@@ -1,5 +1,4 @@
-﻿using Orbis.Audio;
-using Orbis.Game;
+﻿using Orbis.Game;
 using Orbis.Interfaces;
 using OrbisGL;
 using OrbisGL.Audio;
@@ -8,8 +7,6 @@ using OrbisGL.GL;
 using OrbisGL.GL2D;
 using System;
 using System.Collections.Generic;
-using System.Diagnostics;
-using System.IO;
 using System.Linq;
 using System.Numerics;
 
@@ -44,24 +41,15 @@ namespace Orbis.Scene
             "ugh"
         };
 
+        ChoiceScene Menu;
 
         static Texture2D TexView;
         static SpriteAtlas2D Atlas;
 
-        Blank2D SongList = new Blank2D();
         private Vector2 SongListPos = new Vector2(50f, 0);
 
         private WavePlayer Theme;
         private OrbisAudioOut ThemeDriver;
-
-        private WavePlayer SFXAPlayer;
-        private OrbisAudioOut SFXADriver;
-
-        private WavePlayer SFXBPlayer;
-        private OrbisAudioOut SFXBDriver;
-
-        private WavePlayer SFXCPlayer;
-        private OrbisAudioOut SFXCDriver;
 
         private AtlasText2D DifficultyView;
 
@@ -71,44 +59,18 @@ namespace Orbis.Scene
 
         Dificuty CurrentDifficulty = Dificuty.Normal;
 
-        int SelectedIndex = 0;
-
-        public FreestyleScene(WavePlayer Theme, OrbisAudioOut ThemeDriver, WavePlayer SFXPlayer, OrbisAudioOut SFXDriver, LoadingScene LoadScreen)
+        public FreestyleScene(WavePlayer Theme, OrbisAudioOut ThemeDriver, LoadingScene LoadScreen)
         {
             this.Theme = Theme;
             this.ThemeDriver = ThemeDriver;
-            this.SFXAPlayer = SFXPlayer;
-            this.SFXADriver = SFXDriver;
             this.LoadScreen = LoadScreen;
-
-#if ORBIS
-            SFXAPlayer.Close();
-            SFXADriver.SetVolume(0);
-            SFXADriver.Stop();
-
-            SFXBPlayer = new WavePlayer();
-            SFXBDriver = new OrbisAudioOut();
-            SFXBDriver.SetVolume(0);
-
-            SFXCPlayer = new WavePlayer();
-            SFXCDriver = new OrbisAudioOut();
-            SFXCDriver.SetVolume(0);
-            
-            SFXBPlayer.SetAudioDriver(SFXBDriver);
-            SFXCPlayer.SetAudioDriver(SFXCDriver);
-#endif
-
-            if (SFXAPlayer != null)
-                SFXAPlayer.OnTrackEnd += ConfirmTrackEnd;
-            if (SFXBPlayer != null)
-                SFXBPlayer.OnTrackEnd += ConfirmTrackEnd;
-            if (SFXCPlayer != null)
-                SFXCPlayer.OnTrackEnd += ConfirmTrackEnd;
         }
 
         public bool Loaded { get; set; }
 
         public int TotalProgress => 2;
+
+        public bool ChoiceDone { get; private set; }
 
         public void Load(Action<int> OnProgressChanged)
         {
@@ -137,21 +99,11 @@ namespace Orbis.Scene
                 Atlas = new SpriteAtlas2D(XML, Util.CopyFileToMemory, true);
             }
 
+            Menu = new ChoiceScene(SongListPos, 1920, 1080, Songs.Select(GetFirendlyName).ToArray(), Atlas);
+            Menu.OnChoiceDoneBegin += Menu_OnChoiceDoneBegin;
+            Menu.OnChoiceDoneEnd += Menu_OnChoiceDoneEnd;
 
-            Vector2 CurrentPos = Vector2.Zero;
-            foreach (var Song in Songs)
-            {
-                var Text = new AtlasText2D(Atlas, Util.FontBoldMap);
-                Text.SetText(GetFirendlyName(Song));
-                Text.Position = CurrentPos;
-                Text.SetZoom(0.8f);
-                SongList.AddChild(Text);
-
-                CurrentPos += new Vector2(Text.Width, Text.Height + 50);
-            }
-
-            SongList.Position = SongListPos;
-            AddChild(SongList);
+            AddChild(Menu);
 
             DifficultyView = new AtlasText2D(Atlas, Util.FontBoldMap);
             DifficultyView.SetText("NORMAL");
@@ -170,13 +122,21 @@ namespace Orbis.Scene
             Fade.Opacity = 0;
 
             AddChild(Fade);
-
-
-            UpdateSelection(true);
             
 
             OnProgressChanged?.Invoke(2);
 
+        }
+
+        private void Menu_OnChoiceDoneEnd(object sender, EventArgs e)
+        {
+            ChoiceDone = true;
+        }
+
+        private void Menu_OnChoiceDoneBegin(object sender, EventArgs e)
+        {
+            ThemeDriver.SetVolume(0);
+            BeginFadeOut = 0;
         }
 
         private void OnKeyUp(object Sender, KeyboardEventArgs Args)
@@ -185,9 +145,9 @@ namespace Orbis.Scene
                 return;
 
             if (Args.Keycode == IME_KeyCode.DOWNARROW)
-                MoveDown();
+                Menu.MoveDown();
             if (Args.Keycode == IME_KeyCode.UPARROW)
-                MoveUp();
+                Menu.MoveUp();
 
             if (Args.Keycode == IME_KeyCode.RIGHTARROW)
                 IncreaseDifficulty();
@@ -195,7 +155,7 @@ namespace Orbis.Scene
                 DecreaseDifficulty();
 
             if (Args.Keycode == IME_KeyCode.KEYPAD_ENTER || Args.Keycode == IME_KeyCode.RETURN)
-                SongConfirm();
+                Menu.DoChoice();
         }
 
         private void GamepadOnOnButtonUp(object sender, ButtonEventArgs args)
@@ -204,10 +164,10 @@ namespace Orbis.Scene
                 return;
 
             if (args.Button.HasFlag(OrbisPadButton.Down))
-                MoveDown();
+                Menu.MoveDown();
 
             if (args.Button.HasFlag(OrbisPadButton.Up))
-                MoveUp();
+                Menu.MoveUp();
 
             if (args.Button.HasFlag(OrbisPadButton.Left))
                 DecreaseDifficulty();
@@ -216,141 +176,10 @@ namespace Orbis.Scene
                 IncreaseDifficulty();
             
             if (args.Button.HasFlag(OrbisPadButton.Options) || args.Button.HasFlag(OrbisPadButton.Cross))
-                SongConfirm();
-        }
-
-        private void MoveUp()
-        {
-            if (SelectedIndex <= 0 || AnimTick != -1)
-                return;
-
-            SelectedIndex--;
-            UpdateSelection(false);
-        }
-
-        bool WaitingSongEnd = false;
-        bool MusicConfirmed = false;
-        private void SongConfirm()
-        {
-            if (WaitingSongEnd)
-                return;
-            
-            if (SFXAPlayer != null)
-            {
-                WaitingSongEnd = true;
-                MusicConfirmed = false;
-                BeginFadeOut = 0;
-                
-                PlayAudio(SFXHelper.Default.GetSFX(SFXType.MenuConfirm));
-                
-                ThemeDriver.SetVolume(0);
-            }
-            else
-            {
-                MusicConfirmed = true;
-            }
-        }
-        private void ConfirmTrackEnd(object sender, EventArgs e)
-        {
-            //Prevents the SFX from the Main Menu trigger this method in the initialization
-            if (!WaitingSongEnd)
-                return;
-            
-            WaitingSongEnd = false;
-
-            //Again, the OnTrackEnd event runs in a secondary thread, we can't touch in the OpenGL objects.
-            //So, let's just set an flag and let the main draw loop detect it
-            MusicConfirmed = true;
+                Menu.DoChoice();
         }
 
         int SFXTrack = 1;
-
-        const int XSelectionDistance = 50;
-        const int AnimSelectionDuration = 250;
-
-        GLObject2D LastSelection;
-        AtlasText2D Selection;
-        float MoveInitialY;
-        float MoveDeltaY;
-        long AnimTick = -1;
-        private void MoveDown()
-        {
-            if (SelectedIndex >= Songs.Count - 1 || AnimTick != -1)
-                return;
-
-            SelectedIndex++;
-            UpdateSelection(false);
-        }
-
-        private void UpdateSelection(bool Instant)
-        {
-            LastSelection = Selection;
-            Selection = (AtlasText2D)SongList.Childs.ElementAt(SelectedIndex);
-
-            var ListBasePos = 1080f / 2f;
-            MoveInitialY = SongList.Position.Y;
-
-            var CenterSelectionY = Selection.ZoomPosition.Y + (Selection.ZoomHeight / 2);
-            var TargetListY = ListBasePos - CenterSelectionY;
-
-            MoveDeltaY = TargetListY - MoveInitialY;
-
-            if (Instant)
-            {
-                SongList.Position = new Vector2(SongList.Position.X, SongList.Position.Y + MoveDeltaY);
-                
-                foreach (var Child in SongList.Childs)
-                    Child.Position = new Vector2(0, Child.Position.Y);
-
-                Selection.Position = new Vector2(XSelectionDistance, Selection.Position.X);
-            }
-            else
-            {
-                AnimTick = 0;
-
-                PlayAudio(SFXHelper.Default.GetSFX(SFXType.MenuChoice));
-            }
-        }
-
-        int LastTrack = 0;
-        private void PlayAudio(MemoryStream Audio)
-        {
-            if (Audio == null)
-                return;
-
-            Audio.Position = 0;
-
-            switch (LastTrack++)
-            {
-                case 0:
-                    SFXCDriver.SetVolume(0);
-                    SFXBDriver.SetVolume(0);
-
-                    SFXADriver?.SetVolume(80);
-                    SFXAPlayer?.Open(Audio);
-                    SFXAPlayer?.Restart();
-                    break;
-                case 1:
-                    SFXCDriver.SetVolume(0);
-                    SFXADriver.SetVolume(0);
-
-                    SFXBDriver?.SetVolume(80);
-                    SFXBPlayer?.Open(Audio);
-                    SFXBPlayer?.Restart();
-                    break;
-                default:
-                    SFXADriver.SetVolume(0);
-                    SFXBDriver.SetVolume(0);
-
-                    SFXCDriver?.SetVolume(80);
-                    SFXCPlayer?.Open(Audio);
-                    SFXCPlayer?.Restart();
-
-                    LastTrack = 0;
-                    break;
-
-            }
-        }
 
         private void DecreaseDifficulty()
         {
@@ -400,37 +229,23 @@ namespace Orbis.Scene
                 Theme?.Resume();
             }
 
-            DoSongSelection(Tick);
-
-            if (Selection != null)
-            {
-                var ElapsedTicks = Tick - LastFrameTick;
-
-                if (ElapsedTicks > Constants.ORBIS_MILISECOND * 100)
-                {
-                    LastFrameTick = Tick;
-                    foreach (var Child in Selection.Childs.Cast<SpriteAtlas2D>())
-                    {
-                        Child.NextFrame();
-                    }
-                }
-            }
-
             DoFade(Tick);
 
-            if (MusicConfirmed && BeginFadeOut == -1)
+            if (ChoiceDone && BeginFadeOut == -1)
             {
-                MusicConfirmed = false;
+                ChoiceDone = false;
 
                 StartSong();
 
                 return;
             }
 
+            LastFrameTick = Tick;
+            
             base.Draw(Tick);
         }
 
-        private void StartSong() => StartSong(Util.GetSongByName(Songs[SelectedIndex], CurrentDifficulty));
+        private void StartSong() => StartSong(Util.GetSongByName(Songs[Menu.SelectedIndex], CurrentDifficulty));
         private void StartSong(SongInfo Song)
         {
             SongPlayer SP = new SongPlayer(Song);
@@ -450,39 +265,7 @@ namespace Orbis.Scene
             });
         }
 
-        private void DoSongSelection(long Tick)
-        {
-            if (AnimTick >= 0)
-            {
-                if (AnimTick == 0)
-                {
-                    AnimTick = Tick;
-                }
-
-                var DeltaTick = Tick - AnimTick;
-
-                var ElapsedMS = (float)(DeltaTick / Constants.ORBIS_MILISECOND);
-
-                float Progress = ElapsedMS / AnimSelectionDuration;
-
-                if (Progress >= 1)
-                {
-                    Progress = 1;
-                    AnimTick = -1;
-                }
-
-                if (LastSelection != null)
-                    LastSelection.Position = new Vector2(XSelectionDistance - (XSelectionDistance * Progress), LastSelection.Position.Y);
-
-                Selection.Position = new Vector2(XSelectionDistance * Progress, Selection.Position.Y);
-
-                Progress = Geometry.CubicBezier(new Vector2(0.5f, 0), new Vector2(0.5f, 0), Progress);
-
-                var CurrentY = MoveInitialY + (MoveDeltaY * Progress);
-
-                SongList.Position = new Vector2(SongList.Position.X, CurrentY);
-            }
-        }
+        
 
         private void DoFade(long Tick)
         {

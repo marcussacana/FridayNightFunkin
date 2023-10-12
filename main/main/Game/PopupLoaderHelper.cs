@@ -11,6 +11,8 @@ namespace Orbis.Game
 
         public float ZoomFactor = 0;
 
+        public bool AntiAlising = true;
+
         public enum Popup {
             Perfect,
             Good,
@@ -57,7 +59,7 @@ namespace Orbis.Game
             using (var TexData = Util.CopyFileToMemory(Sufix != null ? $"sick{Sufix}.dds" : "sick.dds"))
             {
                 Texture Tex = new Texture(true);
-                Tex.SetDDS(TexData, true);
+                Tex.SetDDS(TexData, AntiAlising);
 
                 Textures[Popup.Perfect] = Tex;
             }
@@ -67,7 +69,7 @@ namespace Orbis.Game
             using (var TexData = Util.CopyFileToMemory(Sufix != null ? $"good{Sufix}.dds" : "good.dds"))
             {
                 Texture Tex = new Texture(true);
-                Tex.SetDDS(TexData, true);
+                Tex.SetDDS(TexData, AntiAlising);
 
                 Textures[Popup.Good] = Tex;
             }
@@ -77,7 +79,7 @@ namespace Orbis.Game
             using (var TexData = Util.CopyFileToMemory(Sufix != null ? $"bad{Sufix}.dds" : "bad.dds"))
             {
                 Texture Tex = new Texture(true);
-                Tex.SetDDS(TexData, true);
+                Tex.SetDDS(TexData, AntiAlising);
 
                 Textures[Popup.Bad] = Tex;
             }
@@ -87,7 +89,7 @@ namespace Orbis.Game
             using (var TexData = Util.CopyFileToMemory(Sufix != null ? $"shit{Sufix}.dds" : "shit.dds"))
             {
                 Texture Tex = new Texture(true);
-                Tex.SetDDS(TexData, true);
+                Tex.SetDDS(TexData, AntiAlising);
 
                 Textures[Popup.Miss] = Tex;
             }
@@ -97,7 +99,7 @@ namespace Orbis.Game
             using (var TexData = Util.CopyFileToMemory(Sufix != null ? $"num0{Sufix}.dds" : "num0.dds"))
             {
                 Texture Tex = new Texture(true);
-                Tex.SetDDS(TexData, true);
+                Tex.SetDDS(TexData, AntiAlising);
 
                 Textures[Popup.Combo0] = Tex;
             }
@@ -107,7 +109,7 @@ namespace Orbis.Game
             using (var TexData = Util.CopyFileToMemory(Sufix != null ? $"num1{Sufix}.dds" : "num1.dds"))
             {
                 Texture Tex = new Texture(true);
-                Tex.SetDDS(TexData, true);
+                Tex.SetDDS(TexData, AntiAlising);
 
                 Textures[Popup.Combo1] = Tex;
             }
@@ -117,7 +119,7 @@ namespace Orbis.Game
             using (var TexData = Util.CopyFileToMemory(Sufix != null ? $"num2{Sufix}.dds" : "num2.dds"))
             {
                 Texture Tex = new Texture(true);
-                Tex.SetDDS(TexData, true);
+                Tex.SetDDS(TexData, AntiAlising);
 
                 Textures[Popup.Combo2] = Tex;
             }
@@ -127,7 +129,7 @@ namespace Orbis.Game
             using (var TexData = Util.CopyFileToMemory(Sufix != null ? $"num3{Sufix}.dds" : "num3.dds"))
             {
                 Texture Tex = new Texture(true);
-                Tex.SetDDS(TexData, true);
+                Tex.SetDDS(TexData, AntiAlising);
 
                 Textures[Popup.Combo3] = Tex;
             }
@@ -137,7 +139,7 @@ namespace Orbis.Game
             using (var TexData = Util.CopyFileToMemory(Sufix != null ? $"num4{Sufix}.dds" : "num4.dds"))
             {
                 Texture Tex = new Texture(true);
-                Tex.SetDDS(TexData, true);
+                Tex.SetDDS(TexData, AntiAlising);
 
                 Textures[Popup.Combo4] = Tex;
             }
@@ -147,7 +149,7 @@ namespace Orbis.Game
             using (var TexData = Util.CopyFileToMemory(Sufix != null ? $"num5{Sufix}.dds" : "num5.dds"))
             {
                 Texture Tex = new Texture(true);
-                Tex.SetDDS(TexData, true);
+                Tex.SetDDS(TexData, AntiAlising);
 
                 Textures[Popup.Combo5] = Tex;
             }
@@ -157,7 +159,7 @@ namespace Orbis.Game
             using (var TexData = Util.CopyFileToMemory(Sufix != null ? $"num6{Sufix}.dds" : "num6.dds"))
             {
                 Texture Tex = new Texture(true);
-                Tex.SetDDS(TexData, true);
+                Tex.SetDDS(TexData, AntiAlising);
 
                 Textures[Popup.Combo6] = Tex;
             }
@@ -167,7 +169,7 @@ namespace Orbis.Game
             using (var TexData = Util.CopyFileToMemory(Sufix != null ? $"num7{Sufix}.dds" : "num7.dds"))
             {
                 Texture Tex = new Texture(true);
-                Tex.SetDDS(TexData, true);
+                Tex.SetDDS(TexData, AntiAlising);
 
                 Textures[Popup.Combo7] = Tex;
             }
@@ -177,7 +179,7 @@ namespace Orbis.Game
             using (var TexData = Util.CopyFileToMemory(Sufix != null ? $"num8{Sufix}.dds" : "num8.dds"))
             {
                 Texture Tex = new Texture(true);
-                Tex.SetDDS(TexData, true);
+                Tex.SetDDS(TexData, AntiAlising);
 
                 Textures[Popup.Combo8] = Tex;
             }
@@ -187,7 +189,7 @@ namespace Orbis.Game
             using (var TexData = Util.CopyFileToMemory(Sufix != null ? $"num9{Sufix}.dds" : "num9.dds"))
             {
                 Texture Tex = new Texture(true);
-                Tex.SetDDS(TexData, true);
+                Tex.SetDDS(TexData, AntiAlising);
 
                 Textures[Popup.Combo9] = Tex;
             }
@@ -197,7 +199,7 @@ namespace Orbis.Game
             using (var TexData = Util.CopyFileToMemory(Sufix != null ? $"ready{Sufix}.dds" : "ready.dds"))
             {
                 Texture Tex = new Texture(true);
-                Tex.SetDDS(TexData, true);
+                Tex.SetDDS(TexData, AntiAlising);
 
                 Textures[Popup.Ready] = Tex;
             }
@@ -207,7 +209,7 @@ namespace Orbis.Game
             using (var TexData = Util.CopyFileToMemory(Sufix != null ? $"set{Sufix}.dds" : "set.dds"))
             {
                 Texture Tex = new Texture(true);
-                Tex.SetDDS(TexData, true);
+                Tex.SetDDS(TexData, AntiAlising);
 
                 Textures[Popup.Set] = Tex;
             }
@@ -217,7 +219,7 @@ namespace Orbis.Game
             using (var TexData = Util.CopyFileToMemory(Sufix != null ? $"go{Sufix}.dds" : "go.dds"))
             {
                 Texture Tex = new Texture(true);
-                Tex.SetDDS(TexData, true);
+                Tex.SetDDS(TexData, AntiAlising);
 
                 Textures[Popup.Go] = Tex;
             }

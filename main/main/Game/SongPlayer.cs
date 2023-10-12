@@ -1065,7 +1065,7 @@ namespace Orbis.Game
 
             if (BeginAudioTick != 0 && Tick >= BeginAudioTick)
             {
-                MusicPlayer.CloseSFX();
+                MusicPlayer?.CloseSFX();
                 
                 MusicPlayer?.Resume();
                 BeginAudioTick = 0;
