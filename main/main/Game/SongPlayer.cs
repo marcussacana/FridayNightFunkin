@@ -8,6 +8,7 @@ using OrbisGL.GL2D;
 using System;
 using System.IO;
 using System.Numerics;
+using ICSharpCode.SharpZipLib.Core;
 
 namespace Orbis.Game
 {
@@ -45,6 +46,8 @@ namespace Orbis.Game
         public bool AltPlayer2 { get; set; }
 
         bool ForceBoyfriend = false;
+
+        SpriteAtlas2D AtlasFont;
 
         TiledSpriteAtlas2D Speaker;
         internal TiledSpriteAtlas2D _Player1;
@@ -86,6 +89,8 @@ namespace Orbis.Game
 
         NoteMenu Player1Menu;
         NoteMenu Player2Menu;
+
+        ChoiceScene PauseMenu;
 
         Vector2 DiePlayerPos;
         long DieTime;
@@ -151,7 +156,7 @@ namespace Orbis.Game
             this.SongInfo = SongInfo;
         }
 
-        public int TotalProgress => 11 + BG.TotalProgress + PopupHelper.TotalProgress;
+        public int TotalProgress => 12 + BG.TotalProgress + PopupHelper.TotalProgress;
 
         public bool Loaded { get; private set; }
 
@@ -263,7 +268,14 @@ namespace Orbis.Game
             MusicPlayer = new MusicPlayer(Instrumental, Voices, (s, a) => { Ended = true; }, false);
 #endif
             OnProgressChanged?.Invoke(BaseProgress + 10);
-            
+
+            var XML = Util.GetXML("alphabet.xml");
+
+            AtlasFont = new SpriteAtlas2D(XML, Util.CopyFileToMemory, true);
+            PauseMenu = new ChoiceScene(new Vector2(100, 0), 1920, 1080, new string[] { "Continue", "Restart Song", "Exit Song" }, AtlasFont);
+            PauseMenu.OnChoiceDoneEnd += PauseChoiceDone;
+            OnProgressChanged?.Invoke(BaseProgress + 11);
+
             //11 - Setup Env
             SetupDisplay();
             SetupInput();
@@ -271,7 +283,7 @@ namespace Orbis.Game
 
             Loaded = true;
 
-            OnProgressChanged?.Invoke(BaseProgress + 11);
+            OnProgressChanged?.Invoke(BaseProgress + 12);
         }
 
         private void SetupEvents()
@@ -552,7 +564,7 @@ namespace Orbis.Game
 
         private void KeyboardDriver_OnKeyUp(object Sender, KeyboardEventArgs Args)
         {
-            if (DieTime == 0)
+            if (DieTime == 0 && !Paused)
             {
                 switch (Args.Keycode)
                 {
@@ -572,13 +584,34 @@ namespace Orbis.Game
                     case IME_KeyCode.RIGHTARROW:
                         Player1Menu.UnsetPress(Note.Right);
                         break;
+                    case IME_KeyCode.RETURN:
+                        Paused = true;
+                        break;
+                }
+
+                return;
+            }
+
+            if (Paused)
+            {
+                switch (Args.Keycode)
+                {
+                    case IME_KeyCode.UPARROW:
+                        PauseMenu.MoveUp();
+                        break;
+                    case IME_KeyCode.DOWNARROW:
+                        PauseMenu.MoveDown();
+                        break;
+                    case IME_KeyCode.RETURN:
+                        PauseMenu.DoChoice();
+                        break;
                 }
             }
         }
 
         private void KeyboardDriver_OnKeyDown(object Sender, KeyboardEventArgs Args)
         {
-            if (DieTime == 0)
+            if (DieTime == 0 && !Paused)
             {
                 switch (Args.Keycode)
                 {
@@ -599,12 +632,13 @@ namespace Orbis.Game
                         Player1Menu.SetPress(Note.Right);
                         break;
                 }
+                return;
             }
         }
 
         private void Gamepad_OnButtonDown(object Sender, ButtonEventArgs Args)
         {
-            if (DieTime == 0)
+            if (DieTime == 0 && !Paused)
             {
                 //While keyboard key up/down event is triggred by individual buttons,
                 //the Gamepad events are triggered by state change, so it may hold more
@@ -617,11 +651,13 @@ namespace Orbis.Game
                     Player1Menu.SetPress(Note.Right);
                 if (Args.Button.HasFlag(OrbisPadButton.Cross) || Args.Button.HasFlag(OrbisPadButton.Down))
                     Player1Menu.SetPress(Note.Down);
+
+                return;
             }
         }
         private void Gamepad_OnButtonUp(object Sender, ButtonEventArgs Args)
         {
-            if (DieTime == 0)
+            if (DieTime == 0 && !Paused)
             {
                 if (Args.Button.HasFlag(OrbisPadButton.Triangle) || Args.Button.HasFlag(OrbisPadButton.Up))
                     Player1Menu.UnsetPress(Note.Up);
@@ -631,7 +667,23 @@ namespace Orbis.Game
                     Player1Menu.UnsetPress(Note.Right);
                 if (Args.Button.HasFlag(OrbisPadButton.Cross) || Args.Button.HasFlag(OrbisPadButton.Down))
                     Player1Menu.UnsetPress(Note.Down);
-            } else if (Args.Button.HasFlag(OrbisPadButton.Options) || Args.Button.HasFlag(OrbisPadButton.Cross))
+                if (Args.Button.HasFlag(OrbisPadButton.Options))
+                    Paused = true;
+                return;
+            } 
+            
+            if (Paused)
+            {
+                if (Args.Button.HasFlag(OrbisPadButton.Up))
+                    PauseMenu.MoveUp();
+                if (Args.Button.HasFlag(OrbisPadButton.Down))
+                    PauseMenu.MoveDown();
+                if (Args.Button.HasFlag(OrbisPadButton.Cross))
+                    PauseMenu.DoChoice();
+                return;
+            }
+            
+            if (Args.Button.HasFlag(OrbisPadButton.Options) || Args.Button.HasFlag(OrbisPadButton.Cross))
             {
                 MusicPlayer.Pause();
                 MusicPlayer.PlayPassiveSFX(SFX.GetSFX(SFXType.DeadRetry));
@@ -642,6 +694,7 @@ namespace Orbis.Game
                     Player2.SetActiveAnimation(Player2Anim.DEAD_CONFIRM);
                 
                 UpdateAnimations();
+                return;
             }
         }
 
@@ -931,7 +984,7 @@ namespace Orbis.Game
 #if ORBIS
             BPMTicks = (int)((BPM / 60) * Constants.ORBIS_MILISECOND) * 10;
 #else
-            BPMTicks = (int)((BPM / 60) * Constants.ORBIS_MILISECOND);
+            BPMTicks = (int)(((BPM / 60) * 5) * Constants.ORBIS_MILISECOND);
 #endif
         }
 
@@ -943,7 +996,13 @@ namespace Orbis.Game
         long LastBeatTick;
         long LastDrawTick;
         long NextUpdateFrame = 0;
-        
+
+        long PauseElapsedTicks = 0;
+        long PauseBeginTick = 0;
+        bool Paused;
+        bool Unpause;
+
+
         private MemoryStream Instrumental;
         private MemoryStream Voices;
 
@@ -951,6 +1010,14 @@ namespace Orbis.Game
         {
             if (!Loaded)
                 return;
+
+            Tick -= PauseElapsedTicks;
+
+            if (Paused)
+            {
+                DoPause(Tick);
+                return;
+            }
 
             if (Ended && BeginFadeOut == -1)
             {
@@ -988,28 +1055,102 @@ namespace Orbis.Game
             if (!FirstFrame && !Started)
             {
                 if (BeginRequested)
-                {
-                    BeginRequested = false;
-                    BeginAudioTick = Tick + (Constants.ORBIS_MILISECOND * NoteMenu.StartDelayMS);
-
-                    ThreeTick = Tick;
-                    ReadyAnimTick = Tick + (Constants.ORBIS_MILISECOND * 500);
-                    SetAnimTick = Tick + (Constants.ORBIS_MILISECOND * 1000);
-                    GoAnimTick = Tick + (Constants.ORBIS_MILISECOND * 1500);
-
-                    //Preload Audio
-                    MusicPlayer?.Resume();
-                    MusicPlayer?.Pause();
-
-                    Player1Menu.SetSongBegin(Tick);
-                    Player2Menu.SetSongBegin(Tick);
-                }
+                    PrepareSongStart(Tick);
+                
 
                 DoStart(Tick);
             }
 
             LastDrawTick = Tick;
             base.Draw(Tick);
+        }
+
+        private void DoPause(long Tick)
+        {
+            if (PauseBeginTick == 0)
+            {
+                MusicPlayer?.Pause();
+                PauseBeginTick = Tick;
+            }
+
+            DoPauseRender(Tick);
+
+            if (Unpause)
+            {
+                Unpause = false;
+
+                Fade.RemoveChild(PauseMenu);
+                Fade.Opacity = 0;
+
+                PauseElapsedTicks += Tick - PauseBeginTick;
+                PauseBeginTick = 0;
+                Paused = false;
+                MusicPlayer?.Resume();
+            }
+        }
+
+        private void DoPauseRender(long Tick)
+        {
+            if (Fade.Opacity == 0)
+            {
+                Fade.Opacity = 150;
+
+                Fade.AddChild(PauseMenu);
+            }
+
+            base.Draw(PauseBeginTick);
+            Fade.Draw(Tick);
+        }
+
+        private void PauseChoiceDone(object sender, EventArgs e)
+        {
+            bool Ends = false;
+            switch (PauseMenu.SelectedIndex)
+            {
+                case 0:
+                    Unpause = true;
+                    break;
+                case 1:
+                    Restart = true;
+                    Ended = true;
+                    Unpause = true;
+                    Ends = true;
+                    break;
+                case 2:
+                    Ended = true;
+                    Unpause = true;
+                    Ends = true;
+                    break;
+                default:
+                    throw new NotImplementedException();
+            }
+
+            if (Ends)
+            {
+                Player1Menu?.Freeze();
+                Player2Menu?.Freeze();
+                MusicPlayer?.Dispose();
+                BeginFadeOut = 0;
+                AddChild(Fade);
+            }
+        }
+
+        private void PrepareSongStart(long Tick)
+        {
+            BeginRequested = false;
+            BeginAudioTick = Tick + (Constants.ORBIS_MILISECOND * NoteMenu.StartDelayMS);
+
+            ThreeTick = Tick;
+            ReadyAnimTick = Tick + (Constants.ORBIS_MILISECOND * 500);
+            SetAnimTick = Tick + (Constants.ORBIS_MILISECOND * 1000);
+            GoAnimTick = Tick + (Constants.ORBIS_MILISECOND * 1500);
+
+            //Preload Audio
+            MusicPlayer?.Resume();
+            MusicPlayer?.Pause();
+
+            Player1Menu.SetSongBegin(Tick);
+            Player2Menu.SetSongBegin(Tick);
         }
 
         private void DoStart(long Tick)
@@ -1231,6 +1372,9 @@ namespace Orbis.Game
                 Application.Default.Gamepad.OnButtonDown -= Gamepad_OnButtonDown;
                 Application.Default.Gamepad.OnButtonUp -= Gamepad_OnButtonUp;
 #endif
+
+                Application.Default.KeyboardDriver.OnKeyDown -= KeyboardDriver_OnKeyDown;
+                Application.Default.KeyboardDriver.OnKeyUp -= KeyboardDriver_OnKeyUp;
             }
 
             BackLayer?.Dispose();
@@ -1247,6 +1391,8 @@ namespace Orbis.Game
             Health?.Dispose();
             
             PopupHelper?.Dispose();
+            PauseMenu?.Dispose();
+            AtlasFont?.Dispose();
             
             Voices?.Dispose();
             Instrumental?.Dispose();

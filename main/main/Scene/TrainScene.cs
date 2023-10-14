@@ -311,7 +311,7 @@ namespace Orbis.Scene
 
         public override void Dispose()
         {
-            Player.MutePassiveSFX();
+            Player?.MutePassiveSFX();
             base.Dispose();
         }
     }

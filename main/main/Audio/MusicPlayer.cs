@@ -6,6 +6,7 @@ namespace Orbis.Audio
 {
     internal class MusicPlayer : IDisposable
     {
+        bool Disposed = false;
         bool Ogg = false;
         
         IAudioPlayer Other;
@@ -56,6 +57,9 @@ namespace Orbis.Audio
         
         public void Resume()
         {
+            if (Disposed)
+                return;
+
             Voices.Resume();
             Instrumental.Resume();
             
@@ -87,6 +91,9 @@ namespace Orbis.Audio
 
         public void Pause()
         {
+            if (Disposed)
+                return;
+
             //When you pause the wave/ogg player
             //the audio keep playing until the
             //buffer is empty, but pausing the audio driver
@@ -107,6 +114,9 @@ namespace Orbis.Audio
 
         public void MuteAll()
         {
+            if (Disposed)
+                return;
+
             VoiceDriver.SetVolume(0);
             InstrumentalDriver.SetVolume(0);
             SFXADriver.SetVolume(0);
@@ -115,46 +125,73 @@ namespace Orbis.Audio
         }
         public void MuteVoice()
         {
+            if (Disposed)
+                return;
+
             VoiceDriver.SetVolume(0);
         }
 
         public void UnmuteVoice()
         {
+            if (Disposed)
+                return;
+
             VoiceDriver.SetVolume(80);
         }
 
         public void MuteOther()
         {
+            if (Disposed)
+                return;
+
             OtherDriver.SetVolume(0);
         }
 
         public void UnmuteOther()
         {
+            if (Disposed)
+                return;
+
             OtherDriver.SetVolume(80);
         }
 
         public void MuteActiveSFX()
         {
+            if (Disposed)
+                return;
+
             SFXADriver.SetVolume(0);
         }
         
         public void MutePassiveSFX()
         {
+            if (Disposed)
+                return;
+
             SFXBDriver.SetVolume(0);
         }
 
         public void UnmuteActiveSFX()
         {
+            if (Disposed)
+                return;
+
             SFXADriver.SetVolume(80);
         }
 
         public void UnmutePassiveSFX()
         {
+            if (Disposed)
+                return;
+
             SFXBDriver.SetVolume(80);
         }
 
         public void PlayActiveSFX(MemoryStream Sound, byte Volume = 80)
         {
+            if (Disposed)
+                return;
+
             SFXADriver.SetVolume(Volume);
             SFXA.Open(Sound);
             SFXA.Restart();
@@ -162,6 +199,9 @@ namespace Orbis.Audio
         
         public void PlayPassiveSFX(MemoryStream Sound, byte Volume = 80)
         {
+            if (Disposed)
+                return;
+
             SFXBDriver.SetVolume(Volume);
             SFXB.Open(Sound);
             SFXB.Restart();
@@ -169,6 +209,9 @@ namespace Orbis.Audio
 
         public void PlayOther(MemoryStream Sound, byte Volume = 80, bool Loop = false)
         {
+            if (Disposed)
+                return;
+
             OtherDriver.SetVolume(Volume);
             Other.Open(Sound);
             Other.Loop = Loop;
@@ -177,6 +220,9 @@ namespace Orbis.Audio
         
         public void SetActiveSFXVol(float Volume)
         {
+            if (Disposed)
+                return;
+
             if (Volume < 0 || Volume > 1)
                 throw new ArgumentOutOfRangeException($"{nameof(Volume)} must be in the range 0.0 <= X <= 1.0");
 
@@ -185,6 +231,9 @@ namespace Orbis.Audio
 
         public void SetPassiveSFXVol(float Volume)
         {
+            if (Disposed)
+                return;
+
             if (Volume < 0 || Volume > 1)
                 throw new ArgumentOutOfRangeException($"{nameof(Volume)} must be in the range 0.0 <= X <= 1.0");
 
@@ -193,6 +242,10 @@ namespace Orbis.Audio
 
         public void Dispose()
         {
+            if (Disposed)
+                return;
+
+            Disposed = true;
             Voices?.Dispose();
             VoiceDriver?.Dispose();
             Instrumental?.Dispose();

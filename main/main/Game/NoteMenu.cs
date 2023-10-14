@@ -41,6 +41,7 @@ namespace Orbis.Game
         public const int RightX = NoteOffset * 3;
 
         private long SongStartTick;
+        private long FrozenTick = -1;
         
         public const int StartDelayMS = 5000;
 
@@ -438,8 +439,26 @@ namespace Orbis.Game
             }
         }
 
+        public void Freeze()
+        {
+            FrozenTick = 0;
+        }
+
+        public void Unfreeze()
+        {
+            FrozenTick = -1;
+        }
+
         public override void Draw(long Tick)
         {
+            if (FrozenTick >= 0)
+            {
+                if (FrozenTick == 0)
+                    FrozenTick = Tick;
+
+                Tick = FrozenTick;
+            }
+
             Up.Update(Tick);
             Down.Update(Tick);
             Left.Update(Tick);

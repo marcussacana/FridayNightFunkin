@@ -62,11 +62,12 @@ namespace Orbis.Scene
         private ChoiceScene(string[] Choices, SpriteAtlas2D Atlas)
         {
             Vector2 CurrentPos = Vector2.Zero;
-            foreach (var Song in Choices)
+            foreach (var Choice in Choices)
             {
                 var Text = new AtlasText2D(Atlas, Util.FontBoldMap);
-                Text.SetText(Song);
+                Text.SetText(Choice.ToUpper());
                 Text.Position = CurrentPos;
+                Text.Opacity = 255 - SecondaryTranparency;
                 Text.SetZoom(0.8f);
                 ChoiceList.AddChild(Text);
 
@@ -97,7 +98,7 @@ namespace Orbis.Scene
             OnChoiceDoneEnd?.Invoke(this, e);
         }
 
-
+        const int SecondaryTranparency = 80;
         const int XSelectionDistance = 50;
         const int AnimSelectionDuration = 250;
 
@@ -167,6 +168,7 @@ namespace Orbis.Scene
                     Child.Position = new Vector2(0, Child.Position.Y);
 
                 Selection.Position = new Vector2(XSelectionDistance, Selection.Position.X);
+                Selection.Opacity = 255;
             }
             else
             {
@@ -238,8 +240,12 @@ namespace Orbis.Scene
                 }
 
                 if (LastSelection != null)
+                {
                     LastSelection.Position = new Vector2(XSelectionDistance - (XSelectionDistance * Progress), LastSelection.Position.Y);
+                    LastSelection.Opacity = (byte)(255 - (SecondaryTranparency * Progress));
+                }
 
+                Selection.Opacity = (byte)(255 - (SecondaryTranparency * (1 - Progress)));
                 Selection.Position = new Vector2(XSelectionDistance * Progress, Selection.Position.Y);
 
                 Progress = Geometry.CubicBezier(new Vector2(0.5f, 0), new Vector2(0.5f, 0), Progress);
