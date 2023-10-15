@@ -1,15 +1,8 @@
-﻿using OrbisGL.GL;
-using OrbisGL.GL2D;
+﻿using OrbisGL.GL2D;
 using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Numerics;
-using System.Security.AccessControl;
-using System.Security.Policy;
-using System.Text;
-using System.Threading.Tasks;
-using System.Xml;
-using static System.Collections.Specialized.BitVector32;
 
 namespace Orbis.Game
 {
@@ -126,45 +119,57 @@ namespace Orbis.Game
         }
         public void UnsetPress(Note Target)
         {
+            IEnumerable<SongNoteEntry> Lookup;
+
             switch (Target)
             {
                 case Note.Up:
                     Up.SetState(NoteState.Static);
+                    Lookup = UpNotes.Where(x => x.Hitted);
                     break;
                 case Note.Left:
                     Left.SetState(NoteState.Static);
+                    Lookup = LeftNotes.Where(x => x.Hitted);
                     break;
                 case Note.Right:
                     Right.SetState(NoteState.Static);
+                    Lookup = RightNotes.Where(x => x.Hitted);
                     break;
                 case Note.Down:
                     Down.SetState(NoteState.Static);
+                    Lookup = DownNotes.Where(x => x.Hitted);
                     break;
+                default:
+                    return;
             }
+
+            foreach (var Note in Lookup)
+                Note.Hitted = false;
         }
         
         private void HitNote(Note target)
         {
-            SongNoteEntry HittedNote;
+            IEnumerable<SongNoteEntry> Lookup;
             switch (target)
             {
                 case Note.Left:
-                    HittedNote = LeftNotes.First(x => x.CanBeHit);
+                    Lookup = LeftNotes.Where(x => x.CanBeHit);
                     break;
                 case Note.Right:
-                    HittedNote = RightNotes.First(x => x.CanBeHit);
+                    Lookup = RightNotes.Where(x => x.CanBeHit);
                     break;
                 case Note.Down:
-                    HittedNote = DownNotes.First(x => x.CanBeHit);
+                    Lookup = DownNotes.Where(x => x.CanBeHit);
                     break;
                 case Note.Up:
-                    HittedNote = UpNotes.First(x => x.CanBeHit);
+                    Lookup = UpNotes.Where(x => x.CanBeHit);
                     break;
                 default:
                     throw new Exception("Invalid Note Type");
             }
 
-            HittedNote.Hitted = true;
+            foreach (var Note in Lookup)
+                Note.Hitted = true;
         }
 
         public void SetSongBegin(long Tick)

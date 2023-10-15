@@ -203,7 +203,8 @@ namespace Orbis.Game
             
             SetSustainFrame();
             SustainRender.Position = AbsolutePosition;
-            SustainRender.ZoomPosition += new Vector2(ZoomWidth / 2 - (SustainRender.ZoomWidth / 2), ZoomHeight / 2);
+            float BaseY = SustainRender.ZoomPosition.Y + (ZoomHeight / 2);
+            SustainRender.ZoomPosition += new Vector2(ZoomWidth / 2 - (SustainRender.ZoomWidth / 2), BaseY);
             SustainHeight = SustainRender.ZoomHeight;
 
             for (float y = SustainBegin; y < SustainLength; y += SustainRender.ZoomHeight)
@@ -217,7 +218,7 @@ namespace Orbis.Game
                     SustainRender.ZoomPosition -= new Vector2(0, 20);
                 }
 
-                SustainRender.ZoomPosition += new Vector2(0, SustainRender.ZoomHeight);
+                SustainRender.ZoomPosition = new Vector2(SustainRender.ZoomPosition.X, BaseY + y);
                 SustainRender.Draw(Tick);
                 
                 if (Last)
@@ -225,23 +226,28 @@ namespace Orbis.Game
             }
         }
 
+        private float LastMissSustain;
         private void UpdateSustainVisibility(float CurrentY)
         {
-            if (SustainLength <= 0 || SustainBegin < SustainLength)
+            if (SustainLength <= 0 || SustainBegin >= SustainLength)
                 return;
 
             while (CurrentY + (SustainBegin + SustainHeight / 2) <= 0)
             {
-                SustainBegin += SustainRender.ZoomHeight;
-
                 if (CanBeHit && Hitted)
                 {
+                    SustainBegin += SustainRender.ZoomHeight;
                     Score += SustainPoints;
                     OnSustainHit?.Invoke(this, null);
                     continue;
                 }
-
-                OnSustainMissed?.Invoke(this, null);
+                
+                if (LastMissSustain != SustainBegin)
+                {
+                    LastMissSustain = SustainBegin;
+                    OnSustainMissed?.Invoke(this, null);
+                }
+                break;
             }
         }
 

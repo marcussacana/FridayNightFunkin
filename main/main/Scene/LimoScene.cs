@@ -23,8 +23,6 @@ namespace Orbis.Scene
         MemoryStream SFXA;
         MemoryStream SFXB;
 
-        MemoryStream GameoverTheme;
-        MemoryStream GameoverEnd;
         public LimoScene(SongPlayer Player)
         {
             Game = Player;

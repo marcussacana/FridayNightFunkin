@@ -9,21 +9,18 @@ namespace Orbis.Audio
         bool Disposed = false;
         bool Ogg = false;
         
-        IAudioPlayer Other;
         IAudioPlayer Instrumental;
         IAudioPlayer Voices;
         IAudioPlayer SFXA;
         IAudioPlayer SFXB;
 
         IAudioOut InstrumentalDriver;
-        IAudioOut OtherDriver;
         IAudioOut VoiceDriver;
         IAudioOut SFXADriver;
         IAudioOut SFXBDriver;
 
         public MusicPlayer(MemoryStream Instrumental, MemoryStream Voices, EventHandler OnMusicEnd, bool Ogg) {
             InstrumentalDriver = new OrbisAudioOut();
-            OtherDriver = new OrbisAudioOut();
             VoiceDriver = new OrbisAudioOut();
             SFXADriver = new OrbisAudioOut();
             SFXBDriver = new OrbisAudioOut();
@@ -31,7 +28,6 @@ namespace Orbis.Audio
             this.Ogg = Ogg;
 
             this.Instrumental = Ogg ? new VorbisPlayer() : new WavePlayer();
-            this.Other = Ogg ? new VorbisPlayer() : new WavePlayer();
             this.Voices = Ogg ? new VorbisPlayer() : new WavePlayer();
             this.SFXA = Ogg ? new VorbisPlayer() : new WavePlayer(); 
             this.SFXB = Ogg ? new VorbisPlayer() : new WavePlayer(); 
@@ -44,8 +40,6 @@ namespace Orbis.Audio
 
             SFXA.SetAudioDriver(SFXADriver);
             SFXB.SetAudioDriver(SFXBDriver);
-            
-            Other.SetAudioDriver(OtherDriver);
 
             this.Instrumental.OnTrackEnd += OnMusicEnd;
             
@@ -105,7 +99,6 @@ namespace Orbis.Audio
             //jailbreak the process to call the pthread functions
             //so it became a bit overkill just to pause the sound.
             InstrumentalDriver.Interrupt();
-            OtherDriver.Interrupt();
             VoiceDriver.Interrupt();
             SFXADriver.Interrupt();
             SFXBDriver.Interrupt();
@@ -121,7 +114,6 @@ namespace Orbis.Audio
             InstrumentalDriver.SetVolume(0);
             SFXADriver.SetVolume(0);
             SFXBDriver.SetVolume(0);
-            OtherDriver.SetVolume(0);
         }
         public void MuteVoice()
         {
@@ -138,23 +130,7 @@ namespace Orbis.Audio
 
             VoiceDriver.SetVolume(80);
         }
-
-        public void MuteOther()
-        {
-            if (Disposed)
-                return;
-
-            OtherDriver.SetVolume(0);
-        }
-
-        public void UnmuteOther()
-        {
-            if (Disposed)
-                return;
-
-            OtherDriver.SetVolume(80);
-        }
-
+        
         public void MuteActiveSFX()
         {
             if (Disposed)
@@ -197,25 +173,21 @@ namespace Orbis.Audio
             SFXA.Restart();
         }
         
-        public void PlayPassiveSFX(MemoryStream Sound, byte Volume = 80)
+        public void PlayPassiveSFX(MemoryStream Sound, byte Volume = 80, bool Loop  = false)
         {
             if (Disposed)
                 return;
 
             SFXBDriver.SetVolume(Volume);
+            SFXB.Loop = Loop;
             SFXB.Open(Sound);
             SFXB.Restart();
         }
-
-        public void PlayOther(MemoryStream Sound, byte Volume = 80, bool Loop = false)
+        public void StopPassiveSFX()
         {
-            if (Disposed)
-                return;
-
-            OtherDriver.SetVolume(Volume);
-            Other.Open(Sound);
-            Other.Loop = Loop;
-            Other.Restart();
+            SFXBDriver.SetVolume(0);
+            SFXB.Close();
+            SFXBDriver.Stop();
         }
         
         public void SetActiveSFXVol(float Volume)
@@ -255,8 +227,6 @@ namespace Orbis.Audio
             SFXB?.Dispose();
             SFXADriver?.Dispose();
             SFXBDriver?.Dispose();
-            Other?.Dispose();
-            OtherDriver?.Dispose();
         }
     }
 }

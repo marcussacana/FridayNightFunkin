@@ -111,7 +111,7 @@ namespace Orbis.Scene
 
             Tree.ZoomPosition = new Vector2(-600, -1200);
 
-            Freaks.SetActiveAnimation(Game.SongInfo.Name == "roses" ? "BG fangirls dissuaded" : "BG girls group");
+            Freaks.SetActiveAnimation(Game.SongInfo.Name.ToLowerInvariant() == "roses" ? "BG fangirls dissuaded" : "BG girls group");
             Freaks.FrameDelay = 16;
             Freaks.ZoomPosition = new Vector2(0, 300);
 

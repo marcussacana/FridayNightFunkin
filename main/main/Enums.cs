@@ -43,6 +43,7 @@ namespace Orbis
         DiesPixel,
         DeadLoop,
         DeadRetry,
+        PauseMenu,
         MenuChoice,
         MenuConfirm,
         MenuBack,

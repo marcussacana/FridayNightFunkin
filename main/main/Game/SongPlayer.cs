@@ -8,7 +8,6 @@ using OrbisGL.GL2D;
 using System;
 using System.IO;
 using System.Numerics;
-using ICSharpCode.SharpZipLib.Core;
 
 namespace Orbis.Game
 {
@@ -471,7 +470,7 @@ namespace Orbis.Game
                     DiePlayerPos -= Player1Anim.GetAnimOffset(Player1Anim.DEAD);
                     
 #if ORBIS
-                    MusicPlayer.PlayOther(SFX.GetSFX(SFXType.DeadLoop), 80, true);
+                    MusicPlayer.PlayPassiveSFX(SFX.GetSFX(SFXType.DeadLoop), 80, true);
 #endif
 
                     Player1CurrentAnim = Player1Anim.DEAD;
@@ -1070,6 +1069,7 @@ namespace Orbis.Game
             if (PauseBeginTick == 0)
             {
                 MusicPlayer?.Pause();
+                MusicPlayer?.PlayPassiveSFX(SFX.GetSFX(SFXType.PauseMenu));
                 PauseBeginTick = Tick;
             }
 
@@ -1085,6 +1085,7 @@ namespace Orbis.Game
                 PauseElapsedTicks += Tick - PauseBeginTick;
                 PauseBeginTick = 0;
                 Paused = false;
+                MusicPlayer?.StopPassiveSFX();
                 MusicPlayer?.Resume();
             }
         }

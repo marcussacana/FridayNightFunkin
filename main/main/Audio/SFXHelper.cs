@@ -55,6 +55,7 @@ public class SFXHelper : ILoadable
         SFXEntries[SFXType.DiesPixel] = Util.CopyFileToMemory("fnf_loss_sfx-pixel_48khz.wav");
         SFXEntries[SFXType.DeadLoop] = Util.CopyFileToMemory("gameOver_48khz.wav");
         SFXEntries[SFXType.DeadRetry] = Util.CopyFileToMemory("gameOverEnd_48khz.wav");
+        SFXEntries[SFXType.PauseMenu] = Util.CopyFileToMemory("breakfast_48khz.wav");
         
         OnProgressChanged?.Invoke(1);
         
