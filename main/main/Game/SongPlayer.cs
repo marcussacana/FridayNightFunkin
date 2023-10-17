@@ -155,7 +155,7 @@ namespace Orbis.Game
             this.SongInfo = SongInfo;
         }
 
-        public int TotalProgress => 12 + BG.TotalProgress + PopupHelper.TotalProgress;
+        public int TotalProgress => 13 + BG.TotalProgress + PopupHelper.TotalProgress;
 
         public bool Loaded { get; private set; }
 
@@ -233,13 +233,20 @@ namespace Orbis.Game
             if (HasPlayer2)
                 Player2.OnAnimationEnd += OnAnimEnd;
 
+
             OnProgressChanged?.Invoke(BaseProgress + 8);
+
+            //9 - Load Font
+            var XML = Util.GetXML("alphabet.xml");
+            AtlasFont = new SpriteAtlas2D(XML, Util.CopyFileToMemory, true);
+
+            OnProgressChanged?.Invoke(BaseProgress + 9);
 
             BG.OnMapStatusChanged += StatusChanged;
             Player1Menu.OnNoteElapsed += StatusChanged;
             Player2Menu.OnNoteElapsed += StatusChanged;
 
-            //9 - Load Health Bar
+            //10 - Load Health Bar
             using (var HealthBarData = Util.CopyFileToMemory("healthBar.dds"))
             using (var P1Icon = Util.CopyFileToMemory(Character.IconMap[SongInfo.Player1]))
             using (var P2Icon = Util.CopyFileToMemory(Character.IconMap[SongInfo.Player2 ?? "gf"]))
@@ -254,35 +261,35 @@ namespace Orbis.Game
                 P1Tex.SetDDS(P1Icon, false);
                 P2Tex.SetDDS(P2Icon, false);
 
-                Health = new HealthBar(Player1Menu, Player2Menu, HealthTex, P1Tex, P2Tex);
+                Health = new HealthBar(Player1Menu, Player2Menu, HealthTex, P1Tex, P2Tex, AtlasFont);
             }
 
-            OnProgressChanged?.Invoke(BaseProgress + 9);
+            OnProgressChanged?.Invoke(BaseProgress + 10);
 
-            //10 - Load Music
+            //11 - Load Music
 #if ORBIS
             Instrumental = Util.CopyFileToMemory($"songs/{SongInfo.Name}/Inst_48khz.wav");
             Voices = Util.CopyFileToMemory($"songs/{SongInfo.Name}/Voices_48khz.wav");
 
             MusicPlayer = new MusicPlayer(Instrumental, Voices, (s, a) => { Ended = true; }, false);
 #endif
-            OnProgressChanged?.Invoke(BaseProgress + 10);
-
-            var XML = Util.GetXML("alphabet.xml");
-
-            AtlasFont = new SpriteAtlas2D(XML, Util.CopyFileToMemory, true);
-            PauseMenu = new ChoiceScene(new Vector2(100, 0), 1920, 1080, new string[] { "Continue", "Restart Song", "Exit Song" }, AtlasFont);
-            PauseMenu.OnChoiceDoneEnd += PauseChoiceDone;
             OnProgressChanged?.Invoke(BaseProgress + 11);
 
-            //11 - Setup Env
+            //12 - Setup Pause Menu
+
+            PauseMenu = new ChoiceScene(new Vector2(100, 0), 1920, 1080, new string[] { "Continue", "Restart Song", "Exit Song" }, AtlasFont);
+            PauseMenu.OnChoiceDoneEnd += PauseChoiceDone;
+
+            OnProgressChanged?.Invoke(BaseProgress + 12);
+
+            //13 - Setup Env
             SetupDisplay();
             SetupInput();
             SetupEvents();
 
             Loaded = true;
 
-            OnProgressChanged?.Invoke(BaseProgress + 12);
+            OnProgressChanged?.Invoke(BaseProgress + 13);
         }
 
         private void SetupEvents()

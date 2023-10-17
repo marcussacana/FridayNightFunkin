@@ -17,16 +17,18 @@ namespace Orbis.Game
         Sprite2D P1Icon;
         Sprite2D P2Icon;
 
+        AtlasText2D ScoreDisplay;
+
         public event EventHandler<NoteMenu> OnPlayerDies;
         
-        public HealthBar(NoteMenu Player1, NoteMenu Player2, Texture BarTexture, Texture Player1Icon, Texture Player2Icon)
+        public HealthBar(NoteMenu Player1, NoteMenu Player2, Texture BarTexture, Texture Player1Icon, Texture Player2Icon, SpriteAtlas2D Atlas)
         {
             this.Player1 = Player1;
             this.Player2 = Player2;
 
             Player1.OnNoteHit += NoteHit;
-            Player2.OnNoteHit += NoteHit;
             Player1.OnNoteMissed += NoteMiss;
+            Player2.OnNoteHit += NoteHit;
             Player2.OnNoteMissed += NoteMiss;
 
             P1Bar = new Texture2D();
@@ -61,8 +63,13 @@ namespace Orbis.Game
             P1Icon.ComputeAllFrames(2);
             P2Icon.ComputeAllFrames(2);
 
+            ScoreDisplay = new AtlasText2D(Atlas.Clone(false) as SpriteAtlas2D, Util.FontCapitalMap);
+            ScoreDisplay.SetZoom(Coordinates2D.ParseZoomFactor(40));
+
             AddChild(P1Bar);
             AddChild(P2Bar);
+
+            AddChild(ScoreDisplay);
 
             AddChild(P1Icon);
             AddChild(P2Icon);
@@ -70,10 +77,14 @@ namespace Orbis.Game
             P1Bar.Position = new Vector2((Application.Default.Width / 2) - P1Bar.Width / 2, (Application.Default.Height - 50) - P1Bar.Height / 2);
             P2Bar.Position = P1Bar.Position;
 
-            UpdateHealthBar();
+            ScoreDisplay.ZoomPosition = P1Bar.Position + new Vector2((P1Tex.Width * 2) - 190, 25);
+            ScoreDisplay.Negative = true;
+            //ScoreDisplay.Outline = 12f; // Needs to be optimized
+
+            UpdateDisplay();
         }
 
-        private void UpdateHealthBar()
+        private void UpdateDisplay()
         {
             Health = Math.Min(Health, 1);
             Health = Math.Max(Health, -1);
@@ -97,6 +108,8 @@ namespace Orbis.Game
 
             P1Icon.Position = P1Bar.Position + new Vector2(SplitPos - (P1Icon.Width*0.2f), -P1Icon.Height / 2);
             P2Icon.Position = P2Bar.Position + new Vector2(SplitPos - (P2Icon.Width*0.8f), -P2Icon.Height / 2);
+
+            ScoreDisplay.SetText($"SCORE: {Player1.Score:D5}");
         }
 
         private void NoteMiss(object sender, SongNoteEntry e)
@@ -112,7 +125,7 @@ namespace Orbis.Game
                 Health -= 0.0475f;
             }
 
-            UpdateHealthBar();
+            UpdateDisplay();
         }
         private void NoteHit(object sender, SongNoteEntry e)
         {
@@ -127,7 +140,7 @@ namespace Orbis.Game
                 Health += 0.023f;
             }
 
-            UpdateHealthBar();
+            UpdateDisplay();
         }
 
         public override void Dispose()
