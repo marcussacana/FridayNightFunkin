@@ -36,7 +36,7 @@ namespace Orbis.Scene
             "thorns",
             "guns",
             "monster",
-            "stress",
+            //"stress", //TODO: Implement before the first stable release
             "test",
             "ugh"
         };

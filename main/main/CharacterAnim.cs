@@ -1,4 +1,5 @@
 ﻿using System.Collections.Generic;
+using System.Dynamic;
 using System.Numerics;
 using System.Text;
 
@@ -80,6 +81,24 @@ namespace Orbis
                     DIES = "BF Dies pixel";
                     DEAD = "Retry Loop";
                     DEAD_CONFIRM = "RETRY CONFIRM";
+                    break;
+                case "bf-holding-gf":
+                    DANCING = SHAKING = "BF idle dance w gf";
+                    LEFT = "BF NOTE LEFT";
+                    RIGHT = "BF NOTE RIGHT";
+                    UP = "BF NOTE UP";
+                    DOWN = "BF NOTE DOWN";
+
+                    LEFT_MISS = "BF NOTE LEFT MISS";
+                    RIGHT_MISS = "BF NOTE RIGHT MISS";
+                    DOWN_MISS = "BF NOTE DOWN MISS";
+                    UP_MISS = "BF NOTE UP MISS";
+
+                    HIT = "BF catches GF";//not used but let's keep avaiable.
+
+                    DIES = "BF Dies with GF";
+                    DEAD = "BF Dead with GF Loop";
+                    DEAD_CONFIRM = "RETRY confirm holding gf";
                     break;
                 case "bf":
                     SHAKING = "BF idle shaking";

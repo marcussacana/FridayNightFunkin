@@ -1076,7 +1076,7 @@ namespace Orbis.Game
             if (PauseBeginTick == 0)
             {
                 MusicPlayer?.Pause();
-                MusicPlayer?.PlayPassiveSFX(SFX.GetSFX(SFXType.PauseMenu));
+                MusicPlayer?.PlayPassiveSFX(SFX.GetSFX(SFXType.PauseMenu), Loop: true);
                 PauseBeginTick = Tick;
             }
 

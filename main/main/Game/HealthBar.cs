@@ -79,7 +79,7 @@ namespace Orbis.Game
 
             ScoreDisplay.ZoomPosition = P1Bar.Position + new Vector2((P1Tex.Width * 2) - 190, 25);
             ScoreDisplay.Negative = true;
-            //ScoreDisplay.Outline = 12f; // Needs to be optimized
+            ScoreDisplay.Outline = 12f;
 
             UpdateDisplay();
         }
