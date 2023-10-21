@@ -5,6 +5,7 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Numerics;
+using System.Runtime.CompilerServices;
 using System.Runtime.ExceptionServices;
 using System.Text;
 using System.Threading.Tasks;
@@ -88,8 +89,8 @@ namespace Orbis.Game
                     break;
             }
 
-            Height = Render.Height;
-            Width = Render.Width;
+            Height = Render.ZoomHeight;
+            Width = Render.ZoomWidth;
 
             SetupSustain();
         }
@@ -102,6 +103,8 @@ namespace Orbis.Game
 
             SustainBegin = SustainRender.ZoomPosition.Y;
         }
+
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         private void SetSustainFrame()
         {
             switch (Type)
@@ -121,6 +124,7 @@ namespace Orbis.Game
             }
         }
 
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         private void SetSustainEndFrame()
         {
             switch (Type)
@@ -196,20 +200,30 @@ namespace Orbis.Game
             DrawSustain(Tick);
             base.Draw(Tick);
         }
+
         private void DrawSustain(long Tick)
         {
             if (!Visible || SustainLength <= 0 || ZoomPosition.Y > 2000)
                 return;
             
             SetSustainFrame();
-            SustainRender.Position = AbsolutePosition;
-            float BaseY = SustainRender.ZoomPosition.Y + (ZoomHeight / 2);
-            SustainRender.ZoomPosition += new Vector2(ZoomWidth / 2 - (SustainRender.ZoomWidth / 2), BaseY);
-            SustainHeight = SustainRender.ZoomHeight;
 
-            for (float y = SustainBegin; y < SustainLength; y += SustainRender.ZoomHeight)
+            SustainRender.ZoomPosition = AbsoluteZoomPosition;
+
+            float PosY = SustainRender.ZoomPosition.Y + (ZoomHeight / 2);
+
+            float PosX = ZoomWidth / 2 - (SustainRender.ZoomWidth / 2);
+
+            SustainRender.ZoomPosition += new Vector2(PosX, PosY);
+
+            float SustainPositionX = SustainRender.ZoomPosition.X;
+            float SustainZoomHeight = SustainRender.ZoomHeight;
+
+            SustainHeight = SustainZoomHeight;
+
+            for (float y = SustainBegin; y < SustainLength; y += SustainZoomHeight)
             {
-                bool Last = y + SustainRender.ZoomHeight > SustainLength;
+                bool Last = y + SustainZoomHeight > SustainLength;
 
                 if (Last)
                 {
@@ -218,7 +232,7 @@ namespace Orbis.Game
                     SustainRender.ZoomPosition -= new Vector2(0, 20);
                 }
 
-                SustainRender.ZoomPosition = new Vector2(SustainRender.ZoomPosition.X, BaseY + y);
+                SustainRender.ZoomPosition = new Vector2(SustainPositionX, PosY + y);
                 SustainRender.Draw(Tick);
                 
                 if (Last)
@@ -236,7 +250,7 @@ namespace Orbis.Game
             {
                 if (CanBeHit && Hitted)
                 {
-                    SustainBegin += SustainRender.ZoomHeight;
+                    SustainBegin += SustainHeight;
                     Score += SustainPoints;
                     OnSustainHit?.Invoke(this, null);
                     continue;
@@ -247,6 +261,7 @@ namespace Orbis.Game
                     LastMissSustain = SustainBegin;
                     OnSustainMissed?.Invoke(this, null);
                 }
+
                 break;
             }
         }

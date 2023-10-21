@@ -1,4 +1,5 @@
 ﻿#if ORBIS
+using Orbis.Internals;
 using Orbis.Scene;
 using OrbisGL;
 using OrbisGL.GL;
@@ -12,7 +13,9 @@ namespace Orbis
             EnableKeyboard();
 
             EnableDualshock(new DualshockSettings());
-            
+
+            Kernel.Log("Initializing StartMenu");
+
             InitializeComponents();
         }
 

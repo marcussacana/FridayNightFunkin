@@ -13,8 +13,6 @@ namespace Orbis.Scene
 {
     internal class HalloweenScene : GLObject2D, IScene
     {
-        MemoryStream SFXA;
-        MemoryStream SFXB;
         SongPlayer Game;
 
         MusicPlayer Player => Game.MusicPlayer;
@@ -43,9 +41,6 @@ namespace Orbis.Scene
             BG.SetActiveAnimation("halloweem bg");
             BG.RefreshVertex();
             OnProgressChanged?.Invoke(2);
-
-            SFXA = SFXHelper.Default.GetSFX(SFXType.ThunderA);
-            SFXB = SFXHelper.Default.GetSFX(SFXType.ThunderB);
 
 
             AddChild(new Rectangle2D(BG.Rectangle, true) { Color = RGBColor.Black });
@@ -78,11 +73,7 @@ namespace Orbis.Scene
 
         private void DoThunder()
         {
-            if (SFXA == null)
-                return;
-
-            var SFX = Rnd.NextDouble() > 0.5f ? SFXA : SFXB;
-            SFX.Position = 0;
+            var SFX = SFXHelper.Default.GetSFX(Rnd.NextDouble() > 0.5f ? SFXType.ThunderA : SFXType.ThunderB);
             
             Player?.SetPassiveSFXVol(0.6f);
             Player?.PlayPassiveSFX(SFX);

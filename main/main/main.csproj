@@ -104,7 +104,7 @@
     <Compile Include="Scene\StageScene.cs" />
     <Compile Include="Enums.cs" />
     <Compile Include="Game\HealthBar.cs" />
-    <Compile Include="Game\MusicNoteEntry.cs" />
+    <Compile Include="Game\SongNoteEntry.cs" />
     <Compile Include="Game\PlayerNoteEntry.cs" />
     <Compile Include="Game\NoteMenu.cs" />
     <Compile Include="Interfaces\IScene.cs" />

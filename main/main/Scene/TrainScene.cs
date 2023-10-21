@@ -28,8 +28,6 @@ namespace Orbis.Scene
 
         MusicPlayer Player => Game.MusicPlayer;
 
-        MemoryStream TrainSFX;
-
         int NextWindow;
 
         public TrainScene(SongPlayer Player)
@@ -112,8 +110,6 @@ namespace Orbis.Scene
             Train.RefreshVertex();
 
             Train.Position = new Vector2(TraingBeginX, City.Height - Train.Height - 190);
-
-            TrainSFX = SFXHelper.Default.GetSFX(SFXType.Train);
 
             UpdateVisibleWindow();
 
@@ -271,13 +267,8 @@ namespace Orbis.Scene
             if (!SFXStarted && ElapsedMS >= SoundTrainDelayMS)
             {
                 SFXStarted = true;
-
-                if (TrainSFX != null)
-                {
-                    TrainSFX.Position = 0;
-                    Player.SetPassiveSFXVol(0.40f);
-                    Player.PlayPassiveSFX(TrainSFX);
-                }
+                Player?.SetPassiveSFXVol(0.40f);
+                Player?.PlayPassiveSFX(SFXHelper.Default.GetSFX(SFXType.Train));
             }
 
             if (ElapsedMS > TrainDelayMS)
