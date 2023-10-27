@@ -1,4 +1,5 @@
 ﻿#if ORBIS
+using Orbis.Interfaces;
 using Orbis.Internals;
 using Orbis.Scene;
 using OrbisGL;
@@ -21,12 +22,12 @@ namespace Orbis
 
         private void InitializeComponents()
         {
-            StartMenuScene Menu = new StartMenuScene();
-            Menu.Load((i) =>
+            ILoadable main = new IntroScene();
+            main.Load((i) =>
             {
-                if (Menu.Loaded)
+                if (main.Loaded)
                 {
-                    AddObject(Menu);
+                    AddObject(main);
                 }
             });
         }

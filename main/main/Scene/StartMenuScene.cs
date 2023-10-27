@@ -14,6 +14,12 @@ namespace Orbis.Scene;
 public class StartMenuScene : GLObject2D, ILoadable
 {
 
+    public StartMenuScene(WavePlayer Theme, OrbisAudioOut ThemeDriver)
+    {
+        this.Theme = Theme;
+        this.ThemeDriver = ThemeDriver;
+    }
+
     private bool Ready;
     private SFXHelper SFX => SFXHelper.Default;
     
@@ -30,19 +36,9 @@ public class StartMenuScene : GLObject2D, ILoadable
     private IScene Target;
     
     public bool Loaded { get; private set; }
-    public int TotalProgress { get => 5 + SFX.TotalProgress; }
+    public int TotalProgress { get => 4; }
     public void Load(Action<int> OnProgressChanged)
     {
-
-#if ORBIS
-        SFX.Load((i) => { OnProgressChanged(i); });
-
-        Theme = new WavePlayer();
-        Theme.SetAudioDriver(ThemeDriver = new OrbisAudioOut());
-        Theme.Loop = true;
-        Theme.Open(Util.CopyFileToMemory("freakyMenu_48khz.wav"));
-#endif
-        OnProgressChanged?.Invoke(SFX.TotalProgress + 1);
 
 #if ORBIS
         SFXPlayer = new WavePlayer();
@@ -50,7 +46,7 @@ public class StartMenuScene : GLObject2D, ILoadable
         SFXPlayer.Open(SFX.GetSFX(SFXType.MenuConfirm));
 #endif
 
-        OnProgressChanged?.Invoke(SFX.TotalProgress + 2);
+        OnProgressChanged?.Invoke(1);
         
         var XML = Util.GetXML("gfDanceTitle.xml");
         Girlfriend = new SpriteAtlas2D(XML, Util.CopyFileToMemory, true);
@@ -61,7 +57,7 @@ public class StartMenuScene : GLObject2D, ILoadable
 
         Girlfriend.SetZoom(0.8f);
 
-        OnProgressChanged?.Invoke(SFX.TotalProgress + 3);
+        OnProgressChanged?.Invoke(2);
 
         XML = Util.GetXML("logoBumpin.xml");
         Logo = new SpriteAtlas2D(XML, Util.CopyFileToMemory, true);
@@ -69,7 +65,7 @@ public class StartMenuScene : GLObject2D, ILoadable
         Logo.Position = new Vector2(-10, -10);
         Logo.SetZoom(0.8f);
 
-        OnProgressChanged?.Invoke(SFX.TotalProgress + 4);
+        OnProgressChanged?.Invoke(3);
 
         XML = Util.GetXML("titleEnter.xml");
         PressStart = new SpriteAtlas2D(XML, Util.CopyFileToMemory, true);
@@ -94,12 +90,12 @@ public class StartMenuScene : GLObject2D, ILoadable
 
         Loaded = true;
         
-        OnProgressChanged?.Invoke(SFX.TotalProgress + 5);
+        OnProgressChanged?.Invoke(4);
     }
 
     private void OnKeyUp(object Sender, KeyboardEventArgs Args)
     {
-        if (Started)
+        if (Started || LastFrameTick <= 0)
             return;
 
         if (Args.Keycode == IME_KeyCode.RETURN)
@@ -110,7 +106,7 @@ public class StartMenuScene : GLObject2D, ILoadable
 
     private void GamepadOnOnButtonUp(object sender, ButtonEventArgs args)
     {
-        if (Started)
+        if (Started || LastFrameTick <= 0)
             return;
         
         if (args.Button.HasFlag(OrbisPadButton.Options))
