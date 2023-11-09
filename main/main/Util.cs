@@ -339,6 +339,8 @@ namespace Orbis
 
                 var Song = JsonConvert.DeserializeObject<SongInfo>(JSON);
 
+                Song.Title = Name;
+
                 switch (Name.ToLowerInvariant().Trim())
                 {
                     default:

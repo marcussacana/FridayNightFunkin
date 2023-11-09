@@ -68,6 +68,7 @@ namespace Orbis.Scene
                 Text.SetText(Choice.ToUpper());
                 Text.Position = CurrentPos;
                 Text.Opacity = 255 - SecondaryTranparency;
+                Text.StaticText = true;
                 Text.SetZoom(0.8f);
                 ChoiceList.AddChild(Text);
 
@@ -87,6 +88,8 @@ namespace Orbis.Scene
         /// Trigger after the selection animation is done
         /// </summary>
         public event EventHandler OnChoiceDoneEnd;
+
+        public event EventHandler OnSelectionChanged;
 
         private void TrackEnd(object sender, EventArgs e)
         {
@@ -149,6 +152,8 @@ namespace Orbis.Scene
 
         private void UpdateSelection(bool Instant)
         {
+            bool Changed = LastSelection != Selection;
+
             LastSelection = Selection;
             Selection = (AtlasText2D)ChoiceList.Childs.ElementAt(SelectedIndex);
 
@@ -176,6 +181,9 @@ namespace Orbis.Scene
 
                 PlayAudio(SFXHelper.Default.GetSFX(SFXType.MenuChoice));
             }
+
+            if (Changed)
+                OnSelectionChanged?.Invoke(this, EventArgs.Empty);
         }
 
         int LastTrack = 0;

@@ -83,9 +83,9 @@ namespace Orbis.Scene
             OnProgressChanged?.Invoke(SFX.TotalProgress + StartMenu.TotalProgress + 3);
         }
 
-        private void UpdateCenter()
+        private void UpdateCenter(Vector2? Size = null)
         {
-            Text.Position = this.GetMiddle(Text);
+            Text.Position = (this.Size / 2) - ((Size ?? Text.Size) / 2);
         }
 
         int IntroIndex = 0;
@@ -98,16 +98,22 @@ namespace Orbis.Scene
                 case 1:
                     break;
                 case 2:
-                    Text.SetText("NOT IN ASSOCIATION\n       WITH");
-                    Text.Position = new Vector2(500, 300);
+                    Text.SetText("NOT IN ASSOCIATION\n      WITH");
+                    Text.Position = new Vector2(550, 300);
                     break;
                 case 3:
                     AddChild(NewGroundsLogo);
                     NewGroundsLogo.Position = new Vector2(800, 500);
                     break;
-                case 4:                    
-                    Text.SetText(IntroText.First() + "\n" + IntroText.Last());
-                    UpdateCenter();
+                case 4:
+                    Text.SetText(IntroText.Last());
+                    var SizeA = Text.Size;
+                    Text.SetText(IntroText.First());
+                    var SizeB = Text.Size;
+
+                    var MaxSize = new Vector2(Math.Max(SizeA.X, SizeB.X), Math.Max(SizeA.Y, SizeB.Y));
+
+                    UpdateCenter(MaxSize);
 
                     Text.SetText(IntroText.First());
                     NewGroundsLogo.Visible = false;

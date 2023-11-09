@@ -8,18 +8,34 @@ namespace Orbis.Game
 {
     internal class FallObj : GLObject2D
     {
+        bool TextureMode = false;
         int Distance;
         int TimeMS;
-        Texture2D Obj;
+        GLObject2D Obj;
         public FallObj(Texture Texture, int Distance, int TimeMS)
+        {
+            TextureMode = true;
+            this.Distance = Distance;
+            this.TimeMS = TimeMS;
+
+            Obj = new Texture2D
+            {
+                Texture = Texture
+            };
+
+            Obj.RefreshVertex();
+            AddChild(Obj);
+
+            Width = Obj.Width;
+            Height = Obj.Height;
+        }
+
+        public FallObj(GLObject2D Obj, int Distance, int TimeMS)
         {
             this.Distance = Distance;
             this.TimeMS = TimeMS;
 
-            Obj = new Texture2D();
-            Obj.Texture = Texture;
-            Obj.RefreshVertex();
-
+            this.Obj = Obj;
             AddChild(Obj);
 
             Width = Obj.Width;
@@ -27,6 +43,7 @@ namespace Orbis.Game
         }
 
         long BeginTick;
+
         public override void Draw(long Tick)
         {
             if (BeginTick == 0)
@@ -55,7 +72,9 @@ namespace Orbis.Game
         }
         public override void Dispose()
         {
-            Obj.Texture = null;
+            if (TextureMode)
+                ((Texture2D)Obj).Texture = null;
+
             base.Dispose();
         }
     }

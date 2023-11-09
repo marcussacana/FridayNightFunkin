@@ -16,6 +16,7 @@ namespace Orbis
 
     public struct SongInfo
     {
+        public string Title;
         public string Name;
         public Dificuty Dificuty;
 

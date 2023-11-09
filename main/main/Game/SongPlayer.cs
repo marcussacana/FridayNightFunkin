@@ -8,6 +8,7 @@ using OrbisGL.GL2D;
 using System;
 using System.IO;
 using System.Numerics;
+using Orbis.Internals;
 
 namespace Orbis.Game
 {
@@ -49,7 +50,7 @@ namespace Orbis.Game
         SpriteAtlas2D AtlasFont;
 
         TiledSpriteAtlas2D Speaker;
-        internal TiledSpriteAtlas2D _Player1;
+        TiledSpriteAtlas2D _Player1;
         TiledSpriteAtlas2D Player1 { get => ForceBoyfriend ? Boyfriend : _Player1; set => _Player1 = value; }
         TiledSpriteAtlas2D Player2;
         internal TiledSpriteAtlas2D Boyfriend;
@@ -88,6 +89,9 @@ namespace Orbis.Game
 
         NoteMenu Player1Menu;
         NoteMenu Player2Menu;
+
+        public long Player1Score => Player1Menu.Score;
+        public long Player2Score => Player2Menu.Score;
 
         ChoiceScene PauseMenu;
 
@@ -270,6 +274,12 @@ namespace Orbis.Game
 #if ORBIS
             Instrumental = Util.CopyFileToMemory($"songs/{SongInfo.Name}/Inst_48khz.wav");
             Voices = Util.CopyFileToMemory($"songs/{SongInfo.Name}/Voices_48khz.wav");
+
+            if (Instrumental == null)
+                Kernel.Log("Failed to Load Instrumental Song Track");
+            
+            if (Voices == null)
+                Kernel.Log("Failed to load Voices Song Track");
 
             MusicPlayer = new MusicPlayer(Instrumental, Voices, (s, a) => { Ended = true; }, false);
 #endif

@@ -7,14 +7,17 @@ using OrbisGL.GL;
 using OrbisGL.GL2D;
 using System;
 using System.Collections.Generic;
+using System.IO;
 using System.Linq;
 using System.Numerics;
+using Orbis.Internals;
+using OrbisGL.Storage;
 
 namespace Orbis.Scene
 {
     internal class FreestyleScene : GLObject2D, ILoadable
-    {        
-
+    {
+        private Dictionary<string, long> Score = new Dictionary<string, long>();
         static readonly List<string> Songs = new List<string>() {
             "tutorial",
             "bopeebo",
@@ -43,6 +46,7 @@ namespace Orbis.Scene
 
         ChoiceScene Menu;
 
+
         static Texture2D TexView;
         static SpriteAtlas2D Atlas;
 
@@ -52,6 +56,8 @@ namespace Orbis.Scene
         private OrbisAudioOut ThemeDriver;
 
         private AtlasText2D DifficultyView;
+        private AtlasText2D ScoreView;
+        private AtlasText2D ScoreLabel;
 
         private Rectangle2D Fade = new Rectangle2D(1920, 1080, true);
 
@@ -59,11 +65,17 @@ namespace Orbis.Scene
 
         Dificuty CurrentDifficulty = Dificuty.Normal;
 
+        private OrbisSaveManager Savedata;
+
         public FreestyleScene(WavePlayer Theme, OrbisAudioOut ThemeDriver, LoadingScene LoadScreen)
         {
             this.Theme = Theme;
             this.ThemeDriver = ThemeDriver;
             this.LoadScreen = LoadScreen;
+            
+#if ORBIS
+            Savedata = new OrbisSaveManager(1024 * 5);
+#endif
         }
 
         public bool Loaded { get; set; }
@@ -102,14 +114,34 @@ namespace Orbis.Scene
             Menu = new ChoiceScene(SongListPos, 1920, 1080, Songs.Select(GetFirendlyName).ToArray(), Atlas);
             Menu.OnChoiceDoneBegin += Menu_OnChoiceDoneBegin;
             Menu.OnChoiceDoneEnd += Menu_OnChoiceDoneEnd;
+            Menu.OnSelectionChanged += Menu_OnSelectionChanged;
 
             AddChild(Menu);
 
             DifficultyView = new AtlasText2D(Atlas, Util.FontBoldMap);
             DifficultyView.SetText("NORMAL");
-            DifficultyView.SetZoom(1.2f);
+            DifficultyView.SetZoom(1.3f);
+            DifficultyView.StaticText = true;
             DifficultyView.ZoomPosition = new Vector2(Application.Default.Width - 300, 50);
             AddChild(DifficultyView);
+            
+            ScoreLabel = new AtlasText2D(Atlas, Util.FontBoldMap);
+            ScoreLabel.SetText("SCORE");
+            ScoreLabel.StaticText = true;
+            
+            ScoreLabel.SetZoom(1.5f);
+            ScoreLabel.ZoomPosition = new Vector2(Application.Default.Width - 400, Application.Default.Height - 70);
+            AddChild(ScoreLabel);
+            
+            ScoreView = new AtlasText2D(Atlas, Util.FontBoldMap);
+            ScoreView.Negative = true;
+            ScoreView.Outline = 15f;
+            ScoreView.StaticText = true;
+            ScoreView.SetZoom(1.5f);
+            ScoreView.ZoomPosition = new Vector2(Application.Default.Width - 225, Application.Default.Height - 80);
+
+            AddChild(ScoreView);
+            
 
             Loaded = true;
 
@@ -122,10 +154,46 @@ namespace Orbis.Scene
             Fade.Opacity = 0;
 
             AddChild(Fade);
-            
 
             OnProgressChanged?.Invoke(2);
 
+#if ORBIS
+            if (Savedata.Exists())
+            {
+                var Save = Savedata.Open();
+
+                var ScoreData = File.ReadAllLines(Path.Combine(Save.AbsoluteMountedPath, "score.ini"));
+                
+                Save.Unmount();
+
+                foreach (var ScoreInf in ScoreData)
+                {
+                    if (!ScoreInf.Contains("=") || ScoreInf.StartsWith(";"))
+                        continue;
+
+                    var SongName = ScoreInf.Split('=').First();
+                    var SongScore = ScoreInf.Split('=').Last();
+
+                    if (long.TryParse(SongScore, out long Score))
+                    {
+                        this.Score[SongName] = Score;
+                    }
+                }
+            }
+#endif
+
+            UpdateScore(Songs.First());
+
+            OnProgressChanged?.Invoke(3);
+
+            Width = Application.Default.Width;
+            Height = Application.Default.Height;
+        }
+
+
+        private void SetScore(long Score)
+        {
+            ScoreView.SetText($": {Score}");
         }
 
         private void Menu_OnChoiceDoneEnd(object sender, EventArgs e)
@@ -137,6 +205,19 @@ namespace Orbis.Scene
         {
             ThemeDriver.SetVolume(0);
             BeginFadeOut = 0;
+        }
+        private void Menu_OnSelectionChanged(object sender, EventArgs e)
+        {
+            var Song = Songs[Menu.SelectedIndex];
+            UpdateScore(Song);
+        }
+
+        private void UpdateScore(string Song)
+        {
+            if (Score.ContainsKey(Song))
+                SetScore(Score[Song]);
+            else
+                SetScore(0);
         }
 
         private void OnKeyUp(object Sender, KeyboardEventArgs Args)
@@ -323,6 +404,24 @@ namespace Orbis.Scene
         private void SongEnd(object sender, EventArgs e)
         {
             var Player = (SongPlayer)sender;
+
+            if (!Score.ContainsKey(Player.SongInfo.Title) || Score[Player.SongInfo.Title] < Player.Player1Score)
+            {
+                var Text = new AtlasText2D(Atlas, Util.FontBoldMap);
+
+                Text.StaticText = true;
+                Text.SetZoom(0.8f);
+                Text.SetText("NEW RECORD");
+
+                FallObj Obj = new FallObj(Text, 50, 2000);
+                Obj.Position = (new Vector2(Width, Height) / 2) - (Obj.Size / 2);
+                AddChild(Obj);
+
+                Score[Player.SongInfo.Title] = Player.Player1Score;
+                SetScore(Player.Player1Score);
+                SaveScore();
+            }
+            
             Player.Dispose();
 
             Application.Default.AddObject(this);
@@ -330,7 +429,35 @@ namespace Orbis.Scene
             BeginFadeIn = 0;
             Started = false;
         }
-        
+
+        private void SaveScore()
+        {
+#if ORBIS
+            DateTime Begin = DateTime.Now;
+            
+            var Lines = Score.Select(x => $"{x.Key}={x.Value}").ToArray();
+
+            OrbisSaveData Save;
+            
+            if (Savedata.Exists())
+                Save = Savedata.Update(false);
+            else
+            {
+                Save = Savedata.Create(false);
+                Save.SetTitle("Score Info");
+            }
+
+            var ScorePath = Path.Combine(Save.AbsoluteMountedPath, "score.ini");
+            File.WriteAllLines(ScorePath, Lines);
+            
+            Save.Unmount();
+
+            var Elapsed = DateTime.Now - Begin;
+            
+            Kernel.Log($"Save Data Updated... ({Elapsed.TotalSeconds} seconds elapsed)");
+#endif
+        }
+
         private void SongRestart(object sender, EventArgs e)
         {
             var Player = (SongPlayer)sender;

@@ -10,10 +10,10 @@ namespace Orbis.Game
     {
         public bool CPU { get; set; }
 
-        CharacterAnim CharAnim => IsPlayer1 ? Game.Player1Anim : Game.Player2Anim;
+        CharacterAnim CharAnim => IsPlayer1 ? Game.Player1Anim : (Game.Player2Anim ?? Game.SpeakerAnim);
 
         public int Missed { get; private set; } = 0;
-        public int Score { get; private set; } = 0;
+        public long Score { get; private set; } = 0;
         public SongPlayer Game { get; private set; }
 
         public event EventHandler<NewStatusEvent> OnNoteElapsed;
