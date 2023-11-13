@@ -81,7 +81,8 @@ namespace Orbis
         Halloween,
         Christmas,
         ChristmasEvil,
-        WeebSchool
+        WeebSchool,
+        EvilWeebSchool
     }
 
     public enum EventTarget : byte

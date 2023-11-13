@@ -131,6 +131,9 @@ namespace Orbis.Game
                 case Map.WeebSchool:
                     BG = (IScene)(BGObject = new WeebSchool(this));
                     break;
+                case Map.EvilWeebSchool:
+                    BG = (IScene)(BGObject = new EvilWeebSchool(this));
+                    break;
                 default:
                     throw new NotImplementedException();
             };

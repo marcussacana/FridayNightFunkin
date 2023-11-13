@@ -224,6 +224,13 @@ namespace Orbis
                     UP = "Tankman UP note instance";
                     DOWN_MISS = LEFT_MISS = RIGHT_MISS = UP_MISS = "TANKMAN UGH instance";
                     break;
+                case "spirit":
+                    SHAKING = DANCING = "idle spirit_";
+                    DOWN = "spirit down_";
+                    LEFT = "left_";
+                    RIGHT = "right_";
+                    UP = "up_";
+                    break;
             }
         }
 

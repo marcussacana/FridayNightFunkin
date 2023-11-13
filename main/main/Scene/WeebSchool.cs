@@ -14,14 +14,14 @@ namespace Orbis.Scene
 {
     internal class WeebSchool : GLObject2D, IScene
     {
-        Texture2D Sky;
-        Texture2D School;
-        Texture2D Street;
+        protected Texture2D Sky;
+        protected Texture2D School;
+        protected Texture2D Street;
 
-        SpriteAtlas2D Freaks;
+        protected SpriteAtlas2D Freaks;
 
-        Texture2D TreeBack;
-        SpriteAtlas2D Tree;
+        protected Texture2D TreeBack;
+        protected SpriteAtlas2D Tree;
 
 
         SongPlayer Game;
@@ -31,13 +31,13 @@ namespace Orbis.Scene
             Game = Player;
         }
 
-        public bool Loaded { get; private set; }
+        public bool Loaded { get; protected set; }
 
-        public int TotalProgress => 6;
+        public virtual int TotalProgress => 6;
 
         public event EventHandler<NewStatusEvent> OnMapStatusChanged;
 
-        public void Load(Action<int> OnProgressChanged)
+        public virtual void Load(Action<int> OnProgressChanged)
         {
             using (var Stream = Util.CopyFileToMemory("weebSky.dds"))
                 Sky = new Texture2D(Stream, false);

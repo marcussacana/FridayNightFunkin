@@ -376,6 +376,10 @@ namespace Orbis
                         Song.BG = Map.WeebSchool;
                         Song.Speaker = "gf-pixel";
                         break;
+                    case "thorns":
+                        Song.BG = Map.EvilWeebSchool;
+                        Song.Speaker = "gf-pixel";
+                        break;
                 }
 
                 return Song;

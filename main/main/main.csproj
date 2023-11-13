@@ -93,6 +93,7 @@
     <Compile Include="Scene\ChoiceScene.cs" />
     <Compile Include="Scene\Christmas.cs" />
     <Compile Include="Scene\ChristmasEvil.cs" />
+    <Compile Include="Scene\EvilWeebSchool.cs" />
     <Compile Include="Scene\HalloweenScene.cs" />
     <Compile Include="Scene\IntroScene.cs" />
     <Compile Include="Scene\LimoScene.cs" />

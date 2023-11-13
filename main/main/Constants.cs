@@ -26,6 +26,7 @@ namespace Orbis
         public const string TankmanAssets = "tankmanCaptain.xml";
         public const string BoyfriendHoldingGirlfriend = "bfAndGF.xml";
         public const string BoyfriendHoldingGirlfriendDead = "bfHoldingGF-DEAD.xml";
+        public const string SpiritAssets = "spirit.xml";
 
         public const string BoyfriendIcon = "icon-bf.dds";
         public const string BoyfriendPixelIcon = "icon-bf-pixel.dds";
@@ -39,6 +40,7 @@ namespace Orbis
         public const string SpiritIcon = "icon-spirit.dds";
         public const string SpookyIcon = "icon-spooky.dds";
         public const string TankmanIcon = "icon-tankman.dds";
+
 
 
         public static readonly ReadOnlyDictionary<string, string> AssetsMap = new ReadOnlyDictionary<string, string>(
@@ -59,7 +61,8 @@ namespace Orbis
                 { "spooky" , SpookyKidsAssets },
                 { "gf" , GirlfriendAssets },
                 { "parents-christmas", ParentsChristmasAssets },
-                { "tankman", TankmanAssets }
+                { "tankman", TankmanAssets },
+                { "spirit", SpiritAssets }
             });
 
         public static readonly ReadOnlyDictionary<string, string> IconMap = new ReadOnlyDictionary<string, string>(
@@ -80,7 +83,8 @@ namespace Orbis
                 { "spooky" , SpookyIcon },
                 { "gf" , GirlfriendIcon },
                 { "parents-christmas", ParentsIcon },
-                { "tankman", TankmanIcon }
+                { "tankman", TankmanIcon },
+                { "spirit", SpiritIcon }
             });
     }
 
