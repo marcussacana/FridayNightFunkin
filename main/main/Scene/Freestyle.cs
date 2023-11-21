@@ -393,6 +393,7 @@ namespace Orbis.Scene
 
                 if (Progress >= 1)
                 {
+                    Started = false;
                     BeginFadeIn = -1;
                     Progress = 1;
                 }
@@ -427,7 +428,6 @@ namespace Orbis.Scene
             Application.Default.AddObject(this);
 
             BeginFadeIn = 0;
-            Started = false;
         }
 
         private void SaveScore()

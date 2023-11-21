@@ -704,15 +704,19 @@ namespace Orbis.Game
             
             if (Args.Button.HasFlag(OrbisPadButton.Options) || Args.Button.HasFlag(OrbisPadButton.Cross))
             {
-                MusicPlayer.Pause();
-                MusicPlayer.PlayPassiveSFX(SFX.GetSFX(SFXType.DeadRetry));
-                
-                if (Player1Dead)
-                    Player1.SetActiveAnimation(Player1Anim.DEAD_CONFIRM);
-                else
-                    Player2.SetActiveAnimation(Player2Anim.DEAD_CONFIRM);
-                
-                UpdateAnimations();
+                if (!RestartConfirmed)
+                {
+                    RestartConfirmed = true;
+                    MusicPlayer.Pause();
+                    MusicPlayer.PlayPassiveSFX(SFX.GetSFX(SFXType.DeadRetry));
+
+                    if (Player1Dead)
+                        Player1.SetActiveAnimation(Player1Anim.DEAD_CONFIRM);
+                    else
+                        Player2.SetActiveAnimation(Player2Anim.DEAD_CONFIRM);
+
+                    UpdateAnimations();
+                }
                 return;
             }
         }
@@ -1009,6 +1013,7 @@ namespace Orbis.Game
 
         public int BPMTicks { get; private set; }
         public bool IsPixel { get; internal set; }
+        public bool RestartConfirmed { get; private set; }
 
         long BeginFadeOut = -1;
         float LastBeatProgress;
@@ -1040,7 +1045,8 @@ namespace Orbis.Game
 
             if (Ended && BeginFadeOut == -1)
             {
-                BeginFadeOut = Tick;
+                if (!Player1Menu.HasReamingNotes && !Player2Menu.HasReamingNotes)
+                    BeginFadeOut = 0;
             }
 
             bool FirstFrame = false;
@@ -1152,7 +1158,6 @@ namespace Orbis.Game
                 Player2Menu?.Freeze();
                 MusicPlayer?.Dispose();
                 BeginFadeOut = 0;
-                AddChild(Fade);
             }
         }
 
@@ -1242,13 +1247,14 @@ namespace Orbis.Game
                 if (BeginFadeOut == 0)
                 {
                     BeginFadeOut = Tick;
+                    AddChild(Fade);
                 }
 
                 var DeltaTick = Tick - BeginFadeOut;
 
                 var ElapsedMS = (float)(DeltaTick / Constants.ORBIS_MILISECOND);
 
-                const int FadeDuration = 1500;
+                const int FadeDuration = 3000;
 
                 float Progress = ElapsedMS / FadeDuration;
 

@@ -16,6 +16,9 @@ namespace Orbis.Game
         public long Score { get; private set; } = 0;
         public SongPlayer Game { get; private set; }
 
+        private bool NoteCreatorFinished = false;
+        public bool HasReamingNotes => SongNotes.Any() && NoteCreatorFinished;
+
         public event EventHandler<NewStatusEvent> OnNoteElapsed;
 
         public event EventHandler<SongNoteEntry> OnNoteMissed;
@@ -309,6 +312,8 @@ namespace Orbis.Game
 
                 yield return null;
             }
+
+            NoteCreatorFinished = true;
         }
 
         private void NoteEntryReached(object sender, EventArgs e)
