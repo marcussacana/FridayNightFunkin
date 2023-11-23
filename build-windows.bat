@@ -4,7 +4,7 @@ SETLOCAL EnableDelayedExpansion
 
 Rem Package information
 set PKG_TITLE="Friday Night Funkin"
-set PKG_VERSION="1.00"
+set PKG_VERSION="0.01"
 set PKG_ASSETS="assets"
 set PKG_TITLE_ID="BREW01859"
 set PKG_CONTENT_ID="IV0000-BREW01859_00-MARCUSSACANA0000"
