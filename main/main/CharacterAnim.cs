@@ -217,7 +217,8 @@ namespace Orbis
                     break;
                 case "tankman":
                     Alt = true;
-                    SHAKING = DANCING = "PRETTY GOOD tankman instance";
+                    SHAKING = DANCING = "Tankman Idle Dance instance";
+                    HEY = "PRETTY GOOD tankman instance";
                     DOWN = "Tankman DOWN note instance";
                     LEFT = "Tankman Note Left instance";
                     RIGHT = "Tankman Right Note instance";

@@ -948,6 +948,7 @@ namespace Orbis.Game
                     break;
                 case "tankman":
                     Player2.Position += new Vector2(0, 180) * CoordinatesScale;
+                    Player2.Mirror = true;
                     break;
             }
         }

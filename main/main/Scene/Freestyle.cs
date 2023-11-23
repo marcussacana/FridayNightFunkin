@@ -37,11 +37,12 @@ namespace Orbis.Scene
             "senpai",
             "roses",
             "thorns",
-            "guns",
             "monster",
-            //"stress", //TODO: Implement before the first stable release
-            "test",
-            "ugh"
+            //"guns",
+            //"ugh",
+            //"stress",
+            //TODO: Implement before the first stable release
+            "test"
         };
 
         ChoiceScene Menu;
