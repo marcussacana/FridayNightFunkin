@@ -83,9 +83,14 @@ namespace Orbis.Scene
             OnProgressChanged?.Invoke(SFX.TotalProgress + StartMenu.TotalProgress + 3);
         }
 
-        private void UpdateCenter(Vector2? Size = null)
+        private void UpdateCenterLineTwo()
         {
-            Text.Position = (this.Size / 2) - ((Size ?? Text.Size) / 2);
+            var CenterX = (Size.X / 2) - (TextLineTwo.Size.X / 2);
+            TextLineTwo.Position = new Vector2(CenterX, Text.Position.Y + Text.Height);
+        }
+        private void UpdateCenter()
+        {
+            Text.Position = (this.Size / 2) - (Text.Size / 2);
         }
 
         int IntroIndex = 0;
@@ -106,21 +111,13 @@ namespace Orbis.Scene
                     NewGroundsLogo.Position = new Vector2(800, 500);
                     break;
                 case 4:
-                    Text.SetText(IntroText.Last());
-                    var SizeA = Text.Size;
                     Text.SetText(IntroText.First());
-                    var SizeB = Text.Size;
-
-                    var MaxSize = new Vector2(Math.Max(SizeA.X, SizeB.X), Math.Max(SizeA.Y, SizeB.Y));
-
-                    UpdateCenter(MaxSize);
-
-                    Text.SetText(IntroText.First());
+                    UpdateCenter();
                     NewGroundsLogo.Visible = false;
                     break;
                 case 5:
                     TextLineTwo.SetText(IntroText.Last());
-                    TextLineTwo.Position = Text.Position + Text.GetMiddle(TextLineTwo) + new Vector2(0, Text.Height);
+                    UpdateCenterLineTwo();
                     AddChild(TextLineTwo);
                     break;
                 case 6:
