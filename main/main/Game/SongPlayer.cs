@@ -284,7 +284,7 @@ namespace Orbis.Game
             if (Voices == null)
                 Kernel.Log("Failed to load Voices Song Track");
 
-            MusicPlayer = new MusicPlayer(Instrumental, Voices, (s, a) => { Ended = true; }, false);
+            MusicPlayer = new MusicPlayer(Instrumental, Voices, (s, a) => { Ended = true; });
 #endif
             OnProgressChanged?.Invoke(BaseProgress + 11);
 

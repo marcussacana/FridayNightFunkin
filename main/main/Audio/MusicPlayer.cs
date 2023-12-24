@@ -19,18 +19,16 @@ namespace Orbis.Audio
         IAudioOut SFXADriver;
         IAudioOut SFXBDriver;
 
-        public MusicPlayer(MemoryStream Instrumental, MemoryStream Voices, EventHandler OnMusicEnd, bool Ogg) {
+        public MusicPlayer(MemoryStream Instrumental, MemoryStream Voices, EventHandler OnMusicEnd) {
             InstrumentalDriver = new OrbisAudioOut();
             VoiceDriver = new OrbisAudioOut();
             SFXADriver = new OrbisAudioOut();
             SFXBDriver = new OrbisAudioOut();
 
-            this.Ogg = Ogg;
-
-            this.Instrumental = Ogg ? new VorbisPlayer() : new WavePlayer();
-            this.Voices = Ogg ? new VorbisPlayer() : new WavePlayer();
-            this.SFXA = Ogg ? new VorbisPlayer() : new WavePlayer(); 
-            this.SFXB = Ogg ? new VorbisPlayer() : new WavePlayer();
+            this.Instrumental = new WavePlayer();
+            this.Voices = new WavePlayer();
+            this.SFXA = new WavePlayer(); 
+            this.SFXB = new WavePlayer();
 
             if (Instrumental == null)
             {
@@ -95,8 +93,8 @@ namespace Orbis.Audio
             SFXADriver?.Dispose();
             SFXBDriver?.Dispose();
 
-            SFXA = Ogg ? new VorbisPlayer() : new WavePlayer();
-            SFXB = Ogg ? new VorbisPlayer() : new WavePlayer();
+            SFXA = new WavePlayer();
+            SFXB = new WavePlayer();
 
             SFXADriver = new OrbisAudioOut();
             SFXBDriver = new OrbisAudioOut();
