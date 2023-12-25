@@ -26,6 +26,8 @@ git clone https://github.com/marcussacana/FridayNightFunkin
 git submodule init
 git submodule update --init --recursive
 ```
+- Download the game assets here: https://www.mediafire.com/file/v7pysvi0he51lhl/assets.zip
+- Place the assets (without extract) at "assets\misc" 
 - Open the "Developer Command Prompt for VS 2022"
 - Run in this project root directory the command
 ```
