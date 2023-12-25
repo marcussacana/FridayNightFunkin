@@ -17,9 +17,17 @@ Support the project on the itch.io page: https://ninja-muffin24.itch.io/funkin
 This game was made with love to Newgrounds and its community. Extra love to Tom Fulp.
 
 ## Build instructions
-
-THESE INSTRUCTIONS ARE FOR COMPILING THE GAME'S SOURCE CODE!!!
-
-IF YOU WANT TO JUST DOWNLOAD AND INSTALL AND PLAY THE GAME NORMALLY, GO TO ITCH.IO TO DOWNLOAD THE GAME FOR PC, MAC, AND LINUX!!
-
-https://ninja-muffin24.itch.io/funkin
+- Install the Visual Studio
+- Install the OpenOrbis SDK 
+- Setup the OpenOrbis SDK Environment variable "OO_PS4_TOOLCHAIN" 
+- Clone this repo with those commands:
+```sh
+git clone https://github.com/marcussacana/FridayNightFunkin
+git submodule init
+git submodule update --init --recursive
+```
+- Open the "Developer Command Prompt for VS 2022"
+- Run in this project root directory the command
+```
+build-windows release
+```
