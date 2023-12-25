@@ -16,6 +16,10 @@ Support the project on the itch.io page: https://ninja-muffin24.itch.io/funkin
 
 This game was made with love to Newgrounds and its community. Extra love to Tom Fulp.
 
+## Installation
+- Download the PKG [Clicking here](https://github.com/marcussacana/FridayNightFunkin/releases/)
+- Install as any other game
+
 ## Build instructions
 - Install the Visual Studio
 - Install the OpenOrbis SDK 
