@@ -33,3 +33,9 @@ git submodule update --init --recursive
 ```
 build-windows release
 ```
+
+## Screenshots
+![pic](https://github.com/marcussacana/FridayNightFunkin/assets/10576957/bb31fa58-ff8b-43c5-b780-ae6c9dd9d149)  
+![pic2](https://github.com/marcussacana/FridayNightFunkin/assets/10576957/cd22a728-5f59-45d5-87ff-3d274d731822)
+
+
