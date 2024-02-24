@@ -60,6 +60,6 @@ Global
 		SolutionGuid = {44B01D86-791E-435F-8DDB-538C0D50C957}
 	EndGlobalSection
 	GlobalSection(SharedMSBuildProjectFiles) = preSolution
-		..\..\PS4-OpenOrbis-Mono\main\OrbisGL\ImageSharp\shared-infrastructure\src\SharedInfrastructure\SharedInfrastructure.projitems*{7870f16a-9159-4ac4-b94b-ea449ecbc4bd}*SharedItemsImports = 5
+		OrbisGL\ImageSharp\shared-infrastructure\src\SharedInfrastructure\SharedInfrastructure.projitems*{7870f16a-9159-4ac4-b94b-ea449ecbc4bd}*SharedItemsImports = 5
 	EndGlobalSection
 EndGlobal
