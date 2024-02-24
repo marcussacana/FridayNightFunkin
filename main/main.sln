@@ -9,11 +9,11 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "OrbisGL", "OrbisGL\OrbisGL\
 		{7870F16A-9159-4AC4-B94B-EA449ECBC4BD} = {7870F16A-9159-4AC4-B94B-EA449ECBC4BD}
 	EndProjectSection
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "SharpGLES", "..\..\PS4-OpenOrbis-Mono\main\OrbisGL\SharpGLES\SharpGLES\SharpGLES.csproj", "{CF294894-F871-4CC4-B947-FEED7967A49E}"
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "SharpGLES", "OrbisGL\SharpGLES\SharpGLES\SharpGLES.csproj", "{CF294894-F871-4CC4-B947-FEED7967A49E}"
 EndProject
-Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "ImageSharp", "..\..\PS4-OpenOrbis-Mono\main\OrbisGL\ImageSharp\src\ImageSharp\ImageSharp.csproj", "{7870F16A-9159-4AC4-B94B-EA449ECBC4BD}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "ImageSharp", "OrbisGL\ImageSharp\src\ImageSharp\ImageSharp.csproj", "{7870F16A-9159-4AC4-B94B-EA449ECBC4BD}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "GLTest", "..\..\PS4-OpenOrbis-Mono\main\OrbisGL\GLTest\GLTest.csproj", "{836BC80E-8DFE-49A8-A411-B30FF5A8482F}"
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "GLTest", "OrbisGL\GLTest\GLTest.csproj", "{836BC80E-8DFE-49A8-A411-B30FF5A8482F}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
