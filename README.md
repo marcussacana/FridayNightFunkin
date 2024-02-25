@@ -37,9 +37,9 @@ git submodule update --init --recursive
 ```
 - Download the game assets here: https://www.mediafire.com/file/v7pysvi0he51lhl/assets.zip
 - Place the assets (without extracting) at "assets\misc"
-- Open the OrbisGL.sln project and  fnd the bulid text on top it say bulid and click that then you will see bulid solution click that
+- Open the OrbisGL.sln project and  find the bulid text on top it say bulid and click that then you will see bulid solution click that
 - Open the "Developer Command Prompt for VS 2022" 
-- Run in this project root directory the command in the Developer Command Prompt or Developer powershell works for me
+- Run in this project root directory the command in the `Developer Command Prompt` or `Developer powershell` works
 ```
 build-windows release
 ```
