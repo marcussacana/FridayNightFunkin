@@ -47,7 +47,7 @@ build-windows release
 ## Debugging
 Is possible to debug the game directly on PS4 or in your PC (but without audio),
 for debug in PS4 you will need use the Jetbrains Rider IDE and setup the remote debug, and for debug in PC you need use the Visual Studio 2022, by running the GLTest project.  
-The problem is that GLTest it require the OpenGL dlls that aren't included, you can copy from your pc browser the files `libEGL.dll` and `libGLESv2.dll` it can be find in `C:\Users\<Current-user>\AppData\Local\Microsoft\Edge\` or `C:\program(x86)\Microsoft\Edge\BROWSER.VERSION.HERE? place in the debug output directory.
+The problem is that GLTest it require the OpenGL dlls that aren't included, you can copy from your pc browser the files `libEGL.dll` and `libGLESv2.dll` it can be find in `C:\Users\<Current-user>\AppData\Local\Microsoft\Edge\` or `C:\program(x86)\Microsoft\Edge\BROWSER.VERSION.HERE` place in the debug output directory.
 
 ## Screenshots
 ![pic](https://github.com/marcussacana/FridayNightFunkin/assets/10576957/bb31fa58-ff8b-43c5-b780-ae6c9dd9d149)  
