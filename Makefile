@@ -1,3 +1,6 @@
+
+#Makefile is broken in linux that need to be fix
+
 # Package metadata.
 TITLE       := OpenOrbis Mono Sample
 VERSION     := 1.00
